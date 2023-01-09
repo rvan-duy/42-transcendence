@@ -15,6 +15,8 @@ Rule 2: The body should be separated from the subject.
 	Most commits will be sizeable enough to warrant further explanation with a 
 	body. This body should be separated from the subject line by a single 
 	empty line.
+	This can be done by using the git commit command in the following way:
+	git commit -m "[subject line]" -m "[clarifying body]"
 
 Rule 3: The body should be relevant to the subject.
 	Do not mention anything in the body that is not a direct expansion on what
@@ -28,9 +30,9 @@ Rule 4: If the above rules cannot be followed, split your commit into multiple p
 	understand every facet despite only writing (ideally) 20% themselves.
 
 Rule 5: Commit little and often.
-	The perfect commit introduces something new, or changes an existing part,
-	to do exactly one thing. Try to force yourself to think in commits, rather 
-	than committing as an after thought with everything you did that day.
+	The perfect commit introduces only one new feature, or changes an existing 
+	part in exactly one way. Try to force yourself to think in commits, rather 
+	than committing as an afterthought with everything you did that day.
 
 
 Sources / further reading:
