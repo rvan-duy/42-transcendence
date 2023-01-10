@@ -39,4 +39,4 @@ Require branch to be up to date before merging
 
 It is important that all team members follow these rules to ensure that
 the main branch of our project remains stable and of high quality. 
-If you have any questions or concerns about these rules, please reach out to @Rubenz
+If you have any questions or concerns about these rules, please reach out to @rvan-duy
