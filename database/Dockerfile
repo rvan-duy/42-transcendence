@@ -1,5 +1,5 @@
 # Use an official Postgres image as the base image
-FROM postgres:12
+FROM postgres:15
 
 # Set the environment variables for the Postgres user, password, and database
 ENV POSTGRES_USER dbuser

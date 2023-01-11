@@ -10,9 +10,6 @@ COPY package*.json ./
 # Install dependencies
 RUN npm ci
 
-# Copy the rest of the application's files to the container
-COPY frontend .
-
 # Expose port 4000 to the host
 EXPOSE 4000
 

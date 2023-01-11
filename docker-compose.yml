@@ -13,17 +13,6 @@ services:
       - db
     environment:
       DATABASE_URL: postgres://dbuser:dbpassword@db:5432/dbname
-  frontend:
-    build:
-      context: ./frontend
-    image: reactjs-frontend
-    container_name: frontend
-    ports:
-      - "4000:4000"
-    volumes:
-      - "./frontend/volume:/usr/src/app"
-    depends_on:
-      - backend
   db:
     build:
       context: ./database
@@ -37,6 +26,17 @@ services:
       POSTGRES_USER: dbuser
       POSTGRES_PASSWORD: dbpassword
       POSTGRES_DB: dbname
+  frontend:
+    build:
+      context: ./frontend
+    image: reactjs-frontend
+    container_name: frontend
+    ports:
+      - "4000:4000"
+    volumes:
+      - "./frontend/volume:/usr/src/app"
+    depends_on:
+      - backend
 
 volumes:
   pgdata:
