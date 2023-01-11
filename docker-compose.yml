@@ -1,0 +1,41 @@
+version: '3.7'
+  services:
+    backend:
+      build: ./backend
+      image: nestjs-backend
+      container_name: backend
+      ports:
+      volumes:
+      - ./backend/volume:/usr/src/app
+      depends_on:
+      - db
+      environment:
+      - DATABASE_URL=postgres://dbuser:dbpassword@db:5432/dbname
+
+    frontend:
+   	  build: ./frontend
+      image: reactjs-frontend
+      container_name: frontend
+      ports:
+        - "4000:4000"
+      volumes:
+        - ./frontend/volume:/usr/src/app
+      depends_on:
+        - backend
+
+    db:
+      build: ./database
+      image: postgres:12
+      container_name: db
+      ports:
+        - "5432:5432"
+      volumes:
+        - pgdata:/var/lib/postgresql/data
+      environment:
+        - POSTGRES_USER=dbuser
+        - POSTGRES_PASSWORD=dbpassword
+        - POSTGRES_DB=dbname
+
+volumes:
+  pgdata:
+
