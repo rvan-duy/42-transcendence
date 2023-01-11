@@ -6,5 +6,5 @@
 # @rvan-duy owns files inside the .github/ directory
 /.github/ @rvan-duy
 
-# @LJmartin94 owns files inside the .docs/ directory
+# @LJmartin94 owns files inside the docs/ directory
 /docs/ @LJmartin94
