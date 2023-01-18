@@ -7,7 +7,7 @@ ENV POSTGRES_PASSWORD dbpassword
 ENV POSTGRES_DB dbname
 
 # Expose port 5432 to the host
-EXPOSE 5432
+EXPOSE 5432 8080
 
 # Create a volume for the Postgres data directory
 VOLUME /var/lib/postgresql/data

@@ -6,7 +6,7 @@ services:
     image: nestjs-backend
     container_name: backend
     ports:
-      - "8000:8000"
+      - "3000:3000"
     volumes:
       - "./backend/volume:/usr/src/app"
     depends_on:
@@ -20,6 +20,7 @@ services:
     container_name: db
     ports:
       - "5432:5432"
+      - "8080:8080"
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
@@ -32,9 +33,9 @@ services:
     image: reactjs-frontend
     container_name: frontend
     ports:
-      - "4000:4000"
+      - "4173:4173"
     volumes:
-      - "./frontend/volume:/usr/src/app"
+      - "./frontend/rubenpong:/usr/src/app"
     depends_on:
       - backend
 
