@@ -4,6 +4,8 @@ build:
 start:
 		docker-compose up -d
 
+run:	start
+
 stop:
 		docker-compose down
 
@@ -12,9 +14,11 @@ clean:
 
 fclean:
 		docker-compose down --volumes --remove-orphans
+		
+		# rm -rf frontend/rubenpong/node_modules
 
-re:	fclean build
+re:	clean build run
+fre: fclean build run
 
 ps:
 		docker-compose ps
-

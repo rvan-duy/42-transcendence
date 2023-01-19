@@ -2,10 +2,17 @@
 FROM node:19-alpine
 
 # Set the working directory in the container
-WORKDIR /usr/src/app
+WORKDIR /app
 
+COPY rubenpong/ .
 # Copy the package.json and package-lock.json files to the container
-COPY rubenpong/package*.json ./
+# COPY rubenpong/package*.json ./
+
+# Install dependencies
+RUN npm install -g npm@latest
+
+# RUN npm install -g vite
+# RUN ls -l
 
 # Install dependencies
 RUN npm ci
@@ -14,4 +21,6 @@ RUN npm ci
 EXPOSE 4173
 
 # Run the command to start the application
-CMD ["npm", "run", "preview"]
+# CMD ["npm", "run", "preview"]
+CMD ["sh", "startup.sh"]
+# CMD ["ls", "-l"]

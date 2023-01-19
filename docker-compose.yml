@@ -35,7 +35,7 @@ services:
     ports:
       - "4173:4173"
     volumes:
-      - "./frontend/rubenpong:/usr/src/app"
+      - "./frontend/rubenpong:/app"
     depends_on:
       - backend
 
