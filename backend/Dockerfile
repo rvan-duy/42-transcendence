@@ -5,12 +5,13 @@ FROM node:19-alpine
 WORKDIR /usr/src/app
 
 # Copy package.json and package-lock.json
-COPY package*.json ./
+COPY volume/ .
 
 #RUN npm install
+RUN npm install -g npm@latest
 
 # Install dependencies
-RUN npm ci --verbose
+RUN npm ci
 
 # Make port 3000 available to the world outside the container
 EXPOSE 3000
@@ -19,4 +20,4 @@ EXPOSE 3000
 ENV DATABASE_URL postgres://dbuser:dbpassword@db:5432/dbname
 
 # Start the application
-CMD ["npm", "start"]
+CMD ["sh", "startup.sh"]
