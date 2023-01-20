@@ -22,3 +22,5 @@ fre: fclean build run
 
 ps:
 		docker-compose ps
+
+# make sure to not have mac node modules and then build and run with the makefile

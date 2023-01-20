@@ -33,7 +33,7 @@ services:
     image: reactjs-frontend
     container_name: frontend
     ports:
-      - "4173:4173"
+      - "8000:8000"
     volumes:
       - "./frontend/rubenpong:/app"
     depends_on:
