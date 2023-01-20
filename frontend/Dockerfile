@@ -18,7 +18,7 @@ RUN npm install -g npm@latest
 RUN npm ci
 
 # Expose port 4000 to the host
-EXPOSE 4173
+EXPOSE 8000
 
 # Run the command to start the application
 # CMD ["npm", "run", "preview"]
