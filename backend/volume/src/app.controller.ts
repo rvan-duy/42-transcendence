@@ -7,8 +7,8 @@ import {
   Put,
   Delete,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { PostService } from './post.service';
+import { UserService } from './prisma/user.service';
+import { PostService } from './prisma/post.service';
 import { User as UserModel, Post as PostModel } from '@prisma/client';
 
 @Controller()
