@@ -17,8 +17,9 @@ fclean:
 		
 		# rm -rf frontend/rubenpong/node_modules
 
-re:	clean build run
+re:	 stop build run
 fre: fclean build run
+restart: stop start
 
 ps:
 		docker-compose ps

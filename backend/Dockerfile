@@ -11,7 +11,16 @@ COPY volume/ .
 RUN npm install -g npm@latest
 
 # Install dependencies
-RUN npm ci
+# RUN npm ci
+
+RUN npm install prisma --save-dev && \
+    npx prisma && \
+    # npx prisma init && \
+    # npx prisma migrate dev --name init && \
+    # npm install @prisma/client && \
+    npx prisma generate
+
+RUN npm install
 
 # Make port 3000 available to the world outside the container
 EXPOSE 3000
@@ -20,4 +29,4 @@ EXPOSE 3000
 ENV DATABASE_URL postgres://dbuser:dbpassword@db:5432/dbname
 
 # Start the application
-CMD ["sh", "startup.sh"]
+CMD ["npm", "run", "start"]

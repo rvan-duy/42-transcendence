@@ -8,7 +8,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - "./backend/volume:/usr/src/app"
+      - "./backend/volume/src:/usr/src/app/src"
     depends_on:
       - db
     environment:
@@ -16,11 +16,10 @@ services:
   db:
     build:
       context: ./database
-    image: postgres:12
+    image: postgres:15
     container_name: db
     ports:
       - "5432:5432"
-      - "8080:8080"
     volumes:
       - pgdata:/var/lib/postgresql/data
     environment:
@@ -35,7 +34,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - "./frontend/rubenpong:/app"
+      - "./frontend/rubenpong/src:/app/src"
     depends_on:
       - backend
 

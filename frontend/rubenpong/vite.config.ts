@@ -1,13 +1,18 @@
-import { Server } from '@sveltejs/kit';
-import { sveltekit } from '@sveltejs/kit/vite';
-import type { UserConfig } from 'vite';
+import { fileURLToPath, URL } from 'node:url'
 
-const config: UserConfig = {
-	plugins: [sveltekit()],
-	server: {
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import vueJsx from '@vitejs/plugin-vue-jsx'
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [vue(), vueJsx()],
+  server: {
 		port: 8000,
 	},
-};
-
-// export default config;
-export default config;
+  resolve: {
+    alias: {
+      '@': fileURLToPath(new URL('./src', import.meta.url))
+    }
+  }
+})
