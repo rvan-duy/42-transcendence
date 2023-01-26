@@ -14,8 +14,6 @@ services:
     environment:
       DATABASE_URL: postgres://dbuser:dbpassword@db:5432/dbname
   db:
-    build:
-      context: ./database
     image: postgres:15
     container_name: db
     ports:
