@@ -24,4 +24,7 @@ restart: stop start
 ps:
 		docker-compose ps
 
+lint:
+		docker exec -it frontend npm run lint
+
 # make sure to not have mac node modules and then build and run with the makefile
