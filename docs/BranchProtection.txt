@@ -7,7 +7,8 @@ branch stable and prevent bad commits from being merged.
 
 Require Pull Request Before Merging
     All changes to the main branch must be made through pull requests. 
-    This allows team members to review and discuss the changes before they are merged.
+    This allows team members to review and discuss the changes before 
+    they are merged.
 
 Require At Least 1 Approval
     All pull requests must be reviewed and approved by at least one
