@@ -27,9 +27,15 @@ lint:
 		docker exec -it frontend npm run lint \
 			|| echo "\033[1;31mCould it be the container is not running?"
 
+migrate:
+		docker exec -it backend npx prisma migrate dev \
+			|| echo "\033[1;31mCould it be the container is not running?"
+
 seed:
 		docker exec -it backend npx prisma db seed \
 			|| echo "\033[1;31mCould it be the container is not running?"
+
+ms:	migrate seed
 
 
 # make sure to not have mac node modules and then build and run with the makefile
