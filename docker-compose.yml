@@ -12,7 +12,7 @@ services:
     depends_on:
       - db
     environment:
-      DATABASE_URL: postgres://dbuser:dbpassword@db:5432/dbname
+      DATABASE_URL: postgres://dbuser:dbpassword@db:5432/ruubdb
   db:
     image: postgres:15
     container_name: db
@@ -23,7 +23,7 @@ services:
     environment:
       POSTGRES_USER: dbuser
       POSTGRES_PASSWORD: dbpassword
-      POSTGRES_DB: dbname
+      POSTGRES_DB: ruubdb
   frontend:
     build:
       context: ./frontend
