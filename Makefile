@@ -24,7 +24,12 @@ ps:
 		docker-compose ps
 
 lint: 
-		docker exec -it frontend npm run lint || echo "\033[1;31mCould it be the container is not running?"
+		docker exec -it frontend npm run lint \
+			|| echo "\033[1;31mCould it be the container is not running?"
+
+seed:
+		docker exec -it backend npx prisma db seed \
+			|| echo "\033[1;31mCould it be the container is not running?"
 
 
 # make sure to not have mac node modules and then build and run with the makefile
