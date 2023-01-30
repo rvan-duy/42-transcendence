@@ -13,6 +13,7 @@ services:
       - db
     environment:
       DATABASE_URL: postgres://dbuser:dbpassword@db:5432/dbname
+      SERVER_HOST : ${IP}
   db:
     image: postgres:15
     container_name: db
