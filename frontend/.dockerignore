@@ -1,4 +1,6 @@
 Dockerfile
 node_modules/
+node_modules
 .dockerignore
 .gitignore
+package-lock.json

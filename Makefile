@@ -35,6 +35,7 @@ seed:
 		docker exec -it backend npx prisma db seed \
 			|| echo "\033[1;31mCould it be the container is not running?"
 
+# Do not forget to seed before using database: easy use make ms while containers are running
 ms:	migrate seed
 
 
