@@ -27,5 +27,7 @@ ps:
 lint: 
 		docker exec -it frontend npm run lint || echo "\033[1;31mCould it be the container is not running?"
 
+subject:
+	docker-compose up --build
 
 # make sure to not have mac node modules and then build and run with the makefile
