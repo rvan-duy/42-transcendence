@@ -28,4 +28,4 @@ jobs:
 
     - name: Run eslint
       working-directory: ./frontend/rubenpong
-      run: npm run lint
+      run: ./node_modules/.bin/eslint . --max-warnings=0
