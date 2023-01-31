@@ -11,12 +11,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-            node-version: 16
-      - run: npm install && npm ci
-      - uses: sibiraj-s/action-eslint@v2
-        with:
-          eslint-args: '--ignore-path=.gitignore --quiet'
-          extensions: '.vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts'
-          annotations: true
+      - name: run linter
+        run: make build run lint
