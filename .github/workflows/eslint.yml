@@ -27,5 +27,9 @@ jobs:
       run: npm install
 
     - name: Run eslint
-      working-directory: ./frontend/rubenpong
-      run: npm run lint
+      uses: sibiraj-s/action-eslint@v2
+      with:
+          eslint-args: '--ignore-path=.gitignore --quiet'
+          working-directory: ./frontend/rubenpong
+          extensions: 'vue,js,jsx,cjs,mjs,ts,tsx,cts,mts'
+          annotations: true
