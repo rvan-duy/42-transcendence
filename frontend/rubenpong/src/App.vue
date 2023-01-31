@@ -1,91 +1,77 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from "vue-router";
-import HelloWorld from "./components/HelloWorld.vue";
 </script>
 
 <template>
-  <header>
-    <img
-      alt="Vue logo"
-      class="logo"
-      src="@/assets/logo.svg"
-      width="125"
-      height="125"
-    />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+  <body>
+    <div class="container">
+      <div>
+        <img src="./assets/42-logo.png" alt="42 Logo" />
+        <button class="log">Login</button>
+        <p>Made with <span>❤</span> by Lindsay, Dagmar, Oswin, Ruben & Ruben.</p>
+      </div>
     </div>
-  </header>
-
-  <RouterView />
+  </body>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
+<style>
+img {
+  position: relative;
+  bottom: 100px;
+  width: 150px;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+body {
+  font-family: sans-serif;
+  background-color: rgba(250, 250, 250);
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
+.container {
   border: 0;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  text-align: center;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+.container div > p span {
+  color: red;
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+p {
+  position: relative;
+  top: 30px;
+}
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+p a {
+  color: black;
+  text-decoration: none;
+}
 
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
+button {
+  cursor: pointer;
+  border: 0;
+  border-radius: 4px;
+  font-weight: 600;
+  margin: 0 10px;
+  width: 200px;
+  padding: 10px 0;
+  box-shadow: 0 0 20px rgba(104, 85, 224, 0.2);
+  transition: 0.4s;
+}
 
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
+.log {
+  color: rgb(104, 85, 224);
+  background-color: rgba(255, 255, 255, 1);
+  border: 1px solid rgba(104, 85, 224, 1);
+}
+
+button:hover {
+  color: white;
+  box-shadow: 0 0 20px rgba(104, 85, 224, 0.6);
+  background-color: rgba(104, 85, 224, 1);
 }
 </style>
