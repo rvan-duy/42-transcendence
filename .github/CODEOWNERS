@@ -5,6 +5,7 @@
 
 # @rvan-duy
 /.github/ @rvan-duy
+/frontend/rubenpong/.eslintrc.cjs @rvan-duy
 
 # @LJmartin94
 /docs/ @LJmartin94
