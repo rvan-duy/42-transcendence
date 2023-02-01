@@ -4,9 +4,13 @@
 
 output=$(./node_modules/.bin/eslint . --max-warnings=0 2>/dev/null)
 
-if [ $? -ne 0 ]; then
+if [ $? -ne 0 ]; 
+then
     echo -e "\033[31mESLint found errors in the codebase. Fix them and try again.\033[0m"
     echo "$output"
     echo -e "\033[31mPlease note we are treating warnings as errors.\033[0m"
     exit 1
+else
+    echo -e "\033[32mESLint successfully ran. No errors found in the codebase.\033[0m"
+    exit 0
 fi
