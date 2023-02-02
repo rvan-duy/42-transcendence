@@ -1,4 +1,18 @@
 <script setup lang="ts">
+
+function getServerHost() {
+	var server_host = "http://"
+	// if (process.env["SERVER_HOST"] != "")
+	// {
+	// 	server_host += process.env["SERVER_HOST"];
+	// }
+	// else
+	// {
+		server_host += "localhost";
+	// }
+	return server_host;
+}
+
 // This function describes what the Meow-button does onclick.
 // It either runs a GET request to "/cat" of the back-end, and sets the
 // about_text to the text received as a response. Or it changes the
@@ -35,8 +49,10 @@ function onclickMeow() {
     // 	console.log("Error - Data: ",data);
     // });
 
+	var backend = getServerHost()+":3000/cat";
+	// console.log(backend);
     fetch(
-      "http://localhost:3000/cat"
+      backend
       // ,
       // {
       // // mode: 'cors',

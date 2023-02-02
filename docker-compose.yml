@@ -36,6 +36,8 @@ services:
       - "./frontend/rubenpong/src:/app/src"
     depends_on:
       - backend
+    environment:
+      SERVER_HOST : ${IP}
 
 volumes:
   pgdata:
