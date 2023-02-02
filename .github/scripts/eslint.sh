@@ -1,8 +1,13 @@
 #!/bin/bash
 
-# This script runs ESLint on the codebase. It is used by the GitHub Actions
+# This script runs ESLint on the codebase and exits with a non-zero exit code if there are any errors.
 
-output=$(./node_modules/.bin/eslint . --max-warnings=0 2>/dev/null)
+config_file="./frontend/rubenpong/.eslintrc.cjs"
+lint_path="./frontend/rubenpong/node_modules/.bin/eslint"
+flags="--max-warnings=0"
+
+echo -e "\033[33mRunning ESLint...\033[0m"
+output=$($lint_path . $flags -c $config_file)
 
 if [ $? -ne 0 ]; 
 then

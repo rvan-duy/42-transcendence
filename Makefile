@@ -24,9 +24,6 @@ ps:
 		docker-compose ps
 
 lint: 
-		docker exec -it frontend npm run lint || echo "\033[1;31mCould it be the container is not running?"
-
-new-lint:
-		cd frontend/rubenpong && bash ../../.github/scripts/eslint.sh
+		@bash .github/scripts/eslint.sh
 
 # make sure to not have mac node modules and then build and run with the makefile
