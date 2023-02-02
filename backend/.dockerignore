@@ -1,6 +1,5 @@
-node_modules/
-node_modules
+volume/node_modules/
+volume/package-lock.json
+Dockerfile
 .dockerignore
 .gitignore
-Dockerfile
-package-lock.json
