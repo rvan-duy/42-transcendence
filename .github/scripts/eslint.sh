@@ -7,7 +7,13 @@ lint_path="./frontend/rubenpong/node_modules/.bin/eslint"
 flags="--max-warnings=0"
 
 echo -e "\033[33mRunning ESLint...\033[0m"
-output=$($lint_path . $flags -c $config_file)
+
+if [ $# -eq 1 ]
+then
+    flags="$flags $1"
+fi
+
+output=$($lint_path . $flags -c $config_file 2>/dev/null)
 
 if [ $? -ne 0 ]; 
 then

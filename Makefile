@@ -26,6 +26,9 @@ ps:
 lint: 
 		@bash .github/scripts/eslint.sh
 
+lint-fix:
+		@bash .github/scripts/eslint.sh --fix
+
 migrate:
 		docker exec -it backend npx prisma migrate dev \
 			|| echo "\033[1;31mCould it be the container is not running?"
