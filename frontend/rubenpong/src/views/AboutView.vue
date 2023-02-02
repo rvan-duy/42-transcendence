@@ -14,7 +14,7 @@
 		else
 		{
 			console.log("Fetching...");
-			fetch('http://localhost:3000/cat')
+			fetch('http://f0r6s9.codam.nl:3000/cat')
 			.then(function(res){
 				// console.log(res);
 				return res.text();
