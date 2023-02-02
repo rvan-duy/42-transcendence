@@ -17,13 +17,13 @@ enum Access {
 
 model User {
   id        Int     @default(autoincrement()) @id
-  intraid   Int     @unique
+  intraId   Int     @unique
   name      String
   status    String?
-  hashedpw  String
+  hashedpw  String?
   friends   Int[]
   blocked   Int[]
-  elo       Int
+  elo       Int     @default(500)
   rooms     Room[]
   owns      Room[]  @relation("owns")
   sendMsg   Msg[]
