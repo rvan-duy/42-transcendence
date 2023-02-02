@@ -7,6 +7,8 @@
 	function onclickMeow(){
 		const about_text_element = document.getElementById("about_text");
 
+		if (about_text_element === null) return;
+
 		if (about_text_element.innerHTML === "cat")
 			about_text_element.innerHTML = "dog";
 		else
