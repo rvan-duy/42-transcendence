@@ -18,6 +18,9 @@ import SupportIcon from "./icons/IconSupport.vue";
     <a href="https://vuejs.org/" target="_blank" rel="noopener"
       >official documentation</a
     >
+    <h1 className="text-3xl font-bold underline">
+      Hello world!
+    </h1>
     provides you with all information you need to get started.
   </WelcomeItem>
 
