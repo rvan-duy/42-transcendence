@@ -17,8 +17,13 @@ const router = createRouter({
       // which is lazy-loaded when the route is visited.
       component: () => import("../views/AboutView.vue"),
     },
+	{
+		path: "/chat",
+		name: "chat",
+		component: () => import("../views/ChatView.vue"),
+	  },
     {
-      path: "/canvas",
+      path: "/canvas", //waarom staat deze meuk nou weer hier he Oswin >:(
       name: "canvas",
       component: () => import("../views/CanvasView.vue"),
     },
