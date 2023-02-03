@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Param,
+  Put,
 } from '@nestjs/common';
 import { User as UserModel} from '@prisma/client';
 import { PrismaUserService } from 'src/prisma/user/prismaUser.service';
@@ -20,5 +21,17 @@ export class UserController {
   @Get('all')
   async getUsers(): Promise<UserModel[]> {
     return this.userService.users({});
+  }
+
+  @Put('chname/:new')
+  async changeName(@Param('new') updatedName: string): Promise<UserModel> {
+    return this.userService.updateUser({
+      where: {
+        id: 42, //set to loged in userId
+      },
+      data: {
+        name: updatedName,
+      },
+    })
   }
 }
