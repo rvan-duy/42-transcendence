@@ -9,7 +9,7 @@
 		<div class="chat-container">
 			<header class="chat-header">
 			<h1><i class="fas fa-smile"></i> ChatCord</h1>
-			<a href="index.html" class="btn">Leave Room</a>
+			<a href="/chat" class="btn">Leave Room</a>
 			</header>
 			<main class="chat-main">
 			<div class="chat-sidebar">
@@ -17,11 +17,11 @@
 				<h2 id="room-name">Room 1</h2>
 				<h3><i class="fas fa-users"></i> Users</h3>
 				<ul id="users">
-				<li>Brad</li>
-				<li>John</li>
-				<li>Mary</li>
-				<li>Paul</li>
-				<li>Mike</li>
+				<li>Ruben 1</li>
+				<li>Ruben 2</li>
+				<li>Lindsay</li>
+				<li>Oswin</li>
+				<li>Dagmar</li>
 				</ul>
 			</div>
 			<div class="chat-messages">

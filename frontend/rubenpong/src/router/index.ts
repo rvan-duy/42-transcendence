@@ -21,7 +21,12 @@ const router = createRouter({
 		path: "/chat",
 		name: "chat",
 		component: () => import("../views/ChatView.vue"),
-	  },
+	},
+	{
+		path: "/chatroom",
+		name: "chatroom",
+		component: () => import("../views/ChatRoomView.vue"),
+	},
     {
       path: "/canvas", //waarom staat deze meuk nou weer hier he Oswin >:(
       name: "canvas",
