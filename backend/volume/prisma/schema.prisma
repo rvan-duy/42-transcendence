@@ -1,5 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema
 
 generator client {
   provider = "prisma-client-js"
@@ -10,18 +9,51 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id    Int     @default(autoincrement()) @id
-  email String  @unique
-  name  String?
-  posts Post[]
+enum Access {
+  PRIVATE
+  PROTECTED
+  PUBLIC
 }
 
-model Post {
-  id        Int      @default(autoincrement()) @id
-  title     String
-  content   String?
-  published Boolean? @default(false)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
+model User {
+  id        Int     @default(autoincrement()) @id
+  intraId   Int     @unique
+  name      String
+  status    String?
+  hashedpw  String?
+  friends   Int[] // ids
+  blocked   Int[] // ids
+  elo       Int     @default(500)
+  rooms     Room[]
+  owns      Room[]  @relation("owns")
+  sendMsg   Msg[]
+  games     Game[]
+}
+
+model Room {
+  id          Int @default(autoincrement()) @id
+  owner       User? @relation("owns", fields: [ownerId], references: [id])
+  ownerId     Int?
+  users       User[]
+  hashedCode  String?
+  access      Access @default(PUBLIC)
+  messages    Msg[]
+  lastId      Int
+}
+
+model Msg {
+  @@id([roomId, id]) //Dit wil ik graag uitgelegd krijgen <3 // Zodat we kunnen lazy loaden, id is samengevoegd id en roomid, op zichzelf zijn deze hier niet uniek
+  id        Int  // has to be set to last Id of Room + 1 and also increase the room->lastId by 1
+  room      Room @relation(fields: [roomId], references: [id])
+  roomId    Int
+  body      String
+  author    User @relation(fields: [authorId], references: [id])
+  authorId  Int
+  invite    Boolean // ? how ?
+}
+
+model Game  {
+  id        Int @default(autoincrement()) @id
+  players   User[]
+  score     Int[]
 }
