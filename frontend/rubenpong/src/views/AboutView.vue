@@ -7,14 +7,12 @@
 	function onclickMeow(){
 		const about_text_element = document.getElementById("about_text");
 
-		if (about_text_element === null) return;
-
 		if (about_text_element.innerHTML === "cat")
 			about_text_element.innerHTML = "dog";
 		else
 		{
 			console.log("Fetching...");
-			fetch('http://f0r6s9.codam.nl:3000/cat')
+			fetch('http://localhost:3000/cat')
 			.then(function(res){
 				// console.log(res);
 				return res.text();
@@ -39,7 +37,6 @@
 @media (min-width: 1024px) {
   .about {
     min-height: 100vh;
-    display: flex;
     align-items: center;
   }
 }
