@@ -5,7 +5,7 @@ import {
   Put,
 } from '@nestjs/common';
 import { User as UserModel} from '@prisma/client';
-import { PrismaUserService } from 'src/prisma/user/prismaUser.service';
+import { PrismaUserService } from './prisma/prismaUser.service';
 
 @Controller('user')
 export class UserController {
