@@ -6,29 +6,15 @@ async function main() {
 
   const alice = await prisma.user.upsert({
 
-    where: { email: 'alice@prisma.io' },
+    where: { intraId: 0 },
 
     update: {},
 
     create: {
 
-      email: 'alice@prisma.io',
+      intraId: 0,
 
       name: 'Alice',
-
-      posts: {
-
-        create: {
-
-          title: 'Check out Prisma with Next.js',
-
-          content: 'https://www.prisma.io/nextjs',
-
-          published: true,
-
-        },
-
-      },
 
     },
 
@@ -36,43 +22,15 @@ async function main() {
 
   const bob = await prisma.user.upsert({
 
-    where: { email: 'bob@prisma.io' },
+    where: { intraId: 1 },
 
     update: {},
 
     create: {
 
-      email: 'bob@prisma.io',
+      intraId:  1,
 
       name: 'Bob',
-
-      posts: {
-
-        create: [
-
-          {
-
-            title: 'Follow Prisma on Twitter',
-
-            content: 'https://twitter.com/prisma',
-
-            published: true,
-
-          },
-
-          {
-
-            title: 'Follow Nexus on Twitter',
-
-            content: 'https://twitter.com/nexusgql',
-
-            published: true,
-
-          },
-
-        ],
-
-      },
 
     },
 
