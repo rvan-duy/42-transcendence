@@ -27,11 +27,16 @@ export class UserController {
   async changeName(@Param('new') updatedName: string): Promise<UserModel> {
     return this.userService.updateUser({
       where: {
-        id: 42, //set to loged in userId
+        id: 2, //set to loged in userId
       },
       data: {
         name: updatedName,
       },
     })
   }
+
+  // @Post('postuserwithname/:name')
+  // async postUser(): Promise<UserModel> {
+  //   return this.userService.createUser({userdetails});
+  // }
 }

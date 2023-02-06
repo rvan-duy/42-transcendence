@@ -21,8 +21,8 @@ model User {
   name      String
   status    String?
   hashedpw  String?
-  friends   Int[]
-  blocked   Int[]
+  friends   Int[] // ids
+  blocked   Int[] // ids
   elo       Int     @default(500)
   rooms     Room[]
   owns      Room[]  @relation("owns")
@@ -49,7 +49,7 @@ model Msg {
   body      String
   author    User @relation(fields: [authorId], references: [id])
   authorId  Int
-  invite    Boolean
+  invite    Boolean // ? how ?
 }
 
 model Game  {

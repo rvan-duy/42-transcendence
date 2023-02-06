@@ -2,9 +2,10 @@ import {
   Controller,
   Get,
   Param,
+  Post,
 } from '@nestjs/common';
 import { Game as GameModel} from '@prisma/client';
-import { PrismaGameService } from 'src/prisma/Game/prismaGame.service';
+import { PrismaGameService } from 'src/prisma/game/prismaGame.service';
 
 // should only be allowed to get games as these will be created by the engine
 @Controller('game')
