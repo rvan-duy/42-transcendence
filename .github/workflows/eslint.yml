@@ -3,7 +3,7 @@ name: ESLint
 on:
   push:
     branches: [ 'main' ]
-    paths: [ 'frontend/**' ]
+    paths: [ '**.js', '**.jsx', '**.ts', '**.tsx', '**.vue' ]
   pull_request:
     branches: [ 'main' ]
   workflow_dispatch:
@@ -27,5 +27,4 @@ jobs:
       run: npm install
 
     - name: Run eslint
-      working-directory: ./frontend/rubenpong
-      run: bash ../../.github/scripts/eslint.sh
+      run: bash .github/scripts/eslint.sh

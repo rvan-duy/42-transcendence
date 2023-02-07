@@ -2,7 +2,7 @@ import {
   Controller,
   Get,
   Param,
-  Post,
+  //Post, linter complains about this, it is unused
 } from '@nestjs/common';
 import { Game as GameModel} from '@prisma/client';
 import { PrismaGameService } from './prisma/prismaGame.service';
@@ -12,7 +12,7 @@ import { PrismaGameService } from './prisma/prismaGame.service';
 export class GameController {
   constructor(
     private readonly gameService: PrismaGameService
-    ) {}
+  ) {}
 
   @Get('id/:id')
   async getGameById(@Param('id') id: string): Promise<GameModel> {
