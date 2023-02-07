@@ -23,9 +23,11 @@
     "@nestjs/common": "^9.0.0",
     "@nestjs/core": "^9.0.0",
     "@nestjs/platform-express": "^9.0.0",
+    "@nestjs/platform-socket.io": "^9.3.2",
+    "@nestjs/websockets": "^9.3.2",
     "@prisma/client": "^4.9.0",
-    "reflect-metadata": "^0.1.13",
     "cors": "^2.8.5",
+    "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0"
   },
   "devDependencies": {
