@@ -24,8 +24,10 @@ ps:
 		docker-compose ps
 
 lint: 
-		docker exec -it frontend npm run lint \
-			|| echo "\033[1;31mCould it be the container is not running?"
+		@bash .github/scripts/eslint.sh
+
+lint-fix:
+		@bash .github/scripts/eslint.sh --fix
 
 migrate:
 		docker exec -it backend npx prisma migrate dev \
@@ -37,6 +39,5 @@ seed:
 
 # Do not forget to seed before using database: easy use make ms while containers are running
 ms:	migrate seed
-
 
 # make sure to not have mac node modules and then build and run with the makefile

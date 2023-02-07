@@ -6,7 +6,14 @@ defineProps<{
 
 <template>
   <div class="item">
-    <div><canvas id="pixels" width="200" height="200" style="border:1px solid #CCCCCC;"></canvas></div>
+    <div>
+      <canvas
+        id="pixels"
+        width="200"
+        height="200"
+        style="border:1px solid #CCCCCC;"
+      />
+    </div>
   </div>
 </template>
 

@@ -6,7 +6,7 @@ import {
 @Controller()
 export class AppController {
   constructor(
-    ) {}
+  ) {}
     
   @Get('cat')
   getCat(): string {
@@ -15,6 +15,6 @@ export class AppController {
 
   @Get()
   getHello(): string {
-      return "Hello world!";
-    }
+    return 'Hello world!';
+  }
 }
