@@ -11,7 +11,7 @@ import { PrismaUserService } from './prisma/prismaUser.service';
 export class UserController {
   constructor(
     private readonly userService: PrismaUserService
-    ) {}
+  ) {}
 
   @Get('id/:id')
   async getUserById(@Param('id') id: string): Promise<UserModel> {
@@ -32,7 +32,7 @@ export class UserController {
       data: {
         name: updatedName,
       },
-    })
+    });
   }
 
   // @Post('postuserwithname/:name')
