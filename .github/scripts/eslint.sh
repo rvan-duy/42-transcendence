@@ -14,8 +14,17 @@ then
 fi
 
 output=$($lint_path . $flags -c $config_file 2>/dev/null)
+exit_code=$?
 
-if [ $? -ne 0 ]; 
+if [ $exit_code -eq 127 ];
+then
+    echo -e "\033[31mESLint not found. Please install it and try again.\033[0m"
+    echo -e "\033[31mrun 'npm install' in the frontend/rubenpong directory.\033[0m"
+    echo -e "\033[31mOr install just eslint with 'npm install eslint'.\033[0m"
+    exit 2
+fi
+
+if [ $exit_code -ne 0 ]; 
 then
     echo -e "\033[31mESLint found errors in the codebase. Fix them and try again.\033[0m"
     echo "$output"
