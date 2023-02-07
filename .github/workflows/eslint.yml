@@ -3,7 +3,7 @@ name: ESLint
 on:
   push:
     branches: [ 'main' ]
-    paths: [ 'frontend/**' ]
+    paths: [ '**.js', '**.jsx', '**.ts', '**.tsx', '**.vue' ]
   pull_request:
     branches: [ 'main' ]
   workflow_dispatch:
