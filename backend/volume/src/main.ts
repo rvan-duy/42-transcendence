@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const prismaService = app.get(PrismaService);
   await prismaService.enableShutdownHooks(app);
-  app.enableCors( {
+  app.enableCors({
     origin: ['*'],
   });
   await app.listen(3000);
