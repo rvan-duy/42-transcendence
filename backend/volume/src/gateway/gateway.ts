@@ -62,6 +62,38 @@ export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
 	}
   }
 
+// import { OnModuleInit } from "@nestjs/common";
+import { MessageBody, OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer, WsResponse } from "@nestjs/websockets";
+import { Server, Socket } from 'socket.io';
+
+@WebSocketGateway({
+	cors: {
+		origin: '*',
+	}
+})
+export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+	@WebSocketServer() broadcast: Server;
+	
+	@SubscribeMessage('msgToServer')
+	handleMessage(client: Socket, text: string): WsResponse<string> {
+		// client.emit('msgToClient', text);
+		// this.broadcast.emit('msgToClient', text);
+		return { event: 'msgToClient', data: text};
+	}
+	
+	// Implemented method overrides //
+	afterInit(server: Server) {
+		console.log("Gateway initialised.")
+	}
+
+	handleConnection(client: Socket, ...args: any[]) {
+		console.log(`Client ${client.id} connected`);
+	}
+	
+	handleDisconnect(client: Socket) {
+		console.log(`Client ${client.id} disconnected`);
+	}
+	// //////////////////////////// //
 }
 // import { OnModuleInit } from "@nestjs/common";
 // import { MessageBody } from '@nestjs/websockets';
