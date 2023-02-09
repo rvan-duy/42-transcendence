@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from "vue-router";
-import HelloWorld from "./components/HelloWorld.vue";
+import { RouterLink, RouterView } from 'vue-router';
+import HelloWorld from './components/HelloWorld.vue';
 
 // import SocketioService from './services/socketio.service.ts';
 
@@ -13,8 +13,8 @@ import SocketioService from './services/socketio.service.js';
 //   name: 'App',
 //   components: {},
 //   created() {
-    SocketioService.setupSocketConnection();
-	// console.log("Please call me :( ");
+SocketioService.setupSocketConnection();
+// console.log("Please call me :( ");
 //   }
 // }
 </script>
