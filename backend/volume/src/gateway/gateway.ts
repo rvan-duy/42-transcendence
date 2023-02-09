@@ -1,6 +1,13 @@
 // import { OnModuleInit } from "@nestjs/common";
 // import { MessageBody } from '@nestjs/websockets';
-import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, SubscribeMessage, WebSocketGateway, WebSocketServer, WsResponse } from '@nestjs/websockets';
+import {
+  OnGatewayConnection,
+  OnGatewayDisconnect,
+  OnGatewayInit,
+  SubscribeMessage,
+  WebSocketGateway,
+  WebSocketServer,
+  WsResponse } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
@@ -16,7 +23,7 @@ export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
     console.warn(client + ' is unused');
     // client.emit('msgToClient', text);
     // this.broadcast.emit('msgToClient', text);
-    return { event: 'msgToClient', data: text};
+    return { event: 'msgToClient', data: text };
   }
 
   // Implemented method overrides //
