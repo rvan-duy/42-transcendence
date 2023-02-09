@@ -1,11 +1,6 @@
 <script setup lang="ts">
-<<<<<<< HEAD
 import { RouterLink, RouterView } from 'vue-router';
 import HelloWorld from './components/HelloWorld.vue';
-=======
-import { RouterLink, RouterView } from "vue-router";
-import HelloWorld from "./components/HelloWorld.vue";
->>>>>>> 28269a14bb23c5166b139856686d06dfaf60e4b8
 
 // import SocketioService from './services/socketio.service.ts';
 
@@ -18,13 +13,8 @@ import SocketioService from './services/socketio.service.js';
 //   name: 'App',
 //   components: {},
 //   created() {
-<<<<<<< HEAD
 SocketioService.setupSocketConnection();
 // console.log("Please call me :( ");
-=======
-    SocketioService.setupSocketConnection();
-	// console.log("Please call me :( ");
->>>>>>> 28269a14bb23c5166b139856686d06dfaf60e4b8
 //   }
 // }
 </script>
