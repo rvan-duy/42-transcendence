@@ -1,6 +1,22 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from "vue-router";
 import HelloWorld from "./components/HelloWorld.vue";
+
+// import SocketioService from './services/socketio.service.ts';
+
+// var socketService = new SocketioService;
+// socketService.socket.on('msgToClient', (msg) => { this.receiveMessage(msg) });
+
+import SocketioService from './services/socketio.service.js';
+
+// export default {
+//   name: 'App',
+//   components: {},
+//   created() {
+    SocketioService.setupSocketConnection();
+	// console.log("Please call me :( ");
+//   }
+// }
 </script>
 
 <template>
