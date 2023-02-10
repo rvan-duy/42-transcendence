@@ -20,9 +20,9 @@ export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
 
   @SubscribeMessage('msgToServer')
   handleMessage(client: Socket, text: string): WsResponse<string> {
-    console.warn(client + ' is unused');
     // client.emit('msgToClient', text);
     // this.broadcast.emit('msgToClient', text);
+    console.log(`Server received msg: "${text}" from client: ${client.id}`);
     return { event: 'msgToClient', data: text };
   }
 
