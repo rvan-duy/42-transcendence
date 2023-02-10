@@ -12,7 +12,7 @@
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
-    "pinia": "^2.0.28",
+    "pinia": "^2.0.30",
     "socket.io-client": "^4.5.4",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
