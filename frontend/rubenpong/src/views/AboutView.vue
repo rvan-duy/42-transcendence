@@ -1,5 +1,12 @@
 <script setup lang="ts">
 import LoginButton from '@/components/buttons/LoginButton.vue';
+import SocketioService from '../services/socketio.service.js';
+const connection = SocketioService;
+connection.setupSocketConnection();
+connection.socket.on('msgToClient', (msg) => {
+  console.log(`client received message: ${msg}`);
+});
+
 // This function describes what the Meow-button does onclick.
 // It either runs a GET request to "/cat" of the back-end, and sets the
 // about_text to the text received as a response. Or it changes the
@@ -7,15 +14,13 @@ import LoginButton from '@/components/buttons/LoginButton.vue';
 function onclickMeow(){
   const about_text_element = document.getElementById('about_text');
 
-  if (about_text_element === null)
-    return;
-
+  connection.socket.emit('msgToServer', 'Meow');
   if (about_text_element.innerHTML === 'cat')
     about_text_element.innerHTML = 'dog';
   else
   {
     console.log('Fetching...');
-    fetch('http://localhost:3000/cat')
+    fetch('http://localhost:3000/cat') // TODO this now generates a CORS error ever since we turned CORS off lmaofml.
       .then(function(res){
         // console.log(res);
         return res.text();
