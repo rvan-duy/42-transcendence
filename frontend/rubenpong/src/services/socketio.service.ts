@@ -6,6 +6,7 @@ class SocketioService {
   socket: any;
 
   constructor() {
+    // this.socket = io(); // would this work as a standard constructor?
     // this.socket = io('http://localhost:3000'); //TODO: Replace with .env variable like 'process.env.VUE_APP_SOCKET_ENDPOINT'
   }
 
