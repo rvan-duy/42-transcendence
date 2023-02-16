@@ -38,7 +38,7 @@ export class AuthController {
         code: code,
         state: state,
         redirect_uri: 'http://localhost:3000/auth/callback',
-      })
+      });
 
       console.log('status', status);
       console.log('data', data);
@@ -68,7 +68,7 @@ export class AuthController {
         return error.message;
       } else {
         console.log('unexpected error: ', error);
-        return 'An unexpected error occurred'
+        return 'An unexpected error occurred';
       }
     }
   }
