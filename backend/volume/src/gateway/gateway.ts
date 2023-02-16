@@ -16,7 +16,7 @@ import { Server, Socket } from 'socket.io';
   }
 })
 export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() broadcast: Server;
+  @WebSocketServer() all_clients: Server; //all clients
 
   @SubscribeMessage('msgToServer')
   handleMessage(client: Socket, text: string): WsResponse<string> {
@@ -33,11 +33,14 @@ export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
   }
 
   handleConnection(client: Socket, ...args: any[]) {
+    client.broadcast.emit('msgToClient', 'A new user joined the chat.'); //all OTHER clients
+    client.emit('msgToClient', 'Welcome to the chat!'); //this client
     console.warn(args + ' is unused');
     console.log(`Client ${client.id} connected`);
   }
 
   handleDisconnect(client: Socket) {
+    this.all_clients.emit('msgToClient', 'A user left the chat.'); //all clients
     console.log(`Client ${client.id} disconnected`);
   }
 // //////////////////////////// //
