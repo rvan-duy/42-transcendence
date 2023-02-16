@@ -8,6 +8,7 @@ module.exports = {
     '@vue/eslint-config-typescript',
     'plugin:vue/vue3-recommended',
   ],
+  'ignorePatterns': ['node_modules/*', 'dist/*'],
   // Custom rules
   rules: {
     // The big ones

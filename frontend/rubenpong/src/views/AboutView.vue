@@ -1,11 +1,14 @@
 <script setup lang="ts">
-
+import LoginButton from '@/components/buttons/LoginButton.vue';
 // This function describes what the Meow-button does onclick.
 // It either runs a GET request to "/cat" of the back-end, and sets the
 // about_text to the text received as a response. Or it changes the
 // about_text to be "dog" if the value is currently "cat".
 function onclickMeow(){
   const about_text_element = document.getElementById('about_text');
+
+  if (about_text_element === null)
+    return;
 
   if (about_text_element.innerHTML === 'cat')
     about_text_element.innerHTML = 'dog';
@@ -34,6 +37,7 @@ function onclickMeow(){
     <button @click="onclickMeow">
       Meow
     </button>
+    <LoginButton />
   </div>
 </template>
 
