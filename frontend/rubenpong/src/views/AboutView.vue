@@ -13,7 +13,8 @@ connection.socket.on('msgToClient', (msg) => {
 function onclickMeow(){
   const about_text_element = document.getElementById('about_text');
 
-  connection.socket.emit('msgToServer', 'Meow');
+  connection.socket.emit('msgToServer', 'Meow'); //Meow at server
+
   if (about_text_element.innerHTML === 'cat')
     about_text_element.innerHTML = 'dog';
   else
