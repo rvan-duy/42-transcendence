@@ -3,7 +3,8 @@
 const clientId = 'u-s4t2ud-77defdf5da75714147831f8ce2531c3aa1554a9e79226dc62041558ded39460b';
 const redirectUri = 'http://localhost:3000/auth/callback';
 const responseType = 'code';
-const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}`;
+const state = 'RubenRubenEnDeRest';
+const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=${responseType}&state=${state}`;
 
 const loginWith42 = () => {
   console.log('Redirecting to 42...');
