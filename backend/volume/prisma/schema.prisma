@@ -20,7 +20,6 @@ model User {
   intraId   Int     @unique
   name      String
   status    String?
-  hashedpw  String?
   friends   Int[] // ids
   blocked   Int[] // ids
   elo       Int     @default(500)
@@ -42,7 +41,7 @@ model Room {
 }
 
 model Msg {
-  @@id([roomId, id]) //Dit wil ik graag uitgelegd krijgen <3 // Zodat we kunnen lazy loaden, id is samengevoegd id en roomid, op zichzelf zijn deze hier niet uniek
+  @@id([roomId, id])
   id        Int  // has to be set to last Id of Room + 1 and also increase the room->lastId by 1
   room      Room @relation(fields: [roomId], references: [id])
   roomId    Int
