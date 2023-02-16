@@ -1,5 +1,3 @@
-// import { OnModuleInit } from "@nestjs/common";
-// import { MessageBody } from '@nestjs/websockets';
 import {
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -119,13 +117,10 @@ export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
 
   @SubscribeMessage('msgToServer')
   handleMessage(client: Socket, text: string): WsResponse<string> {
-    // client.emit('msgToClient', text);
-    // this.broadcast.emit('msgToClient', text);
     console.log(`Server received msg: "${text}" from client: ${client.id}`);
     return { event: 'msgToClient', data: text };
   }
 
-  // Implemented method overrides //
   afterInit(server: Server) {
     console.warn(server + ' is unused');
     console.log('Gateway initialised.');
@@ -142,7 +137,6 @@ export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
     this.all_clients.emit('msgToClient', 'A user left the chat.'); //all clients
     console.log(`Client ${client.id} disconnected`);
   }
-// //////////////////////////// //
 }
 
 // @WebSocketGateway(/*{  cors: true }*/)
