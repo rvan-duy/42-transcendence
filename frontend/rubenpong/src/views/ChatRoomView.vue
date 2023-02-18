@@ -27,9 +27,9 @@ function outputMessages(message)
   const div = document.createElement('div');
   div.classList.add('message');
   div.innerHTML =
-	`<p class="meta">NAME <span>TIME</span></p>
+	`<p class="meta">${message.username} <span>${message.time}</span></p>
 	<p class="text">
-		${message}
+		${message.body}
 	</p>`;
   const chatMessages = document.querySelector('.chat-messages');
   chatMessages.appendChild(div);
