@@ -8,8 +8,8 @@
     <div>
       <canvas
         id="pixels"
-        width="800"
-        height="800"
+        width="1000"
+        height="600"
         style="border:1px solid #CCCCCC;"
       />
     </div>
@@ -45,7 +45,7 @@ export default {
         queue.push(new ImageData(pxlData.data, pxlData.width, pxlData.height));
       }
     });
-    socket.on('canvas-init', canvasData => {
+    socket.on('canvas-init', canvasData => { 
       if (!ctx) {
         return;
       }
@@ -64,7 +64,91 @@ export default {
       init = true;
       console.log('hope to have received the canvas-init');
     });
+
+  function render()
+  {
+    //draw background
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    //draw plateau other player
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 100, 20, 50);
+    //draw plateau you
+    ctx.fillStyle = 'white';
+    ctx.fillRect(canvas.width - 20, 100, 20, 50);
+    //draw ball
+    ctx.fillStyle = 'red';
+    ctx.beginPath();
+    ctx.arc(300,300,20,0,Math.PI*2,false);
+    ctx.closePath();
+    ctx.fill();
+    //draw text
+    ctx.fillStyle = 'white';
+    ctx.font = "50px arial";
+    ctx.fillText('other', canvas.width / 4, canvas.height / 8);
+    //draw text
+    ctx.fillStyle = 'white';
+    ctx.font = "50px arial";
+    ctx.fillText('0', canvas.width / 4 + 40, canvas.height / 4);
+    //draw text
+    ctx.fillStyle = 'white';
+    ctx.font = "50px arial";
+    ctx.fillText('you', canvas.width / 4 * 3 - 100, canvas.height / 8);
+    //draw text
+    ctx.fillStyle = 'white';
+    ctx.font = "50px arial";
+    ctx.fillText('0', canvas.width / 4 * 3 - 70, canvas.height / 4);
+    //draw net
+    for(let i = 0; i <= canvas.height; i+=15){
+      ctx.fillStyle = 'white';
+      ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
+    }
+    // //draw text
+    // ctx.fillStyle = 'white';
+    // ctx.font = "100px arial";
+    // ctx.fillText('you won', canvas.width / 2 - 200, canvas.height / 2);
+}
+
+  const ball: {x: number, y: number, speed: number, Xvelocity: number, Yvelocity: number, rad: number} = {
+    x: canvas.width/2,
+    y: canvas.height/2,
+    speed: 5,
+    Xvelocity: 5,
+    Yvelocity: 5,
+    rad: 20,
+  };
+
+  const plat: {x: number, y: number, height: number, width: number} = {
+    x: 0,
+    y : canvas.height / 2 - 25,
+    height: 50,
+    width: 50
   }
+
+  function update()
+  {
+    ball.x += ball.Xvelocity;
+    ball.y += ball.Yvelocity;
+    if (ball.y + ball.rad > canvas.height || ball.y - ball.rad < 0){
+        ball.Yvelocity = -ball.Yvelocity;
+        // wall.play();
+    }
+    // var collision: boolean = false;
+    //if there is a collision
+    if (plat.x < ball.x + ball.rad && plat.y < ball.x - ball.rad && plat.x + plat.width > ball.x-ball.rad && plat.y + plat.height > ball.y - ball.rad)
+    {
+      
+    }
+  }
+
+  function rubenpong()
+  {
+    update();
+    render();
+  };
+  const fps: number = 60;
+  setInterval(rubenpong, 1000/fps);
+}
 };
 </script>
 
