@@ -72,14 +72,14 @@ export default {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     //draw plateau other player
     ctx.fillStyle = 'white';
-    ctx.fillRect(0, 100, 20, 50);
+    ctx.fillRect(other.x, other.y, other.width, other.height);
     //draw plateau you
     ctx.fillStyle = 'white';
-    ctx.fillRect(canvas.width - 20, 100, 20, 50);
+    ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
     //draw ball
     ctx.fillStyle = 'red';
     ctx.beginPath();
-    ctx.arc(300,300,20,0,Math.PI*2,false);
+    ctx.arc(ball.x,ball.y,ball.rad,0,Math.PI*2,false);
     ctx.closePath();
     ctx.fill();
     //draw text
@@ -89,7 +89,7 @@ export default {
     //draw text
     ctx.fillStyle = 'white';
     ctx.font = "50px arial";
-    ctx.fillText('0', canvas.width / 4 + 40, canvas.height / 4);
+    ctx.fillText(other.score.toString(), canvas.width / 4 + 40, canvas.height / 4);
     //draw text
     ctx.fillStyle = 'white';
     ctx.font = "50px arial";
@@ -97,7 +97,7 @@ export default {
     //draw text
     ctx.fillStyle = 'white';
     ctx.font = "50px arial";
-    ctx.fillText('0', canvas.width / 4 * 3 - 70, canvas.height / 4);
+    ctx.fillText(plat.score.toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
     //draw net
     for(let i = 0; i <= canvas.height; i+=15){
       ctx.fillStyle = 'white';
@@ -118,15 +118,57 @@ export default {
     rad: 20,
   };
 
-  const plat: {x: number, y: number, height: number, width: number} = {
-    x: 0,
+  const plat: {x: number, y: number, height: number, width: number, score:number} = {
+    x: canvas.width - 20,
     y : canvas.height / 2 - 25,
-    height: 50,
-    width: 50
+    height: 100,
+    width: 20,
+    score: 0
   }
 
+  const other: {x: number, y: number, height: number, width: number, score:number} = {
+    x: 0,
+    y : canvas.height / 2 - 25,
+    height: 100,
+    width: 20,
+    score: 0
+  }
+
+  function scoredOrNotScored()
+  {
+    ball.x = canvas.width/2;
+    ball.y = canvas.height/2;
+    ball.Xvelocity = -ball.Xvelocity;
+    ball.speed = 5;
+  }
+
+  function  movePlat(e: KeyboardEvent)
+  {
+    if (e.key === 'ArrowDown')
+      plat.y += 20;
+    if (e.key === 'ArrowUp')
+      plat.y -= 20;
+  // var name = e.key;
+  // var code = e.code;
+  // // Alert the key name and key code on keydown
+  // alert(`Key pressed ${name} \r\n Key code value: ${code}`);
+  }
   function update()
   {
+     // change the score of players, if the ball goes to the left "ball.x<0" computer win, else if "ball.x > canvas.width" the user win
+    if(ball.x + ball.rad > canvas.width){
+        other.score++;
+        // comScore.play();
+        scoredOrNotScored();
+    }else if(ball.x - ball.rad < 0 ){
+        plat.score++;
+        // userScore.play();
+        scoredOrNotScored();
+    }
+    // when COM or USER scores, we reset the ball
+    //resetball
+
+
     ball.x += ball.Xvelocity;
     ball.y += ball.Yvelocity;
     if (ball.y + ball.rad > canvas.height || ball.y - ball.rad < 0){
@@ -134,10 +176,23 @@ export default {
         // wall.play();
     }
     // var collision: boolean = false;
+    // we check if the paddle hit the user or the com paddle
+    var player : string = (ball.x + ball.rad < canvas.width/2) ? 'other' : 'user';
     //if there is a collision
     if (plat.x < ball.x + ball.rad && plat.y < ball.x - ball.rad && plat.x + plat.width > ball.x-ball.rad && plat.y + plat.height > ball.y - ball.rad)
     {
+      // where the ball hits the plateau & normalize
+      var collisionPoint:number = ((ball.y - (plat.y + plat.height/2))) / (plat.height/2);
+      // from -45degrees to +45degrees
+      // Math.PI/4 = 45degrees
+      var angleRad: number = (Math.PI/4) * collisionPoint;
+      // change X & Y velocity dir
+      var dir:number= (ball.x + ball.rad < canvas.width/2) ? 1 : -1;
+      ball.Xvelocity = dir * ball.speed * Math.cos(angleRad);
+      ball.Yvelocity = ball.speed * Math.sin(angleRad);
       
+      // speed up the ball everytime a paddle hits it.
+      ball.speed += 0.1;
     }
   }
 
@@ -148,6 +203,27 @@ export default {
   };
   const fps: number = 60;
   setInterval(rubenpong, 1000/fps);
+  // canvas.addEventListener("keyup", movePlatUp);
+  // canvas.addEventListener("keydown", movePlatDown);
+  // input.addEventListener('keypress', logKey);
+  // function logKey(evt : KeyboardEvent) {
+  //   console.log(evt.key);
+  // }
+  // const input: HTMLInputElement = document.querySelector('input');
+
+  // console.log(input);
+  // input.addEventListener('keypress', (e: KeyboardEvent) =>{
+  //          //You have yout key code here
+  //           console.log(e.key);
+  //       });
+document.addEventListener('keydown', movePlat);
+
+//   var name = event.key;
+//   var code = event.code;
+//   // Alert the key name and key code on keydown
+//   alert(`Key pressed ${name} \r\n Key code value: ${code}`);
+// }, false);
+
 }
 };
 </script>
