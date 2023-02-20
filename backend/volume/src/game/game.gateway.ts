@@ -5,9 +5,9 @@ import { Socket, Server } from 'socket.io';
   cors: {
     origin: '*',
   },
-  namespace: '/chat'
+  namespace: '/game'
 })
-export class MsgGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private server: Server;
 
   afterInit(server: Server) {
@@ -16,7 +16,7 @@ export class MsgGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
-    client.emit('init') // , data (all chats?)
+    client.emit('init') // new connection
   }
 
   handleDisconnect(client: Socket) {
