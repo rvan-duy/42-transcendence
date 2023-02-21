@@ -15,7 +15,7 @@ type AuthResponse = {
 export class AuthService {
   constructor(private userService: PrismaUserService) {}
 
-  /* 
+  /*
    * Request an access token from the 42 API
    */
   async requestAccessToken(code: string) {

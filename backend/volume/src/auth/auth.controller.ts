@@ -9,9 +9,8 @@
   * 6. The user is redirected to the home page        (backend -> frontend)
 */
 
-import { Controller, Get, Req, Query, Res, Module, } from '@nestjs/common';
+import { Controller, Get, Req, Query, Res, } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { PrismaUserService } from '../user/prisma/prismaUser.service';
 import axios from 'axios';
 
 // TODO: move these enums to a separate file
@@ -42,6 +41,8 @@ export class AuthController {
     try {
       const token = await this.AuthService.requestAccessToken(code);
       const user = await this.AuthService.requestUserData(token); // the user object contains user data
+
+      console.log(`TODO - check if the user exists in the database (${user.login})`);
 
       // if this response is successful we can verify the user
       // check if the user exists in the database
