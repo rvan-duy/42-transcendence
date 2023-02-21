@@ -32,7 +32,7 @@ class Games {
 })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private server: Server;
-  // private games: Games[];
+  private games: Games[];
 
   afterInit(server: Server) {
     this.server = server;

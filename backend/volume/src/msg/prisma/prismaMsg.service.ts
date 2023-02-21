@@ -63,9 +63,9 @@ export class PrismaMsgService {
     const room = await this.prisma.room.findUnique({
       where: { id: roomId },
     });
-    const author = await this.prisma.user.findUnique({
-      where: { id: authorId },
-    });
+    // const author = await this.prisma.user.findUnique({
+    //   where: { id: authorId },
+    // });
 
     // update the lastId so there are no duplicates
     room.lastId++;

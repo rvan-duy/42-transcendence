@@ -1,4 +1,4 @@
-interface MsgDto {
+export interface MsgDto {
   id: number;
   roomId: number;
   body: string;
