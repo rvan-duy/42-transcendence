@@ -1,14 +1,13 @@
 import { SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
-import { Game } from '@prisma/client';
+// import { Game } from '@prisma/client';
 import { Socket, Server } from 'socket.io';
 
 enum GameMode {
-  SURVIVAL = "Survival",
-  CREATIVE = "Creative",
-  ADVENTURE = "Adventure",
-  SPECTATOR = "Spectator",
+  SURVIVAL = 'Survival',
+  CREATIVE = 'Creative',
+  ADVENTURE = 'Adventure',
+  SPECTATOR = 'Spectator',
 }
-
 
 class Player {
   userId: number;
@@ -33,7 +32,7 @@ class Games {
 })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private server: Server;
-  private games: Games[];
+  // private games: Games[];
 
   afterInit(server: Server) {
     this.server = server;
@@ -41,7 +40,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
-    client.emit('init') // new connection
+    client.emit('init'); // new connection
   }
 
   handleDisconnect(client: Socket) {

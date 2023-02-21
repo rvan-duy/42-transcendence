@@ -60,7 +60,7 @@ export class PrismaMsgService {
     // Authenticate here?
 
     // retrieve the Room and User objects using their IDs
-    let room = await this.prisma.room.findUnique({
+    const room = await this.prisma.room.findUnique({
       where: { id: roomId },
     });
     const author = await this.prisma.user.findUnique({
@@ -73,7 +73,7 @@ export class PrismaMsgService {
     await this.prisma.room.update({
       where: { id: room.id},
       data: { lastId: room.lastId}
-    })
+    });
     
     // create the Msg object using the retrieved Room and User objects
     return this.prisma.msg.create({

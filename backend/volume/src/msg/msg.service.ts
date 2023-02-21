@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaMsgService } from 'src/msg/prisma/prismaMsg.service';
+// import { MsgDto } from './msg.dto';
 
 @Injectable()
 export class MsgService {
@@ -7,5 +8,5 @@ export class MsgService {
 
   async handleIncomingMsg(dataInDto: MsgDto) {
     this.prismaMsg.createMsgWithIds(dataInDto);
-  };
+  }
 }

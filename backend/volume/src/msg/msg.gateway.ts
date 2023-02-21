@@ -18,7 +18,7 @@ export class MsgGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
   handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
-    client.emit('init') // , data (all chats?)
+    client.emit('init'); // , data (all chats?)
   }
 
   handleDisconnect(client: Socket) {
@@ -28,7 +28,7 @@ export class MsgGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   @SubscribeMessage('send')
   handleNewMessage(client: any, payload: MsgDto) { // client verification?
     console.log('Received payload:', payload);
-    // extract message 
+    // extract message
 
     this.msgService.handleIncomingMsg(payload);
     // do i need a service for this?
