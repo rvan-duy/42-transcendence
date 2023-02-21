@@ -2,28 +2,6 @@ import { SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection,
 // import { Game } from '@prisma/client';
 import { Socket, Server } from 'socket.io';
 
-enum GameMode {
-  SURVIVAL = 'Survival',
-  CREATIVE = 'Creative',
-  ADVENTURE = 'Adventure',
-  SPECTATOR = 'Spectator',
-}
-
-class Player {
-  userId: number;
-  batXY: number[];
-  score: number;
-  acceleration: number;
-}
-
-class Games {
-  player: Player[];
-  watchers: number[];
-  mapsize: number[];
-  mode: GameMode;
-  texturePath: string;
-}
-
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -32,7 +10,6 @@ class Games {
 })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private server: Server;
-  private games: Games[];
 
   afterInit(server: Server) {
     this.server = server;
