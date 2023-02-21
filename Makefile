@@ -1,10 +1,10 @@
+run:	start
+
 build:
 		@docker-compose build || echo "\033[1;31mDid you start docker?"
 
 start:
 		docker-compose up -d
-
-run:	start
 
 stop:
 		docker-compose down
