@@ -1,5 +1,6 @@
-import { WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import { SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
+import { MsgService } from './msg.service';
 
 @WebSocketGateway({
   cors: {
@@ -9,6 +10,7 @@ import { Socket, Server } from 'socket.io';
 })
 export class MsgGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private server: Server;
+  private msgService: MsgService;
 
   afterInit(server: Server) {
     this.server = server;
@@ -21,5 +23,16 @@ export class MsgGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
+  }
+
+  @SubscribeMessage('send')
+  handleNewMessage(client: any, payload: MsgDto) { // client verification?
+    console.log('Received payload:', payload);
+    // extract message 
+
+    this.msgService.handleIncomingMsg(payload);
+    // do i need a service for this?
+    // check if the user is alowed to send it in the room
+    // upload it to the database
   }
 }

@@ -37,16 +37,16 @@ model Room {
   hashedCode  String?
   access      Access @default(PUBLIC)
   messages    Msg[]
-  lastId      Int
+  lastId      Int    @default(0)
 }
 
 model Msg {
   @@id([roomId, id])
   id        Int  // has to be set to last Id of Room + 1 and also increase the room->lastId by 1
-  room      Room @relation(fields: [roomId], references: [id])
+  room      Room? @relation(fields: [roomId], references: [id])
   roomId    Int
   body      String
-  author    User @relation(fields: [authorId], references: [id])
+  author    User? @relation(fields: [authorId], references: [id])
   authorId  Int
   invite    Boolean // ? how ?
 }
