@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Msg, Prisma } from '@prisma/client';
+import { MsgDto } from '../msg.service';
 
 @Injectable()
 export class PrismaMsgService {
@@ -53,4 +54,39 @@ export class PrismaMsgService {
       where,
     });
   }
+  
+  async createMsgWithIds(msgDto: MsgDto): Promise<Msg> {
+    const { roomId, authorId } = msgDto; // extract roomId and authorId from data
+    
+    // Authenticate here?
+
+    // retrieve the Room and User objects using their IDs
+    const room = await this.prisma.room.findUnique({
+      where: { id: roomId },
+    });
+    // const author = await this.prisma.user.findUnique({
+    //   where: { id: authorId },
+    // });
+
+    // update the lastId so there are no duplicates
+    room.lastId++;
+    // update in database
+    await this.prisma.room.update({
+      where: { id: room.id},
+      data: { lastId: room.lastId}
+    });
+    
+    // create the Msg object using the retrieved Room and User objects
+    return this.prisma.msg.create({
+      data: {
+        body: msgDto.body,
+        invite: msgDto.invite,
+        id: room.lastId,
+        room: { connect: { id: roomId } },
+        author: { connect: { id: authorId } },
+      },
+    });
+  }
+
 }
+
