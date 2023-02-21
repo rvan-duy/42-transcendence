@@ -120,7 +120,7 @@ export default {
 
   const plat: {x: number, y: number, height: number, width: number, score:number} = {
     x: canvas.width - 20,
-    y : canvas.height / 2 - 25,
+    y: canvas.height / 2 - 25,
     height: 100,
     width: 20,
     score: 0
@@ -134,7 +134,7 @@ export default {
     score: 0
   }
 
-  function scoredOrNotScored()
+  function scored()
   {
     ball.x = canvas.width/2;
     ball.y = canvas.height/2;
@@ -145,9 +145,9 @@ export default {
   function  movePlat(e: KeyboardEvent)
   {
     if (e.key === 'ArrowDown')
-      plat.y += 20;
+      plat.y += 30;
     if (e.key === 'ArrowUp')
-      plat.y -= 20;
+      plat.y -= 30;
   // var name = e.key;
   // var code = e.code;
   // // Alert the key name and key code on keydown
@@ -159,11 +159,11 @@ export default {
     if(ball.x + ball.rad > canvas.width){
         other.score++;
         // comScore.play();
-        scoredOrNotScored();
-    }else if(ball.x - ball.rad < 0 ){
+        scored();
+    }else if(ball.x - ball.rad < 0){
         plat.score++;
         // userScore.play();
-        scoredOrNotScored();
+        scored();
     }
     // when COM or USER scores, we reset the ball
     //resetball
@@ -177,12 +177,12 @@ export default {
     }
     // var collision: boolean = false;
     // we check if the paddle hit the user or the com paddle
-    var player : string = (ball.x + ball.rad < canvas.width/2) ? 'other' : 'user';
+    var player : {x: number, y: number, height: number, width: number, score:number} = (ball.x + ball.rad < canvas.width/2) ? other : plat;
     //if there is a collision
-    if (plat.x < ball.x + ball.rad && plat.y < ball.x - ball.rad && plat.x + plat.width > ball.x-ball.rad && plat.y + plat.height > ball.y - ball.rad)
+    if (player.x < ball.x + ball.rad && player.y < ball.y + ball.rad && player.x + player.width > ball.x - ball.rad && player.y + player.height > ball.y - ball.rad)
     {
       // where the ball hits the plateau & normalize
-      var collisionPoint:number = ((ball.y - (plat.y + plat.height/2))) / (plat.height/2);
+      var collisionPoint:number = ((ball.y - (player.y + player.height/2))) / (player.height/2);
       // from -45degrees to +45degrees
       // Math.PI/4 = 45degrees
       var angleRad: number = (Math.PI/4) * collisionPoint;
