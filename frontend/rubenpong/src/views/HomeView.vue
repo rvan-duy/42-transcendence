@@ -145,9 +145,11 @@ export default {
   function  movePlat(e: KeyboardEvent)
   {
     if (e.key === 'ArrowDown')
-      plat.y += 30;
+      if (plat.y < canvas.height - plat.height)
+        plat.y += 30;
     if (e.key === 'ArrowUp')
-      plat.y -= 30;
+      if (plat.y > 0)
+        plat.y -= 30;
   // var name = e.key;
   // var code = e.code;
   // // Alert the key name and key code on keydown
