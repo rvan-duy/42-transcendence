@@ -12,9 +12,10 @@ module.exports = {
   // Custom rules
   rules: {
     // The big ones
-    'indent': ['warn', 2],            // 2 spaces for indentation
-    'quotes': ['warn', 'single'],     // single quotes
-    'semi': ['warn', 'always'],       // semicolons at the end of statements
+    'indent': ['warn', 2],                // 2 spaces for indentation
+    'quotes': ['warn', 'single'],         // single quotes
+    'semi': ['warn', 'always'],           // semicolons at the end of statements
+    'no-unexpected-multiline': ['warn'],  // disallow confusing multiline expressions
 
     // Whitespace / newline rules
     'no-trailing-spaces': ['warn', { skipBlankLines: true }],
