@@ -12,9 +12,10 @@ import * as moment from 'moment';
 @WebSocketGateway({
   cors: {
     origin: '*',
-  }
+  },
+  namespace: '/chat',
 })
-export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer() all_clients: Server; //all clients
 
   @SubscribeMessage('msgToServer')
@@ -41,10 +42,10 @@ export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
 
     // const qs_import = 'query-string';
     // import (qs_import).then( (queryString) => {
-    // 	const { user_name, room_name } = queryString.parse(location.search, {
-    // 	// ignoreQueryPrefix: true
-    // 	});
-    // 	console.log(user_name, room_name);
+    //   const { user_name, room_name } = queryString.parse(location.search, {
+    //   // ignoreQueryPrefix: true
+    //   });
+    //   console.log(user_name, room_name);
     // });
   }
 
@@ -192,3 +193,4 @@ export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
 // ): string {
 // 	return data;
 // }
+}
