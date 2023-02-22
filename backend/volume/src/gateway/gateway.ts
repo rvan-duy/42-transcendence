@@ -31,8 +31,14 @@ export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
   handleConnection(client: Socket, ...args: any[]) {
     client.broadcast.emit('msgToClient', this.formatMessage('Rubot','A new user joined the chat.')); //all OTHER clients
     client.emit('msgToClient', this.formatMessage('Rubot','Welcome to the chat!')); //this client
-    console.warn(args + ' is unused');
+    // console.warn(args + ' is unused');
     console.log(`Client ${client.id} connected`);
+
+	args.forEach(element => {
+		console.log('Arg passed to connection: ');
+		console.log(element)
+	});
+
 	// const qs_import = 'query-string';
 	// import (qs_import).then( (queryString) => {
 	// 	const { user_name, room_name } = queryString.parse(location.search, {
@@ -52,7 +58,7 @@ export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
 	return {
 		username: username,
 		body: message_body,
-		time: moment().format('HH:mm ZZ')
+		time: moment().format('HH:mm ZZ') //TODO: Make not GMT maybe?
 	}
   }
 

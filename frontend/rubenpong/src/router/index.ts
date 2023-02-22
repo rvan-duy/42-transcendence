@@ -26,6 +26,7 @@ const router = createRouter({
       path: '/chatroom',
       name: 'chatroom',
       component: () => import('../views/ChatRoomView.vue'),
+	//   props: route=> ({ username: route.query.username, room: route.query.room})
     },
     {
       path: '/canvas', //waarom staat deze meuk nou weer hier he Oswin >:(
