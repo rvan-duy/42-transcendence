@@ -31,7 +31,7 @@ const router = createRouter({
       path: '/chatroom',
       name: 'chatroom',
       component: () => import('@/views/ChatRoomView.vue'),
-	//   props: route=> ({ username: route.query.username, room: route.query.room})
+      //   props: route=> ({ username: route.query.username, room: route.query.room})
     },
     {
       path: '/login',

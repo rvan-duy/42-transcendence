@@ -5,7 +5,7 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-  WsResponse } from '@nestjs/websockets';
+} from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import * as moment from 'moment';
 
@@ -20,7 +20,7 @@ export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
   @SubscribeMessage('msgToServer')
   handleMessage(client: Socket, text: string) {
     console.log(`Server received msg: "${text}" from client: ${client.id}`);
-	this.all_clients.emit('msgToClient', this.formatMessage('USER', text));
+    this.all_clients.emit('msgToClient', this.formatMessage('USER', text));
   }
 
   afterInit(server: Server) {
@@ -34,18 +34,18 @@ export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
     // console.warn(args + ' is unused');
     console.log(`Client ${client.id} connected`);
 
-	args.forEach(element => {
-		console.log('Arg passed to connection: ');
-		console.log(element)
-	});
+    args.forEach(element => {
+      console.log('Arg passed to connection: ');
+      console.log(element);
+    });
 
-	// const qs_import = 'query-string';
-	// import (qs_import).then( (queryString) => {
-	// 	const { user_name, room_name } = queryString.parse(location.search, {
-	// 	// ignoreQueryPrefix: true
-	// 	});
-	// 	console.log(user_name, room_name);
-	// });
+    // const qs_import = 'query-string';
+    // import (qs_import).then( (queryString) => {
+    // 	const { user_name, room_name } = queryString.parse(location.search, {
+    // 	// ignoreQueryPrefix: true
+    // 	});
+    // 	console.log(user_name, room_name);
+    // });
   }
 
   handleDisconnect(client: Socket) {
@@ -153,11 +153,11 @@ export class MyGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayD
 
   formatMessage(username, message_body)
   {
-	return {
-		username: username,
-		body: message_body,
-		time: moment().format('HH:mm ZZ') //TODO: Make not GMT maybe?
-	}
+    return {
+      username: username,
+      body: message_body,
+      time: moment().format('HH:mm ZZ') //TODO: Make not GMT maybe?
+    };
   }
 
 }
