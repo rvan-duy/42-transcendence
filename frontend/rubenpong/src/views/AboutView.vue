@@ -1,11 +1,5 @@
 <script setup lang="ts">
 import LoginButton from '@/components/buttons/LoginButton.vue';
-import SocketioService from '../services/socketio.service.js';
-const connection = SocketioService;
-connection.setupSocketConnection();
-connection.socket.on('msgToClient', (msg) => {
-  console.log(`client received message: ${msg}`);
-});
 
 // This function describes what the Meow-button does onclick.
 // It either runs a GET request to "/cat" of the back-end, and sets the
@@ -13,8 +7,6 @@ connection.socket.on('msgToClient', (msg) => {
 // about_text to be "dog" if the value is currently "cat".
 function onclickMeow(){
   const about_text_element = document.getElementById('about_text');
-
-  connection.socket.emit('msgToServer', 'Meow'); //Meow at server
 
   if (about_text_element.innerHTML === 'cat')
     about_text_element.innerHTML = 'dog';
