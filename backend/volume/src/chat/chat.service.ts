@@ -17,4 +17,20 @@ export class MsgService {
   async handleIncomingMsg(dataInDto: MsgDto) {
     this.prismaMsg.createMsgWithIds(dataInDto);
   }
+
+  async handleDeleteMsg(data: MsgDto) {
+    this.prismaMsg.updateMsg(
+      {
+        where: {
+          id_roomId: {
+            id: data.id,
+            roomId: data.roomId
+          },
+        },
+        data: {
+          body: 'deleted',
+        }
+      },
+    );
+  }
 }
