@@ -22,6 +22,9 @@ import HelloWorld from './components/HelloWorld.vue';
         <RouterLink to="/about">
           About
         </RouterLink>
+        <RouterLink to="/game">
+          Game
+        </RouterLink>
         <RouterLink to="/chat">
           Chat
         </RouterLink>
