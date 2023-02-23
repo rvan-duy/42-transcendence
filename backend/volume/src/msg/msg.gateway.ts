@@ -26,11 +26,22 @@ export class MsgGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
   }
 
   @SubscribeMessage('send')
-  handleNewMessage(client: any, payload: MsgDto) { // client verification?
+  handleNewMsg(client: any, payload: MsgDto) { // client verification?
     console.log('Received payload:', payload);
     // extract message
 
     this.msgService.handleIncomingMsg(payload);
+    // do i need a service for this?
+    // check if the user is alowed to send it in the room
+    // upload it to the database
+  }
+
+  @SubscribeMessage('delete')
+  handleDeleteMsg(client: any, payload: MsgDto) { // client verification?
+    console.log('Received payload:', payload);
+    // extract message
+
+    this.msgService.handleDeleteMsg(payload);
     // do i need a service for this?
     // check if the user is alowed to send it in the room
     // upload it to the database
