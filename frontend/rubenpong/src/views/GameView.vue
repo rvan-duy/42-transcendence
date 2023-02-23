@@ -31,78 +31,90 @@ export default {
     var canvas: HTMLCanvasElement = document.getElementById('pixels') as HTMLCanvasElement;
     var ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
     var queue: ImageData[];
-    const socket = io('http://localhost:3000/game');
-    socket.on('canvas-update', pxlData => {
-      if (init)
-      {
-        var tmpData = new Uint8ClampedArray(pxlData.data);
-        tmpData = increaseArraySize(tmpData);
-        ctx.putImageData(new ImageData(tmpData, 4, 4), pxlData.width * 4, pxlData.height * 4);
-        console.log('received update on canvas');
-      }
-      else
-      {
-        queue.push(new ImageData(pxlData.data, pxlData.width, pxlData.height));
-      }
+    const socket: any = io('http://localhost:3000/game');
+    socket.on("connect_error", (err) => {
+      console.log(`connect_error due to ${err.message}`);
     });
-    socket.on('canvas-init', canvasData => {
-      if (!ctx) {
-        return;
-      }
-      var tmpData = new Uint8ClampedArray(canvasData.data);
-      const iData: ImageData = new ImageData(tmpData, canvasData.width, canvasData.height);
-      const tmpCanvas = document.createElement('canvas');
-      tmpCanvas.width = 800;
-      tmpCanvas.height = 800;
-      var tmpctx: CanvasRenderingContext2D = tmpCanvas.getContext('2d') as CanvasRenderingContext2D;
-      // var tmpctx: CanvasRenderingContext2D = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D;
-      tmpctx.putImageData(iData, 0, 0);
-      ctx.scale(4, 4);
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(tmpctx.canvas, 0, 0);
-      // add everything from queue to canvasv (need to add)
-      init = true;
-      console.log('hope to have received the canvas-init');
-    });
-		
+    // socket.on('canvas-update', pxlData => {
+    //   if (init)
+    //   {
+    //     var tmpData = new Uint8ClampedArray(pxlData.data);
+    //     tmpData = increaseArraySize(tmpData);
+    //     ctx.putImageData(new ImageData(tmpData, 4, 4), pxlData.width * 4, pxlData.height * 4);
+    //     console.log('received update on canvas');
+    //   }
+    //   else
+    //   {
+    //     queue.push(new ImageData(pxlData.data, pxlData.width, pxlData.height));
+    //   }
+    // });
+    // socket.on('canvas-init', canvasData => {
+    //   if (!ctx) {
+    //     return;
+    //   }
+    //   var tmpData = new Uint8ClampedArray(canvasData.data);
+    //   const iData: ImageData = new ImageData(tmpData, canvasData.width, canvasData.height);
+    //   const tmpCanvas = document.createElement('canvas');
+    //   tmpCanvas.width = 800;
+    //   tmpCanvas.height = 800;
+    //   var tmpctx: CanvasRenderingContext2D = tmpCanvas.getContext('2d') as CanvasRenderingContext2D;
+    //   // var tmpctx: CanvasRenderingContext2D = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D;
+    //   tmpctx.putImageData(iData, 0, 0);
+    //   ctx.scale(4, 4);
+    //   ctx.imageSmoothingEnabled = false;
+    //   ctx.drawImage(tmpctx.canvas, 0, 0);
+    //   // add everything from queue to canvasv (need to add)
+    //   init = true;
+    //   console.log('hope to have received the canvas-init');
+    // });
+		class GameData {
+      ball: number[] = [500, 300];
+      paddle1:  number[] = [0, 275];
+      paddle2:  number[] = [980, 275];
+      score:    number[] = [0, 0];
+    }
+
     function render()
     {
-      //draw background
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      //draw plateau other player
-      ctx.fillStyle = 'white';
-      ctx.fillRect(other.x, other.y, other.width, other.height);
-      //draw plateau you
-      ctx.fillStyle = 'white';
-      ctx.fillRect(plat.x, plat.y, plat.width, plat.height);
-      //draw ball
-      ctx.fillStyle = 'red';
-      ctx.beginPath();
-      ctx.arc(ball.x,ball.y,ball.rad,0,Math.PI*2,false);
-      ctx.closePath();
-      ctx.fill();
-      //draw text
-      ctx.fillStyle = 'white';
-      ctx.font = '50px arial';
-      ctx.fillText('other', canvas.width / 4, canvas.height / 8);
-      //draw text
-      ctx.fillStyle = 'white';
-      ctx.font = '50px arial';
-      ctx.fillText(other.score.toString(), canvas.width / 4 + 40, canvas.height / 4);
-      //draw text
-      ctx.fillStyle = 'white';
-      ctx.font = '50px arial';
-      ctx.fillText('you', canvas.width / 4 * 3 - 100, canvas.height / 8);
-      //draw text
-      ctx.fillStyle = 'white';
-      ctx.font = '50px arial';
-      ctx.fillText(plat.score.toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
-      //draw net
-      for(let i = 0; i <= canvas.height; i+=15){
+      socket.on('pos', data => {
+        const datas: GameData = data;
+        //draw background
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        //draw plateau other player
         ctx.fillStyle = 'white';
-        ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
-      }
+        ctx.fillRect(datas.paddle1[0], datas.paddle1[1], other.width, other.height);
+        //draw plateau you
+        ctx.fillStyle = 'white';
+        ctx.fillRect(datas.paddle2[0], datas.paddle2[1], plat.width, plat.height);
+        //draw ball
+        ctx.fillStyle = 'red';
+        ctx.beginPath();
+        ctx.arc(datas.ball[0], datas.ball[1],ball.rad,0,Math.PI*2,false);
+        ctx.closePath();
+        ctx.fill();
+        //draw text
+        ctx.fillStyle = 'white';
+        ctx.font = '50px arial';
+        ctx.fillText('other', canvas.width / 4, canvas.height / 8);
+        //draw text
+        ctx.fillStyle = 'white';
+        ctx.font = '50px arial';
+        ctx.fillText(datas.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
+        //draw text
+        ctx.fillStyle = 'white';
+        ctx.font = '50px arial';
+        ctx.fillText('you', canvas.width / 4 * 3 - 100, canvas.height / 8);
+        //draw text
+        ctx.fillStyle = 'white';
+        ctx.font = '50px arial';
+        ctx.fillText(datas.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
+        //draw net
+        for(let i = 0; i <= canvas.height; i+=15){
+          ctx.fillStyle = 'white';
+          ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
+        }
+      });
       // //draw text
       // ctx.fillStyle = 'white';
       // ctx.font = "100px arial";
