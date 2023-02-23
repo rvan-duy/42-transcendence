@@ -28,21 +28,21 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.all_clients.emit('msgToClient', this.formatMessage('USER', text));
   }
   
-//   OSWIN'S SEND:
-    //   @SubscribeMessage('send')
-    // handleNewMessage(client: any, payload: MsgDto) { // client verification?
-    //   console.log('Received payload:', payload);
-    //   // extract message
+  //   OSWIN'S SEND:
+  @SubscribeMessage('send')
+  handleNewMessage(client: any, payload: MsgDto) { // client verification?
+    console.log('Received payload:', payload);
+    // extract message
   
-    //   this.msgService.handleIncomingMsg(payload);
-    //   // do i need a service for this?
-    //   // check if the user is alowed to send it in the room
-    //   // upload it to the database
-    // }
+    this.msgService.handleIncomingMsg(payload);
+    // do i need a service for this?
+    // check if the user is alowed to send it in the room
+    // upload it to the database
+  }
 
   afterInit(server: Server) {
-	this.server = server;
-	console.log('Gateway initialised.');
+    this.server = server;
+    console.log('Gateway initialised.');
   }
 
   handleConnection(client: Socket, ...args: any[]) {
@@ -56,13 +56,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       console.log(element);
     });
 
-    // const qs_import = 'query-string';
-    // import (qs_import).then( (queryString) => {
-    //   const { user_name, room_name } = queryString.parse(location.search, {
-    //   // ignoreQueryPrefix: true
-    //   });
-    //   console.log(user_name, room_name);
-    // });
+  // const qs_import = 'query-string';
+  // import (qs_import).then( (queryString) => {
+  //   const { user_name, room_name } = queryString.parse(location.search, {
+  //   // ignoreQueryPrefix: true
+  //   });
+  //   console.log(user_name, room_name);
+  // });
   }
 
   handleDisconnect(client: Socket) {
