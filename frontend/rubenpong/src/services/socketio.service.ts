@@ -10,8 +10,8 @@ class SocketioService {
     // this.socket = io('http://localhost:3000'); //TODO: Replace with .env variable like 'process.env.VUE_APP_SOCKET_ENDPOINT'
   }
 
-  setupSocketConnection() {
-    this.socket = io('http://localhost:3000/chat'); //TODO: Replace with .env variable like 'process.env.VUE_APP_SOCKET_ENDPOINT'
+  setupSocketConnection(slash_namespace: string) {
+    this.socket = io('http://localhost:3000' + `${slash_namespace}`); //TODO: Replace with .env variable like 'process.env.VUE_APP_SOCKET_ENDPOINT'
 	this.socket.on("connect_error", (err: any) => {
 		console.log(`connect_error due to ${err.message}`);
     });

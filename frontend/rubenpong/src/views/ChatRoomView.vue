@@ -5,7 +5,7 @@ import SocketioService from '../services/socketio.service.js';
 <script lang="ts">
 const connection = SocketioService;
 
-connection.setupSocketConnection();
+connection.setupSocketConnection('/chat');
 // connection.socket.on('connection', () => {console.log('Chat client connected');});
 connection.socket.on('msgToClient', (msg) => {
   console.log(`client received message: ${msg}`);
