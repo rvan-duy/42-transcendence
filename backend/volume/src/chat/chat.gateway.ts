@@ -28,16 +28,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.all_clients.emit('msgToClient', this.formatMessage('USER', text));
   }
   
-  //     @SubscribeMessage('send')
-  //   handleNewMessage(client: any, payload: MsgDto) { // client verification?
-  //     console.log('Received payload:', payload);
-  //     // extract message
+//   OSWIN'S SEND:
+    //   @SubscribeMessage('send')
+    // handleNewMessage(client: any, payload: MsgDto) { // client verification?
+    //   console.log('Received payload:', payload);
+    //   // extract message
   
-  //     this.msgService.handleIncomingMsg(payload);
-  //     // do i need a service for this?
-  //     // check if the user is alowed to send it in the room
-  //     // upload it to the database
-  //   }
+    //   this.msgService.handleIncomingMsg(payload);
+    //   // do i need a service for this?
+    //   // check if the user is alowed to send it in the room
+    //   // upload it to the database
+    // }
 
   afterInit(server: Server) {
 	this.server = server;
