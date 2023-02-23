@@ -15,7 +15,6 @@ import HelloWorld from './components/HelloWorld.vue';
 
     <div class="wrapper">
       <HelloWorld msg="You did it!" />
-
       <nav>
         <RouterLink to="/">
           Home
@@ -26,7 +25,9 @@ import HelloWorld from './components/HelloWorld.vue';
         <RouterLink to="/chat">
           Chat
         </RouterLink>
-        <!-- <RouterLink to="/canvas">Canvas</RouterLink> -->
+        <RouterLink to="/login">
+          Log in
+        </RouterLink>
       </nav>
     </div>
   </header>

@@ -1,10 +1,10 @@
+run:	start
+
 build:
 		@docker-compose build || echo "\033[1;31mDid you start docker?"
 
 start:
 		docker-compose up -d
-
-run:	start
 
 stop:
 		docker-compose down
@@ -41,3 +41,7 @@ seed:
 ms:	migrate seed
 
 # make sure to not have mac node modules and then build and run with the makefile
+
+studio:
+		export DATABASE_URL='postgres://dbuser:dbpassword@localhost:5432/ruubdb' && \
+		cd backend/volume/ && npx prisma studio
