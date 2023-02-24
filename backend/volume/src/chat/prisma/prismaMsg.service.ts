@@ -60,13 +60,10 @@ export class PrismaMsgService {
     
     // Authenticate here?
 
-    // retrieve the Room and User objects using their IDs
+    // retrieve the Room object using id
     const room = await this.prisma.room.findUnique({
       where: { id: roomId },
     });
-    // const author = await this.prisma.user.findUnique({
-    //   where: { id: authorId },
-    // });
 
     // update the lastId so there are no duplicates
     room.lastId++;
