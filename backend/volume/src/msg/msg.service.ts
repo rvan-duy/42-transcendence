@@ -33,4 +33,12 @@ export class MsgService {
       },
     );
   }
+
+  async getChatHistory(roomId: number): Promise<MsgDto[]> {
+    return this.prismaMsg.Msgs({
+      where: {
+        roomId: roomId,
+      }
+    });
+  }
 }
