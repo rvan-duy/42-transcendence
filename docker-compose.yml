@@ -16,7 +16,7 @@ services:
   db:
     image: postgres:15
     container_name: db
-    ports:
+    ports: # we can limit it to server pc too by removing port forwarding
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
