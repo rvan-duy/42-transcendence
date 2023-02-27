@@ -67,7 +67,9 @@ class Games {
     this.mode = GameMode.SURVIVAL;
 }
 }
-const game = Games[0].data;
+
+// this is a temporary solution to get a gamedata object to test with
+const game = new GameData();
 
 const ball: {x: number, y: number, speed: number, Xvelocity: number, Yvelocity: number, rad: number} = {
   x: 1000/2,
