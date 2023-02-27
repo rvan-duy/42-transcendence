@@ -17,8 +17,8 @@ class Player {
 }
 
 // const ball: {x: number, y: number, speed: number, Xvelocity: number, Yvelocity: number, rad: number} = {
-//   x: canvas.width/2,
-//   y: canvas.height/2,
+//   x: 1000/2,
+//   y: 600/2,
 //   speed: 5,
 //   Xvelocity: 5,
 //   Yvelocity: 5,
@@ -27,7 +27,7 @@ class Player {
 
 // const plat: {x: number, y: number, height: number, width: number, score:number} = {
 //   x: canvas.width - 20,
-//   y: canvas.height / 2 - 25,
+//   y: 600 / 2 - 25,
 //   height: 100,
 //   width: 20,
 //   score: 0
@@ -35,7 +35,7 @@ class Player {
 
 // const other: {x: number, y: number, height: number, width: number, score:number} = {
 //   x: 0,
-//   y : canvas.height / 2 - 25,
+//   y : 600 / 2 - 25,
 //   height: 100,
 //   width: 20,
 //   score: 0
@@ -43,13 +43,13 @@ class Player {
 
 class GameData {
   ball: number[] = [500, 300];
-  paddle1:  number[] = [0, 275];
-  paddle2:  number[] = [980, 275];
+  paddle1:  number[] = [0, 250];
+  paddle2:  number[] = [980, 250];
   score:    number[] = [0, 0];
   constructor() {
     this.ball = [500, 300];
-    this.paddle1 = [0, 275];
-    this.paddle2 = [980, 275];
+    this.paddle1 = [0, 250];
+    this.paddle2 = [980, 250];
     this.score = [0, 0];
   }
 }
@@ -67,6 +67,103 @@ class Games {
     this.mode = GameMode.SURVIVAL;
 }
 }
+const game = Games[0].data;
+
+const ball: {x: number, y: number, speed: number, Xvelocity: number, Yvelocity: number, rad: number} = {
+  x: 1000/2,
+  y: 600/2,
+  speed: 5,
+  Xvelocity: 5,
+  Yvelocity: 5,
+  rad: 20,
+};
+
+const plat: {x: number, y: number, height: number, width: number, score:number} = {
+  x: 1000 - 20,
+  y: 600 / 2 - 25,
+  height: 100,
+  width: 20,
+  score: 0
+};
+
+const other: {x: number, y: number, height: number, width: number, score:number} = {
+  x: 0,
+  y : 600 / 2 - 25,
+  height: 100,
+  width: 20,
+  score: 0
+};
+
+function scored()
+{
+  game.ball[0] = 1000/2;
+  game.ball[1] = 600/2;
+  ball.Xvelocity = -ball.Xvelocity;
+  ball.speed = 5;
+}
+
+// function movePlat(e: KeyboardEvent)
+// {
+//   if (e.key === 'ArrowDown')
+//     if (plat.y < 600 - plat.height)
+//       plat.y += 30;
+//   if (e.key === 'ArrowUp')
+//     if (plat.y > 0)
+//       plat.y -= 30;
+//   // var name = e.key;
+//   // var code = e.code;
+//   // // Alert the key name and key code on keydown
+//   // alert(`Key pressed ${name} \r\n Key code value: ${code}`);
+// }
+
+function update()
+{
+  // change the score of players, if the ball goes to the left "game.ball[0]<0" computer win, else if "game.ball[0] > 1000" the user win
+  if(game.ball[0] + ball.rad > 1000){
+    game.score[0]++;
+    // comScore.play();
+    scored();
+  }else if(game.ball[0] - ball.rad < 0){
+    game.score[1]++;
+    // userScore.play();
+    scored();
+  }
+  // when COM or USER scores, we reset the ball
+  //resetball
+
+  game.ball[0] += ball.Xvelocity;
+  game.ball[1] += ball.Yvelocity;
+  if (game.ball[1] + ball.rad > 600 || game.ball[1] - ball.rad < 0){
+    ball.Yvelocity = -ball.Yvelocity;
+    // wall.play();
+  }
+  // var collision: boolean = false;
+  // we check if the paddle hit the user or the com paddle
+  var player : {x: number, y: number, height: number, width: number, score:number} = (game.ball[0] + ball.rad < 1000/2) ? other : plat;
+  //if there is a collision
+  if (player.x < game.ball[0] + ball.rad && player.y < game.ball[1] + ball.rad && player.x + player.width > game.ball[0] - ball.rad && player.y + player.height > game.ball[1] - ball.rad)
+  {
+    // where the ball hits the plateau & normalize
+    var collisionPoint:number = ((game.ball[1] - (player.y + player.height/2))) / (player.height/2);
+    // from -45degrees to +45degrees
+    // Math.PI/4 = 45degrees
+    var angleRad: number = (Math.PI/4) * collisionPoint;
+    // change X & Y velocity dir
+    var dir:number= (game.ball[0] + ball.rad < 1000/2) ? 1 : -1;
+    ball.Xvelocity = dir * ball.speed * Math.cos(angleRad);
+    ball.Yvelocity = ball.speed * Math.sin(angleRad);
+    
+    // speed up the ball everytime a paddle hits it.
+    ball.speed += 0.1;
+  }
+}
+
+function rubenpong()
+{
+  update();
+}
+const fps: number = 60;
+setInterval(rubenpong, 1000/fps);
 
 @WebSocketGateway({
   cors: {
@@ -102,6 +199,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('pos')
   handlePos(client: any, payload: any) {
     console.log('Received payload:', payload);
+    // setInterval(rubenpong, 1000/60);
+    update();
     this.server.emit('pos', this.games[2].data);  // magic
   }
 
