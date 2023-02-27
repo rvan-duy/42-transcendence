@@ -44,13 +44,13 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       console.log(element);
     });
 
-  // const qs_import = 'query-string';
-  // import (qs_import).then( (queryString) => {
-  //   const { user_name, room_name } = queryString.parse(location.search, {
-  //   // ignoreQueryPrefix: true
-  //   });
-  //   console.log(user_name, room_name);
-  // });
+    // const qs_import = 'query-string';
+    // import (qs_import).then( (queryString) => {
+    //   const { user_name, room_name } = queryString.parse(location.search, {
+    //   // ignoreQueryPrefix: true
+    //   });
+    //   console.log(user_name, room_name);
+    // });
     client.emit('init'); // data, all chats
   }
 
