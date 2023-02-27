@@ -1,6 +1,31 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router';
 import HelloWorld from './components/HelloWorld.vue';
+// import SocketioService from './services/socketio.service.ts';
+// import { useConnectionStore } from './stores/connections.ts';
+</script>
+
+<script lang="ts">
+// const connection_store = useConnectionStore();
+// connection_store.setSocket(SocketioService);
+// const connection = connection_store.getConnection();
+
+// const connection = SocketioService;
+// connection.setupSocketConnection();
+// connection.socket.on('msgToClient', (msg) => {
+//   console.log(`client received message: ${msg}`);
+// });
+// connection.socket.emit('msgToServer', 'Testing');
+
+// export default {
+//   name: 'App',
+//   components: {},
+//   created() {
+// 	const socket = new SocketioService;
+// 	// SocketioService.setupSocketConnection();
+// 	console.log("Please call me :( ");
+//   }
+// }
 </script>
 
 <template>

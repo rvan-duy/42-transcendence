@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaMsgService } from 'src/msg/prisma/prismaMsg.service';
+import { PrismaMsgService } from 'src/chat/prisma/prismaMsg.service';
 // import { MsgDto } from './msg.dto';
 
 export interface MsgDto {
