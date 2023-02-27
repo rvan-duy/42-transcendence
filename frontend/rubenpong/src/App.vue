@@ -56,6 +56,10 @@ import HelloWorld from './components/HelloWorld.vue';
         <RouterLink to="/login">
           Log in
         </RouterLink>
+		<RouterLink to="/chatTesting">
+          chatTesting
+        </RouterLink>
+        <!-- <RouterLink to="/canvas">Canvas</RouterLink> -->
       </nav>
     </div>
   </header>
