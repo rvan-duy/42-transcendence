@@ -1,6 +1,5 @@
 import { SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
-import { PrismaRoomService } from 'src/room/prisma/prismaRoom.service';
 import { MsgDto, MsgService } from './msg.service';
 
 @WebSocketGateway({
@@ -24,6 +23,10 @@ export class MsgGateway implements OnGatewayInit, OnGatewayConnection, OnGateway
 
   handleDisconnect(client: Socket) {
     console.log(`Client disconnected: ${client.id}`);
+  }
+
+  addMessage(msg: MsgDto) {
+    this.server.emit('add', msg);
   }
 
   @SubscribeMessage('load')
