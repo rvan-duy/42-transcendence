@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ChatGateway } from './chat.gateway';
-import { PrismaMsgModule } from './prisma/prismaMsg.module';
+import { PrismaMsgModule } from '../msg/prisma/prismaMsg.module';
 
 @Module({
   imports: [PrismaMsgModule],

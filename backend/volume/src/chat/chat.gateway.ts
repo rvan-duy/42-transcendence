@@ -8,7 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import * as moment from 'moment';
-import { MsgDto, MsgService } from './chat.service';
+import { MsgDto, MsgService } from '../msg/msg.service';
 
 @WebSocketGateway({
   cors: {
@@ -26,18 +26,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   handleMessage(client: Socket, text: string) {
     console.log(`Server received msg: "${text}" from client: ${client.id}`);
     this.all_clients.emit('msgToClient', this.formatMessage('USER', text));
-  }
-  
-  //   OSWIN'S SEND:
-  @SubscribeMessage('send')
-  handleNewMessage(client: any, payload: MsgDto) { // client verification?
-    console.log('Received payload:', payload);
-    // extract message
-  
-    this.msgService.handleIncomingMsg(payload);
-    // do i need a service for this?
-    // check if the user is alowed to send it in the room
-    // upload it to the database
   }
 
   afterInit(server: Server) {
@@ -63,6 +51,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   //   });
   //   console.log(user_name, room_name);
   // });
+    client.emit('init'); // data, all chats
   }
 
   handleDisconnect(client: Socket) {
@@ -77,6 +66,33 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       body: message_body,
       time: moment().format('HH:mm ZZ') //TODO: Make not GMT maybe?
     };
+  }
+
+  addMessage(msg: MsgDto) {
+    this.server.emit('add', msg);
+  }
+
+  @SubscribeMessage('load')
+  handleLoad(client: any, roomId: number) { // client verification?
+    console.log('/chat/load received roomId:', roomId);
+
+    const data = this.msgService.getChatHistory(roomId);
+    client.emit('load', data);
+  }
+
+  @SubscribeMessage('send')
+  handleNewMsg(client: any, payload: MsgDto) { // client verification?
+    console.log('Received payload:', payload);
+
+    this.msgService.handleIncomingMsg(payload);
+  }
+
+  @SubscribeMessage('delete')
+  handleDeleteMsg(client: any, payload: MsgDto) { // client verification?
+
+    // verify that it is either an admin or the client self?
+    console.log('Received delete Request:', payload);
+    this.msgService.handleDeleteMsg(payload);
   }
 
 }
