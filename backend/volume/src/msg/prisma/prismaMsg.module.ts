@@ -4,9 +4,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaMsgService } from './prismaMsg.service';
 
 @Module({
-  imports: [PrismaClient, PrismaMsgService, PrismaService],
+  imports: [PrismaClient],
   controllers: [],
-  providers: [PrismaMsgService],
+  providers: [PrismaMsgService, PrismaService],
   exports: [PrismaMsgService],
 })
 export class PrismaMsgModule {}

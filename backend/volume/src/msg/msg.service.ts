@@ -21,7 +21,7 @@ export class MsgService {
     this.prismaMsg.updateMsg(
       {
         where: {
-          id_roomId: {
+          roomId_id: {
             id: data.id,
             roomId: data.roomId,
           },
