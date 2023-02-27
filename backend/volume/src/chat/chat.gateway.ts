@@ -9,6 +9,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import * as moment from 'moment';
 import { MsgDto, MsgService } from '../msg/msg.service';
+import { RoomService, roomDto } from 'src/room/room.service';
 
 @WebSocketGateway({
   cors: {
@@ -19,6 +20,7 @@ import { MsgDto, MsgService } from '../msg/msg.service';
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private server: Server;
   private msgService: MsgService;
+  private roomService: RoomService;
 
   @WebSocketServer() all_clients: Server; //all clients
 
@@ -34,24 +36,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   handleConnection(client: Socket, ...args: any[]) {
-    client.broadcast.emit('msgToClient', this.formatMessage('Rubot','A new user joined the chat.')); //all OTHER clients
-    client.emit('msgToClient', this.formatMessage('Rubot','Welcome to the chat!')); //this client
-    // console.warn(args + ' is unused');
-    console.log(`Client ${client.id} connected`);
+    // client.broadcast.emit('msgToClient', this.formatMessage('Rubot','A new user joined the chat.')); //all OTHER clients
+    // client.emit('msgToClient', this.formatMessage('Rubot','Welcome to the chat!')); //this client
+    // console.log(`Client ${client.id} connected`);
 
-    args.forEach(element => {
-      console.log('Arg passed to connection: ');
-      console.log(element);
-    });
-
-    // const qs_import = 'query-string';
-    // import (qs_import).then( (queryString) => {
-    //   const { user_name, room_name } = queryString.parse(location.search, {
-    //   // ignoreQueryPrefix: true
-    //   });
-    //   console.log(user_name, room_name);
-    // });
-    client.emit('init'); // data, all chats
+    client.emit('init'); // data, all chats roomDto[]
   }
 
   handleDisconnect(client: Socket) {
@@ -95,4 +84,21 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.msgService.handleDeleteMsg(payload);
   }
 
+// room
+  // create
+  // remove?
+  // invite
+  // admin (make someone admin)
+  
+  // (channel) ban  (ban from channel == cannot rejoin without invite) (with timeout)
+  // mute (player from channel) (with timeout)
+
+  // creates a chat
+  // @SubscribeMessage('create')
+  // handleCreateChat(client: any, payload: RoomDto) { // client verification?
+
+  //   // verify that it is either an admin or the client self?
+  //   console.log('Received delete Request:', client);
+  //   this.roomService.createChat(payload);
+  // }
 }

@@ -24,6 +24,7 @@ model User {
   blocked   Int[] // ids
   elo       Int     @default(500)
   rooms     Room[]
+  admin     Room[]  @relation("admin")
   owns      Room[]  @relation("owns")
   sendMsg   Msg[]
   games     Game[]
@@ -31,8 +32,10 @@ model User {
 
 model Room {
   id          Int @default(autoincrement()) @id
+  name        String?
   owner       User? @relation("owns", fields: [ownerId], references: [id])
   ownerId     Int?
+  admin       User[] @relation("admin")
   users       User[]
   hashedCode  String?
   access      Access @default(PUBLIC)
