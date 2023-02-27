@@ -2,8 +2,9 @@ import { Module } from '@nestjs/common';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
-import { ChatGatewayModule } from './chat/chat.module';
+import { ChatModule } from './chat/chat.module';
 import { GameModule } from './game/game.module';
+import { MsgModule } from './msg/msg.module';
 
 // import only the modules which provide the controllers
 
@@ -13,7 +14,8 @@ import { GameModule } from './game/game.module';
     UserModule,
     AuthModule,
     GameModule,
-    ChatGatewayModule,
+    ChatModule,
+    MsgModule,
   ],
 })
 export class AppModule {}

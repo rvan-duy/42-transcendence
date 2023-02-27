@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaMsgService } from 'src/msg/prisma/prismaMsg.service';
-// import { MsgDto } from './msg.dto';
 
 export interface MsgDto {
   id: number;
@@ -24,7 +23,7 @@ export class MsgService {
         where: {
           id_roomId: {
             id: data.id,
-            roomId: data.roomId
+            roomId: data.roomId,
           },
         },
         data: {
@@ -41,4 +40,5 @@ export class MsgService {
       }
     });
   }
+
 }
