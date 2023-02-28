@@ -135,7 +135,7 @@ async function update()
 
   game.ball[0] += ball.Xvelocity;
   game.ball[1] += ball.Yvelocity;
-  console.log(game.ball[0]);
+  // console.log(game.ball[0]);
   if (game.ball[1] + ball.rad > 600 || game.ball[1] - ball.rad < 0){
     ball.Yvelocity = -ball.Yvelocity;
     // wall.play();
@@ -161,7 +161,7 @@ async function update()
   }
 }
 
-function rubenpong()
+async function rubenpong()
 {
   update();
 }
@@ -188,9 +188,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.games.push(new Games());
   }
 
-  handleConnection(client: Socket) {
+  async handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
-    this.server.emit('pos', this.games[0].data);  // magic
+    await rubenpong();
+    // client.emit('pos', this.games[0].data);  // magic
     client.emit('init'); // new connection
   }
 
@@ -206,12 +207,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('pos')
   handlePos(client: any, payload: any) {
-    console.log('Received payload:', payload);
+    console.log("yes");
+    // console.log('Received payload:', payload);
+    // await rubenpong();
     // setInterval(rubenpong, 1000/60);
     // setInterval(rubenpong, 1000/fps);
-    setInterval(SEND,fps);
+    // setInterval(SEND,fps);
 
-    // this.server.emit('pos', this.games[2].data);  // magic
+    this.server.emit('pos', this.games[0].data);  // magic
   }
 
 

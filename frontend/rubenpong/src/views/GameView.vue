@@ -85,7 +85,7 @@ export default {
 
    
 
-socket.on('pos', async (data: any) => {
+socket.on('pos', (data: any) => {
     //  const result = await update();
     //  console.log('after await');
     //  const datas: GameData = update();
