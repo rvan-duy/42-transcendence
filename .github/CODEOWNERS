@@ -21,6 +21,5 @@ Dockerfile @Obult
 /backend/volume/src/user @Obult
 /backend/volume/src/msg @Obult
 /backend/volume/src/prisma @Obult
-/backend/volume/* @Obult
-!backend/volume/package.json @Obult
 /backend/volume/src/game @rvan-mee
+/backend/volume/* @Obult
