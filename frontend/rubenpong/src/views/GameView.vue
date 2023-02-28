@@ -73,10 +73,23 @@ export default {
       paddle2:  number[] = [980, 275];
       score:    number[] = [0, 0];
     }
+  //   function returnsPromise() {
+  //   return new Promise((resolve) => {
+  //   setTimeout(() => {
+  //       resolve();
+  //   }, 1000);
 
     function render()
     {
-      socket.on('pos', data => {
+      // async socket.on('pos', data => {
+
+   
+
+socket.on('pos', async (data: any) => {
+    //  const result = await update();
+    //  console.log('after await');
+    //  const datas: GameData = update();
+    // socket.on('pos', data => {
         const datas: GameData = data;
         //draw background
         ctx.fillStyle = 'black';
@@ -212,7 +225,7 @@ export default {
 
     function rubenpong()
     {
-      update();
+      // update();
       render();
     }
     const fps: number = 60;

@@ -118,7 +118,7 @@ function scored()
 //   // alert(`Key pressed ${name} \r\n Key code value: ${code}`);
 // }
 
-function update()
+async function update()
 {
   // change the score of players, if the ball goes to the left "game.ball[0]<0" computer win, else if "game.ball[0] > 1000" the user win
   if(game.ball[0] + ball.rad > 1000){
@@ -135,6 +135,7 @@ function update()
 
   game.ball[0] += ball.Xvelocity;
   game.ball[1] += ball.Yvelocity;
+  console.log(game.ball[0]);
   if (game.ball[1] + ball.rad > 600 || game.ball[1] - ball.rad < 0){
     ball.Yvelocity = -ball.Yvelocity;
     // wall.play();
@@ -166,6 +167,11 @@ function rubenpong()
 }
 const fps: number = 60;
 setInterval(rubenpong, 1000/fps);
+
+
+function SEND(){
+  this.server.emit('pos', this.games[0].data);
+}
 
 @WebSocketGateway({
   cors: {
@@ -202,10 +208,24 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   handlePos(client: any, payload: any) {
     console.log('Received payload:', payload);
     // setInterval(rubenpong, 1000/60);
-    update();
-    this.server.emit('pos', this.games[2].data);  // magic
+    // setInterval(rubenpong, 1000/fps);
+    setInterval(SEND,fps);
+
+    // this.server.emit('pos', this.games[2].data);  // magic
   }
 
+
+  // @SubscribeMessage('start')
+  // onStart(client: Socket): void {
+  //   try {
+  //     if (!client.data.user) return;
+
+  //     const player: Player = this.roomService.getPlayer(client.data.user.id);
+  //     if (!player || !player.room) return;
+
+  //     this.roomService.startCalc(player.room);
+  //   } catch {}
+  // }
   @SubscribeMessage('down')
   handleDown(client: any, payload: any): string {
     console.log('Received payload:', payload);
