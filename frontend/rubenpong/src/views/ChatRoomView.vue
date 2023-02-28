@@ -1,9 +1,35 @@
 <script setup lang="ts">
 import SocketioService from '../services/socketio.service.js';
+
 </script>
 
 <script lang="ts">
 const connection = SocketioService;
+
+var username = getUsername();
+
+function getUsername(){
+  if (typeof username !== 'undefined'){
+    console.log('Username already fetched');
+    return username;
+  }
+  else{
+    console.log('Fetching username');
+    fetch('http://localhost:3000/user/me', {mode: 'cors'})
+      .then(function(res){
+		// console.log(res);
+		return res.json();
+        // return res.text();
+      })
+      .then(function(data){
+        // console.log(data);
+        username = data.name;
+        // console.log(username);
+        return username;
+      })
+      .catch(error => console.log('Failed to fetch user : ' + error.message));
+  }
+}
 
 connection.setupSocketConnection('/chat');
 // connection.socket.on('connection', () => {console.log('Chat client connected');});
@@ -16,7 +42,11 @@ connection.socket.on('msgToClient', (msg) => {
 
 function chatFormSubmit(e){
   const msg = e.target.elements.msg;
-  connection.socket.emit('msgToServer', msg.value);
+  const packet = {username: getUsername(), msg: (msg.value)};
+  packet.username = getUsername()
+  console.log(packet.username);
+  console.log(packet);
+  connection.socket.emit('msgToServer', packet);
   msg.value = ''; //clears the message text you just entered
   msg.focus(); //focuses on the text input area again after sending
 }
