@@ -1,15 +1,15 @@
 enum GameMode {
-  NORMAL = "ModeNormal",
-  FREEMOVE = "ModeFreeMove",
-  POWERUP = "ModePowerUp",
-  FIESTA = "ModeFiesta",
+  NORMAL = 'ModeNormal',
+  FREEMOVE = 'ModeFreeMove',
+  POWERUP = 'ModePowerUp',
+  FIESTA = 'ModeFiesta',
 }
 
 enum PaddleInput {
-  UP = "KeyUp",
-  DOWN = "KeyDown",
-  LEFT = "KeyLeft",
-  RIGHT = "KeyRight",
+  UP = 'KeyUp',
+  DOWN = 'KeyDown',
+  LEFT = 'KeyLeft',
+  RIGHT = 'KeyRight',
 }
 
 enum PlayerDefinitions {
@@ -37,14 +37,14 @@ class Paddle {
 
 class Player {
   constructor(id: number, side: PlayerDefinitions) {
-    this.userId = id
-    if (side == PlayerDefinitions.PLAYER1) {
-      this.paddle.x = 0
-      this.paddle.y = MapSize.HEIGHT / 2
+    this.userId = id;
+    if (side === PlayerDefinitions.PLAYER1) {
+      this.paddle.x = 0;
+      this.paddle.y = MapSize.HEIGHT / 2;
     }
     else {
-      this.paddle.x = MapSize.WIDTH
-      this.paddle.y = MapSize.HEIGHT / 2
+      this.paddle.x = MapSize.WIDTH;
+      this.paddle.y = MapSize.HEIGHT / 2;
     }
   }
 
@@ -83,15 +83,15 @@ export class GameService {
   private gamesPlayed: number = 0;
 
   updateGames() {
-    if (this.games.length == 0)
-      return
+    if (this.games.length === 0)
+      return;
 
     for (let index = 0; index < this.games.length; index++) {
-      this.updatePaddles(this.games[index])
-      this.updateBall(this.games[index])
-      this.sendGameInfo(this.games[index])
+      this.updatePaddles(this.games[index]);
+      this.updateBall(this.games[index]);
+      this.sendGameInfo(this.games[index]);
     }
-    this.removeFinishedGames() // Don't do this every game tick
+    this.removeFinishedGames(); // Don't do this every game tick
   }
 
   private updatePaddles(game: GameData) {
@@ -115,21 +115,21 @@ export class GameService {
 
   private updateBall(game: GameData) {
     const ball = game.ball;
-    let   paddle: Paddle;
+    let paddle: Paddle;
 
     // check what side of the map the ball is on and which paddle to check collision for
     if (game.ball.x + ball.radius > MapSize.WIDTH / 2)
-      paddle = game.players[PlayerDefinitions.PLAYER1].paddle
+      paddle = game.players[PlayerDefinitions.PLAYER1].paddle;
     else
-      paddle = game.players[PlayerDefinitions.PLAYER2].paddle
+      paddle = game.players[PlayerDefinitions.PLAYER2].paddle;
 
     // Update ball position
-    ball.x += ball.xDirection
-    ball.y += ball.yDirection
+    ball.x += ball.xDirection;
+    ball.y += ball.yDirection;
 
     // check if ball hits the top or bottom of the map then invert its direction
     if (ball.y + ball.radius > MapSize.HEIGHT || ball.y - ball.radius < 0)
-      ball.yDirection -= ball.yDirection
+      ball.yDirection -= ball.yDirection;
 
     if (this.ballPaddleCollision(ball, paddle)) {
       const speed = ball.acceleration * MoveSpeedPerTick.BALL;
@@ -142,59 +142,59 @@ export class GameService {
       ball.yDirection = speed * Math.sin(returnAngle); // sin gets the value between the ball and the y angle
 
       // update the ball's acceleration after every paddle hit
-      ball.acceleration += 0.1
+      ball.acceleration += 0.1;
     }
 
     // Check if the ball has hit the score line
     if (ball.x - ball.radius < 0)
-      this.scored(game, PlayerDefinitions.PLAYER2)
+      this.scored(game, PlayerDefinitions.PLAYER2);
     else if (ball.x + ball.radius > MapSize.WIDTH)
-      this.scored(game, PlayerDefinitions.PLAYER1)
+      this.scored(game, PlayerDefinitions.PLAYER1);
   }
 
   private ballPaddleCollision(ball: Ball, paddle: Paddle) {
     if (paddle.x + paddle.width >= ball.x - ball.radius && paddle.x <= ball.x + ball.radius &&  // Checks if the ball's x coordinate is within the paddle's coordinate range
         paddle.y + paddle.height >= ball.y - ball.radius && paddle.y <= ball.y + ball.radius) { // Checks if the ball's y coordinate is within the paddle's coordinate range
-        return (true)
+      return (true);
     }
-    return (false)
+    return (false);
   }
 
   private scored(game: GameData, player: PlayerDefinitions) {
     const ball = game.ball;
 
-    if (player == PlayerDefinitions.PLAYER1)
-      game.score[PlayerDefinitions.PLAYER1]++
+    if (player === PlayerDefinitions.PLAYER1)
+      game.score[PlayerDefinitions.PLAYER1]++;
     else
-      game.score[PlayerDefinitions.PLAYER2]++
+      game.score[PlayerDefinitions.PLAYER2]++;
 
-    if (game.score[PlayerDefinitions.PLAYER1] == game.pointsToWin ||
-        game.score[PlayerDefinitions.PLAYER2] == game.pointsToWin)
-        game.isFinished = true;
-      ball.x = MapSize.WIDTH / 2;
-      ball.y = MapSize.HEIGHT / 2;
-      ball.xDirection = (getRandomInt(100) % 2) ? 1.0 : -1.0;
-      ball.yDirection = 0.0;
-      ball.acceleration = 1
+    if (game.score[PlayerDefinitions.PLAYER1] === game.pointsToWin ||
+        game.score[PlayerDefinitions.PLAYER2] === game.pointsToWin)
+      game.isFinished = true;
+    ball.x = MapSize.WIDTH / 2;
+    ball.y = MapSize.HEIGHT / 2;
+    ball.xDirection = (getRandomInt(100) % 2) ? 1.0 : -1.0;
+    ball.yDirection = 0.0;
+    ball.acceleration = 1;
   }
 
   createGame(player1: number, player2: number, mode: GameMode) {
     const newGame = new GameData;
 
     newGame.gameID = this.gamesPlayed;
-    newGame.players.push(new Player(player1, PlayerDefinitions.PLAYER1))
-    newGame.players.push(new Player(player2, PlayerDefinitions.PLAYER2))
-    newGame.mode = mode
-    this.games.push(newGame)
-    this.gamesPlayed++
+    newGame.players.push(new Player(player1, PlayerDefinitions.PLAYER1));
+    newGame.players.push(new Player(player2, PlayerDefinitions.PLAYER2));
+    newGame.mode = mode;
+    this.games.push(newGame);
+    this.gamesPlayed++;
   }
 
   private removeFinishedGames() {
     for (let index = 0; index < this.games.length; index++) {
       if (this.games[index].isFinished) {
-        this.storeGameInfo(this.games[index])
-        this.games.splice(index, 1)
-        index-- // is this necessary ??
+        this.storeGameInfo(this.games[index]);
+        this.games.splice(index, 1);
+        index--; // is this necessary ??
       }
     }
   }
@@ -205,13 +205,13 @@ export class GameService {
 
   addSpectator(spectator: number, gameID: number) {
     for (let index = 0; index < this.games.length; index++) {
-      if (this.games[index].gameID == gameID) {
+      if (this.games[index].gameID === gameID) {
         if (this.games[index].isFinished) {
           // send info back that game is already finished
-          return
+          return;
         }
-      this.games[index].spectators.push(spectator)
-      return
+        this.games[index].spectators.push(spectator);
+        return;
       }
     }
     // send info back that game is already finished
@@ -219,10 +219,10 @@ export class GameService {
 
   removeSpectator(spectator: number, gameID: number) {
     for (let index = 0; index < this.games.length; index++) {
-      if (this.games[index].gameID == gameID) {
-        const indexOfSpectator = this.games[index].spectators.indexOf(spectator)
-        this.games[index].spectators.splice(indexOfSpectator, 1)
-        return
+      if (this.games[index].gameID === gameID) {
+        const indexOfSpectator = this.games[index].spectators.indexOf(spectator);
+        this.games[index].spectators.splice(indexOfSpectator, 1);
+        return;
       }
     }
   }
@@ -241,14 +241,14 @@ export class GameService {
         // enables / disables the current move input
         if (player.userId === playerId) {
           if (input === PaddleInput.DOWN)
-            player.moveDown = player.moveDown ? false : true
+            player.moveDown = player.moveDown ? false : true;
           else if (input === PaddleInput.UP)
-            player.moveUp = player.moveUp ? false : true
+            player.moveUp = player.moveUp ? false : true;
           else if (input === PaddleInput.LEFT)
-            player.moveLeft = player.moveLeft ? false : true
+            player.moveLeft = player.moveLeft ? false : true;
           else if (input === PaddleInput.RIGHT)
-            player.moveRight = player.moveRight ? false : true
-          return
+            player.moveRight = player.moveRight ? false : true;
+          return;
         }
       }
     }
