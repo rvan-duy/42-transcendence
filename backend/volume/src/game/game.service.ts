@@ -1,4 +1,4 @@
-import { PrismaGameService } from "./prisma/prismaGame.service";
+import { PrismaGameService } from './prisma/prismaGame.service';
 
 enum GameMode {
   NORMAL = 'ModeNormal',
@@ -81,7 +81,7 @@ class GameData {
 }
 
 export class CurrentGameState {
-  constructor (score: number[], player1: number, player2: number,  leftPaddleCoords: number[], rightPaddleCoords: number[], ballCoords: number[]) {
+  constructor (score: number[], player1: number, player2: number, leftPaddleCoords: number[], rightPaddleCoords: number[], ballCoords: number[]) {
     this.score = score;
     this.players.push(player1);
     this.players.push(player2);
@@ -230,7 +230,7 @@ export class GameService {
           id: game.players[PlayerDefinitions.PLAYER2].userId
         }],
       }
-    })
+    });
   }
 
   addSpectator(spectator: number, gameID: number) {
@@ -263,7 +263,7 @@ export class GameService {
       game.players[PlayerDefinitions.PLAYER2].userId,
       [game.players[PlayerDefinitions.PLAYER1].paddle.x, game.players[PlayerDefinitions.PLAYER1].paddle.y],
       [game.players[PlayerDefinitions.PLAYER2].paddle.x, game.players[PlayerDefinitions.PLAYER2].paddle.y],
-      [game.ball.x, game.ball.y])
+      [game.ball.x, game.ball.y]);
     // send current game state back through socket
   }
 
