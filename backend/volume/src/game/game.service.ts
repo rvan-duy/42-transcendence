@@ -106,7 +106,7 @@ export class GameService {
         player.paddle.y += paddleMovement;
 
       // Check if paddle goes out of bounds
-      if (player.paddle.y > 0)
+      if (player.paddle.y < 0)
         player.paddle.y = 0;
       else if (player.paddle.y + player.paddle.height > MapSize.HEIGHT)
         player.paddle.y = MapSize.HEIGHT - player.paddle.height;
