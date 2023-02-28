@@ -73,65 +73,61 @@ export default {
       paddle2:  number[] = [980, 275];
       score:    number[] = [0, 0];
     }
-  //   function returnsPromise() {
-  //   return new Promise((resolve) => {
-  //   setTimeout(() => {
-  //       resolve();
-  //   }, 1000);
-
-    function render()
-    {
-      // async socket.on('pos', data => {
-
-   
 
 socket.on('pos', (data: any) => {
-    //  const result = await update();
-    //  console.log('after await');
-    //  const datas: GameData = update();
-    // socket.on('pos', data => {
         const datas: GameData = data;
         //draw background
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        //draw plateau other player
         ctx.fillStyle = 'white';
-        ctx.fillRect(datas.paddle1[0], datas.paddle1[1], other.width, other.height);
-        //draw plateau you
-        ctx.fillStyle = 'white';
-        ctx.fillRect(datas.paddle2[0], datas.paddle2[1], plat.width, plat.height);
-        //draw ball
-        ctx.fillStyle = 'red';
-        ctx.beginPath();
-        ctx.arc(datas.ball[0], datas.ball[1],ball.rad,0,Math.PI*2,false);
-        ctx.closePath();
-        ctx.fill();
-        //draw text
-        ctx.fillStyle = 'white';
-        ctx.font = '50px arial';
-        ctx.fillText('other', canvas.width / 4, canvas.height / 8);
-        //draw text
-        ctx.fillStyle = 'white';
-        ctx.font = '50px arial';
-        ctx.fillText(datas.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
-        //draw text
-        ctx.fillStyle = 'white';
-        ctx.font = '50px arial';
-        ctx.fillText('you', canvas.width / 4 * 3 - 100, canvas.height / 8);
-        //draw text
-        ctx.fillStyle = 'white';
-        ctx.font = '50px arial';
-        ctx.fillText(datas.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
-        //draw net
-        for(let i = 0; i <= canvas.height; i+=15){
+        if (datas.score[1] >= 10 || datas.score[0] >= 10 )
+        {
+          ctx.fillStyle = 'black';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.fillStyle = 'white';
-          ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
+          if (datas.score[1] >= 10 )
+            ctx.fillText('You won!', canvas.width / 2 - 100, canvas.height / 2);
+          if (datas.score[0] >= 10 )
+            ctx.fillText('You lost!', canvas.width /  2 - 100, canvas.height / 2);
+        }
+        //draw plateau other player
+        else if (datas.score[1] < 10 || datas.score[0] < 10) {
+          ctx.fillRect(datas.paddle1[0], datas.paddle1[1], other.width, other.height);
+          //draw plateau you
+          ctx.fillStyle = 'white';
+          ctx.fillRect(datas.paddle2[0], datas.paddle2[1], plat.width, plat.height);
+          //draw ball
+          ctx.fillStyle = 'red';
+          ctx.beginPath();
+          ctx.arc(datas.ball[0], datas.ball[1],ball.rad,0,Math.PI*2,false);
+          ctx.closePath();
+          ctx.fill();
+          //draw text
+          ctx.fillStyle = 'white';
+          ctx.font = '50px arial';
+          ctx.fillText('other', canvas.width / 4, canvas.height / 8);
+          //draw text
+          ctx.fillStyle = 'white';
+          ctx.font = '50px arial';
+          ctx.fillText(datas.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
+          //draw text
+          ctx.fillStyle = 'white';
+          ctx.font = '50px arial';
+          ctx.fillText('you', canvas.width / 4 * 3 - 100, canvas.height / 8);
+          //draw text
+          ctx.fillStyle = 'white';
+          ctx.font = '50px arial';
+          ctx.fillText(datas.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
+          //draw net
+          for(let i = 0; i <= canvas.height; i+=15){
+            ctx.fillStyle = 'white';
+            ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
+          }
         }
       });
-      // //draw text
-      // ctx.fillStyle = 'white';
-      // ctx.font = "100px arial";
-      // ctx.fillText('you won', canvas.width / 2 - 200, canvas.height / 2);
+    function render()
+    {
+      socket.emit('pos');
     }
 
     const ball: {x: number, y: number, speed: number, Xvelocity: number, Yvelocity: number, rad: number} = {
@@ -159,97 +155,27 @@ socket.on('pos', (data: any) => {
       score: 0
     };
 
-    function scored()
-    {
-      ball.x = canvas.width/2;
-      ball.y = canvas.height/2;
-      ball.Xvelocity = -ball.Xvelocity;
-      ball.speed = 5;
-    }
-
     function movePlat(e: KeyboardEvent)
     {
+      console.log(e.key);
       if (e.key === 'ArrowDown')
-        if (plat.y < canvas.height - plat.height)
-          plat.y += 30;
+        socket.emit('ArrowDown');
       if (e.key === 'ArrowUp')
-        if (plat.y > 0)
-          plat.y -= 30;
-      // var name = e.key;
-      // var code = e.code;
-      // // Alert the key name and key code on keydown
-      // alert(`Key pressed ${name} \r\n Key code value: ${code}`);
-    }
-
-    function update()
-    {
-      // change the score of players, if the ball goes to the left "ball.x<0" computer win, else if "ball.x > canvas.width" the user win
-      if(ball.x + ball.rad > canvas.width){
-        other.score++;
-        // comScore.play();
-        scored();
-      }else if(ball.x - ball.rad < 0){
-        plat.score++;
-        // userScore.play();
-        scored();
-      }
-      // when COM or USER scores, we reset the ball
-      //resetball
-
-      ball.x += ball.Xvelocity;
-      ball.y += ball.Yvelocity;
-      if (ball.y + ball.rad > canvas.height || ball.y - ball.rad < 0){
-        ball.Yvelocity = -ball.Yvelocity;
-        // wall.play();
-      }
-      // var collision: boolean = false;
-      // we check if the paddle hit the user or the com paddle
-      var player : {x: number, y: number, height: number, width: number, score:number} = (ball.x + ball.rad < canvas.width/2) ? other : plat;
-      //if there is a collision
-      if (player.x < ball.x + ball.rad && player.y < ball.y + ball.rad && player.x + player.width > ball.x - ball.rad && player.y + player.height > ball.y - ball.rad)
-      {
-        // where the ball hits the plateau & normalize
-        var collisionPoint:number = ((ball.y - (player.y + player.height/2))) / (player.height/2);
-        // from -45degrees to +45degrees
-        // Math.PI/4 = 45degrees
-        var angleRad: number = (Math.PI/4) * collisionPoint;
-        // change X & Y velocity dir
-        var dir:number= (ball.x + ball.rad < canvas.width/2) ? 1 : -1;
-        ball.Xvelocity = dir * ball.speed * Math.cos(angleRad);
-        ball.Yvelocity = ball.speed * Math.sin(angleRad);
-				
-        // speed up the ball everytime a paddle hits it.
-        ball.speed += 0.1;
-      }
+        socket.emit('ArrowUp');
+      if (e.key === 'ArrowRight')
+        socket.emit('ArrowRight');
+      if (e.key === 'ArrowLeft')
+        socket.emit('ArrowLeft');
     }
 
     function rubenpong()
     {
-      // update();
       render();
     }
     const fps: number = 60;
     setInterval(rubenpong, 1000/fps);
-    // canvas.addEventListener("keyup", movePlatUp);
-    // canvas.addEventListener("keydown", movePlatDown);
-    // input.addEventListener('keypress', logKey);
-    // function logKey(evt : KeyboardEvent) {
-    //   console.log(evt.key);
-    // }
-    // const input: HTMLInputElement = document.querySelector('input');
 
-    // console.log(input);
-    // input.addEventListener('keypress', (e: KeyboardEvent) =>{
-    //          //You have yout key code here
-    //           console.log(e.key);
-    //       });
     document.addEventListener('keydown', movePlat);
-
-    //   var name = event.key;
-    //   var code = event.code;
-    //   // Alert the key name and key code on keydown
-    //   alert(`Key pressed ${name} \r\n Key code value: ${code}`);
-    // }, false);
 
     //start of game define which plat - b / f?
     //update() function in backend

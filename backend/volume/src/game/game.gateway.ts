@@ -74,7 +74,7 @@ const game = new GameData();
 const ball: {x: number, y: number, speed: number, Xvelocity: number, Yvelocity: number, rad: number} = {
   x: 1000/2,
   y: 600/2,
-  speed: 5,
+  speed: 20,
   Xvelocity: 5,
   Yvelocity: 5,
   rad: 20,
@@ -118,7 +118,7 @@ function scored()
 //   // alert(`Key pressed ${name} \r\n Key code value: ${code}`);
 // }
 
-async function update()
+function update(game:GameData)
 {
   // change the score of players, if the ball goes to the left "game.ball[0]<0" computer win, else if "game.ball[0] > 1000" the user win
   if(game.ball[0] + ball.rad > 1000){
@@ -130,7 +130,6 @@ async function update()
     // userScore.play();
     scored();
   }
-  // when COM or USER scores, we reset the ball
   //resetball
 
   game.ball[0] += ball.Xvelocity;
@@ -161,17 +160,16 @@ async function update()
   }
 }
 
-async function rubenpong()
+function rubenpong(game: GameData)
 {
-  update();
+  update(game);
 }
-const fps: number = 60;
-setInterval(rubenpong, 1000/fps);
 
 
-function SEND(){
-  this.server.emit('pos', this.games[0].data);
-}
+
+// function SEND(){
+//   this.server.emit('pos', this.games[0].data);
+// }
 
 @WebSocketGateway({
   cors: {
@@ -188,9 +186,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.games.push(new Games());
   }
 
-  async handleConnection(client: Socket) {
+  handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
-    await rubenpong();
+    // await rubenpong();
+    const fps: number = 60;
+    setInterval(rubenpong, 1000/fps, this.games[0].data);
     // client.emit('pos', this.games[0].data);  // magic
     client.emit('init'); // new connection
   }
@@ -208,6 +208,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('pos')
   handlePos(client: any, payload: any) {
     console.log("yes");
+
     // console.log('Received payload:', payload);
     // await rubenpong();
     // setInterval(rubenpong, 1000/60);
