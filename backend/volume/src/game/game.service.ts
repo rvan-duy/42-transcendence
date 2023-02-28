@@ -1,3 +1,5 @@
+import { PrismaGameService } from "./prisma/prismaGame.service";
+
 enum GameMode {
   NORMAL = 'ModeNormal',
   FREEMOVE = 'ModeFreeMove',
@@ -81,6 +83,7 @@ class GameData {
 export class GameService {
   private games: GameData[] = null;
   private gamesPlayed: number = 0;
+  private prismaGameService: PrismaGameService;
 
   updateGames() {
     if (this.games.length === 0)
@@ -200,7 +203,17 @@ export class GameService {
   }
 
   private storeGameInfo(game: GameData) {
-    // store game info into database
+    this.prismaGameService.createGame({
+      score: game.score,
+      players: {
+        connect: [{
+          id: game.players[PlayerDefinitions.PLAYER1].userId
+        },
+        {
+          id: game.players[PlayerDefinitions.PLAYER2].userId
+        }],
+      }
+    })
   }
 
   addSpectator(spectator: number, gameID: number) {
