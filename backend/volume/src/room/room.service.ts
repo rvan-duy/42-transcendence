@@ -1,6 +1,6 @@
 import { PrismaRoomService } from "./prisma/prismaRoom.service";
 import { Injectable } from "@nestjs/common";
-import { Access} from "@prisma/client";
+import { Access, UserTimestamp } from "@prisma/client";
 import { PrismaUserService } from "src/user/prisma/prismaUser.service";
 
 // enum EAccess {
@@ -77,15 +77,32 @@ export class RoomService {
     })
   }
 
-  // async banUser(roomId: number, userId: number) {
+  async banUser(roomId: number, userId: number) {
+    this.prismaRoom.updateRoom({
+      where: {
+        id: roomId,
+      },
+      data: {
+        banned: {
+          create: {
+            userId: userId,
+            timestamp: new Date(Date.now() + 45000), // 45sec
+          }
+        }
+      }
+    })
+  }
+
+  // async muteUser(roomId: number, userId: number) {
   //   this.prismaRoom.updateRoom({
   //     where: {
   //       id: roomId,
   //     },
   //     data: {
-  //       admin: {
-  //         disconnect: {
-  //           id: userId,
+  //       muted: {
+  //         create: {
+  //           userId: userId,
+  //           timestamp: new Date(Date.now() + 45000), // 45sec
   //         }
   //       }
   //     }

@@ -15,6 +15,15 @@ enum Access {
   PUBLIC
 }
 
+model UserTimestamp {
+  id        Int      @id @default(autoincrement())
+  room      Room     @relation(fields: [roomId], references: [id])
+  roomId    Int
+  userId    Int
+  timestamp DateTime @default(now())
+}
+
+
 model User {
   id        Int     @default(autoincrement()) @id
   intraId   Int     @unique
@@ -37,6 +46,7 @@ model Room {
   ownerId     Int?
   admin       User[] @relation("admin")
   users       User[]
+  banned      UserTimestamp[]
   hashedCode  String?
   access      Access @default(PUBLIC)
   messages    Msg[]
