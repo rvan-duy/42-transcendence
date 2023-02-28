@@ -43,11 +43,6 @@ const router = createRouter({
       name: 'not-found',
       component: () => import('@/views/NotFoundView.vue'),
     },
-    {
-      path: '/chatTesting',
-      name: 'chatTesting',
-      component: () => import('../views/ChatTestingView.vue'),
-    }
   ],
 });
 
