@@ -17,8 +17,8 @@ function getUsername(){
     console.log('Fetching username');
     fetch('http://localhost:3000/user/me', {mode: 'cors'})
       .then(function(res){
-		// console.log(res);
-		return res.json();
+        // console.log(res);
+        return res.json();
         // return res.text();
       })
       .then(function(data){
@@ -43,7 +43,7 @@ connection.socket.on('msgToClient', (msg) => {
 function chatFormSubmit(e){
   const msg = e.target.elements.msg;
   const packet = {username: getUsername(), msg: (msg.value)};
-  packet.username = getUsername()
+  packet.username = getUsername();
   console.log(packet.username);
   console.log(packet);
   connection.socket.emit('msgToServer', packet);

@@ -13,7 +13,7 @@ import { MsgDto, MsgService } from '../msg/msg.service';
 @WebSocketGateway({
   cors: {
     origin: '*',
-	credentials: false
+    credentials: false
   },
   namespace: '/chat',
 })
