@@ -1,6 +1,6 @@
 import { PrismaGameService } from './prisma/prismaGame.service';
 
-enum GameMode {
+export enum GameMode {
   NORMAL = 'ModeNormal',
   FREEMOVE = 'ModeFreeMove',
   POWERUP = 'ModePowerUp',
@@ -81,16 +81,13 @@ class GameData {
 }
 
 export class CurrentGameState {
-  constructor (score: number[], player1: number, player2: number, leftPaddleCoords: number[], rightPaddleCoords: number[], ballCoords: number[]) {
+  constructor (score: number[], leftPaddleCoords: number[], rightPaddleCoords: number[], ballCoords: number[]) {
     this.score = score;
-    this.players.push(player1);
-    this.players.push(player2);
     this.leftPaddleCoords = leftPaddleCoords;
     this.rightPaddleCoords = rightPaddleCoords;
     this.ballCoords = ballCoords;
   }
 
-  players: number[] = null;
   score:number[] = null;
   leftPaddleCoords: number[] = [0, MapSize.HEIGHT / 2];
   rightPaddleCoords: number[] = [MapSize.WIDTH, MapSize.HEIGHT / 2];
@@ -251,6 +248,9 @@ export class GameService {
     for (let index = 0; index < this.games.length; index++) {
       if (this.games[index].gameID === gameID) {
         const indexOfSpectator = this.games[index].spectators.indexOf(spectator);
+
+		if (indexOfSpectator === -1)
+			return;
         this.games[index].spectators.splice(indexOfSpectator, 1);
         return;
       }
@@ -259,8 +259,6 @@ export class GameService {
 
   private sendGameInfo(game: GameData) {
     const toSend = new CurrentGameState(game.score,
-      game.players[PlayerDefinitions.PLAYER1].userId,
-      game.players[PlayerDefinitions.PLAYER2].userId,
       [game.players[PlayerDefinitions.PLAYER1].paddle.x, game.players[PlayerDefinitions.PLAYER1].paddle.y],
       [game.players[PlayerDefinitions.PLAYER2].paddle.x, game.players[PlayerDefinitions.PLAYER2].paddle.y],
       [game.ball.x, game.ball.y]);
