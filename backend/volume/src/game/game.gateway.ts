@@ -1,6 +1,7 @@
 import { SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 // import { Game } from '@prisma/client';
 import { Socket, Server } from 'socket.io';
+import { GameService } from './game.service';
 
 enum GameMode {
   SURVIVAL = 'Survival',
@@ -104,6 +105,8 @@ function scored()
   ball.speed = 5;
 }
 
+
+
 // function movePlat(e: KeyboardEvent)
 // {
 //   if (e.key === 'ArrowDown')
@@ -164,6 +167,30 @@ function rubenpong(game: GameData)
 {
   update(game);
 }
+// private updatePaddles(game: GameData) {
+//   for (let index = 0; index < game.players.length; index++) {
+//     const player:Player = game.players[index];
+//     const paddleMovement:number = player.paddle.acceleration * MoveSpeedPerTick.PADDLE;
+
+//     // Get new y coordinate of paddle
+//     if (player.moveUp)
+//       player.paddle.y -= paddleMovement;
+//     if (player.moveDown)
+//       player.paddle.y += paddleMovement;
+
+//     // Check if paddle goes out of bounds
+//     if (player.paddle.y > 0)
+//       player.paddle.y = 0;
+//     else if (player.paddle.y + player.paddle.height > MapSize.HEIGHT)
+//       player.paddle.y = MapSize.HEIGHT - player.paddle.height;
+//   }
+// }
+enum PaddleInput {
+  UP = "KeyUp",
+  DOWN = "KeyDown",
+  LEFT = "KeyLeft",
+  RIGHT = "KeyRight",
+}
 
 
 
@@ -180,6 +207,7 @@ function rubenpong(game: GameData)
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private server: Server;
   private games:  Games[] = [];
+  private readonly gameService: GameService;
 
   afterInit(server: Server) {
     this.server = server;
@@ -218,7 +246,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.server.emit('pos', this.games[0].data);  // magic
   }
 
-
+  @SubscribeMessage('keyDown')
+  handleKeyDown(client: any, payload: any): string {
+    // console.log('Received payload:', payload);
+    // return 'Server says hello!';
+    this.gameService.UpdatePlayerInput(1, PaddleInput.DOWN); // magic 
+  }
   // @SubscribeMessage('start')
   // onStart(client: Socket): void {
   //   try {
