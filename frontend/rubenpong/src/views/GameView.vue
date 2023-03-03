@@ -18,6 +18,7 @@
 
 <script lang="ts">
 import io from 'socket.io-client';
+// import CurrentGameState from 'game.service'
 function increaseArraySize(inputArray: Uint8ClampedArray): Uint8ClampedArray {
   const outputArray = new Uint8ClampedArray(64);
   for (let i = 0; i < 64; i++) {
@@ -36,39 +37,51 @@ export default {
       console.log(`connect_error due to ${err.message}`);
     });
  
-		class GameData {
-      ball: number[] = [500, 300];
-      paddle1:  number[] = [0, 275];
-      paddle2:  number[] = [980, 275];
-      score:    number[] = [0, 0];
-    }
+		// class GameData {
+    //   ball: number[] = [500, 300];
+    //   paddle1:  number[] = [0, 275];
+    //   paddle2:  number[] = [980, 275];
+    //   score:    number[] = [0, 0];
+    // }
+  class CurrentGameState {
+  constructor (score: number[], leftPaddleCoords: number[], rightPaddleCoords: number[], ballCoords: number[]) {
+    this.score = score;
+    this.leftPaddleCoords = leftPaddleCoords;
+    this.rightPaddleCoords = rightPaddleCoords;
+    this.ballCoords = ballCoords;
+  }
 
+  score:number[] = [0, 0];
+  leftPaddleCoords: number[] = [0, canvas.height / 2];
+  rightPaddleCoords: number[] = [canvas.width, canvas.height / 2];
+  ballCoords: number[] = [canvas.width / 2, canvas.height / 2];
+}
 socket.on('pos', (data: any) => {
-        const datas: GameData = data;
+        const datas: CurrentGameState = data;
         //draw background
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = 'white';
-        if (datas.score[1] >= 10 || datas.score[0] >= 10 )
-        {
-          ctx.fillStyle = 'black';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = 'white';
-          if (datas.score[1] >= 10 )
-            ctx.fillText('You won!', canvas.width / 2 - 100, canvas.height / 2);
-          if (datas.score[0] >= 10 )
-            ctx.fillText('You lost!', canvas.width /  2 - 100, canvas.height / 2);
-        }
+        // if (datas.score[1] >= 10 || datas.score[0] >= 10 )
+        // {
+        //   ctx.fillStyle = 'black';
+        //   ctx.fillRect(0, 0, canvas.width, canvas.height);
+        //   ctx.fillStyle = 'white';
+        //   if (datas.score[1] >= 10 )
+        //     ctx.fillText('You won!', canvas.width / 2 - 100, canvas.height / 2);
+        //   if (datas.score[0] >= 10 )
+        //     ctx.fillText('You lost!', canvas.width /  2 - 100, canvas.height / 2);
+        // }
         //draw plateau other player
-        else if (datas.score[1] < 10 || datas.score[0] < 10) {
-          ctx.fillRect(datas.paddle1[0], datas.paddle1[1], other.width, other.height);
+        // else if (datas.score[1] < 10 || datas.score[0] < 10) {
+          ctx.fillRect(datas.leftPaddleCoords[0], datas.leftPaddleCoords[1], other.width, other.height);
           //draw plateau you
           ctx.fillStyle = 'white';
-          ctx.fillRect(datas.paddle2[0], datas.paddle2[1], plat.width, plat.height);
+          ctx.fillRect(datas.rightPaddleCoords[0], datas.rightPaddleCoords[1], plat.width, plat.height);
           //draw ball
           ctx.fillStyle = 'red';
           ctx.beginPath();
-          ctx.arc(datas.ball[0], datas.ball[1],ball.rad,0,Math.PI*2,false);
+          ctx.arc(datas.ballCoords[0], datas.ballCoords[1],ball.rad,0,Math.PI*2,false);
           ctx.closePath();
           ctx.fill();
           //draw text
@@ -92,7 +105,7 @@ socket.on('pos', (data: any) => {
             ctx.fillStyle = 'white';
             ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
           }
-        }
+        // }
       });
     function render()
     {
@@ -196,12 +209,12 @@ socket.on('pos', (data: any) => {
       }
     }
 
-    function rubenpong()
-    {
-      render();
-    }
+    // function rubenpong()
+    // {
+    //   render();
+    // }
     const fps: number = 60;
-    setInterval(rubenpong, 1000/fps);
+    // setInterval(rubenpong, 1000/fps);
 
     document.addEventListener('keydown', movePlat);
     document.addEventListener('keyup', stopMovePlat);
