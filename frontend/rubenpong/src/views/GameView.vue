@@ -35,38 +35,7 @@ export default {
     socket.on("connect_error", (err) => {
       console.log(`connect_error due to ${err.message}`);
     });
-    // socket.on('canvas-update', pxlData => {
-    //   if (init)
-    //   {
-    //     var tmpData = new Uint8ClampedArray(pxlData.data);
-    //     tmpData = increaseArraySize(tmpData);
-    //     ctx.putImageData(new ImageData(tmpData, 4, 4), pxlData.width * 4, pxlData.height * 4);
-    //     console.log('received update on canvas');
-    //   }
-    //   else
-    //   {
-    //     queue.push(new ImageData(pxlData.data, pxlData.width, pxlData.height));
-    //   }
-    // });
-    // socket.on('canvas-init', canvasData => {
-    //   if (!ctx) {
-    //     return;
-    //   }
-    //   var tmpData = new Uint8ClampedArray(canvasData.data);
-    //   const iData: ImageData = new ImageData(tmpData, canvasData.width, canvasData.height);
-    //   const tmpCanvas = document.createElement('canvas');
-    //   tmpCanvas.width = 800;
-    //   tmpCanvas.height = 800;
-    //   var tmpctx: CanvasRenderingContext2D = tmpCanvas.getContext('2d') as CanvasRenderingContext2D;
-    //   // var tmpctx: CanvasRenderingContext2D = document.createElement('canvas').getContext('2d') as CanvasRenderingContext2D;
-    //   tmpctx.putImageData(iData, 0, 0);
-    //   ctx.scale(4, 4);
-    //   ctx.imageSmoothingEnabled = false;
-    //   ctx.drawImage(tmpctx.canvas, 0, 0);
-    //   // add everything from queue to canvasv (need to add)
-    //   init = true;
-    //   console.log('hope to have received the canvas-init');
-    // });
+ 
 		class GameData {
       ball: number[] = [500, 300];
       paddle1:  number[] = [0, 275];
@@ -155,17 +124,76 @@ socket.on('pos', (data: any) => {
       score: 0
     };
 
+    var arrowUp: Boolean = false;
+    var arrowDown: Boolean = false;
+    var arrowLeft: Boolean = false;
+    var arrowRight: Boolean = false;
+
+
     function movePlat(e: KeyboardEvent)
     {
+      if (!arrowDown)
+      {
+        if (e.key === 'ArrowDown')
+        {
+          console.log(e.key);
+          socket.emit('ArrowDown');
+          arrowDown = true;
+        }
+      }
+      if (!arrowUp)
+      {
+        if (e.key === 'ArrowUp')
+        {
+          console.log(e.key);
+          socket.emit('ArrowUp');
+          arrowUp = true;
+        }
+      }
+      if (!arrowRight)
+      {
+        if (e.key === 'ArrowRight')
+        {
+          console.log(e.key);
+          socket.emit('ArrowRight');
+          arrowRight = true;
+        }
+      }
+      if (!arrowLeft)
+      {
+        if (e.key === 'ArrowLeft')
+        {
+          console.log(e.key);
+          socket.emit('ArrowLeft');
+          arrowLeft = true;
+        }
+      }
+    }
+
+    function stopMovePlat(e: KeyboardEvent)
+    {
+      console.log ("keyup");
       console.log(e.key);
       if (e.key === 'ArrowDown')
+      {
         socket.emit('ArrowDown');
+        arrowDown = false;
+      }
       if (e.key === 'ArrowUp')
+      {
         socket.emit('ArrowUp');
+        arrowUp = false;
+      }
       if (e.key === 'ArrowRight')
+      {
         socket.emit('ArrowRight');
+        arrowRight = false;
+      }
       if (e.key === 'ArrowLeft')
+      {
         socket.emit('ArrowLeft');
+        arrowLeft = false;
+      }
     }
 
     function rubenpong()
@@ -176,6 +204,8 @@ socket.on('pos', (data: any) => {
     setInterval(rubenpong, 1000/fps);
 
     document.addEventListener('keydown', movePlat);
+    document.addEventListener('keyup', stopMovePlat);
+
 
     //start of game define which plat - b / f?
     //update() function in backend

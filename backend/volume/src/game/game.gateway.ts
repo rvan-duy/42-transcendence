@@ -74,7 +74,7 @@ const game = new GameData();
 const ball: {x: number, y: number, speed: number, Xvelocity: number, Yvelocity: number, rad: number} = {
   x: 1000/2,
   y: 600/2,
-  speed: 20,
+  speed: 5,
   Xvelocity: 5,
   Yvelocity: 5,
   rad: 20,
