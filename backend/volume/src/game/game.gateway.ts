@@ -215,15 +215,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // this.games.push(new Games());
     this.gameService = new GameService(this.server);
     this.gameService.createGame(1, 2, GameMode.NORMAL);
+	const fps: number = 60;
+	setInterval(function() {this.gameService.updateGames()}.bind(this), 1000/fps);
+	// setInterval(this.gameService.updateGames, 1000/fps);
     // console.log(this.gameService.updateGames);
+}
 
-  }
-
-  handleConnection(client: Socket) {
+handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
     // await rubenpong();
-    const fps: number = 60;
-    setInterval(this.gameService.updateGames, 1000/fps);
     // client.emit('pos', this.games[0].data);  // magic
     client.emit('init'); // new connection
   }
@@ -251,11 +251,16 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.server.emit('pos', this.currGameState);  // magic
   }
 
-  @SubscribeMessage('keyDown')
+  @SubscribeMessage('ArrowDown')
   handleKeyDown(client: any, payload: any) {
     // console.log('Received payload:', payload);
     // return 'Server says hello!';
     this.gameService.UpdatePlayerInput(1, PaddleInput.DOWN); // magic 
+  }
+
+  @SubscribeMessage('ArrowUp')
+  handleKeyUp(client: any, payload: any) {
+    this.gameService.UpdatePlayerInput(1, PaddleInput.UP); // magic 
   }
   // @SubscribeMessage('start')
   // onStart(client: Socket): void {
