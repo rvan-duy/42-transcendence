@@ -164,7 +164,7 @@ export class GameService {
     let paddle: Paddle;
 
     // check what side of the map the ball is on and which paddle to check collision for
-    if (game.ball.x + ball.radius > MapSize.WIDTH / 2)
+    if (game.ball.x + ball.radius < MapSize.WIDTH / 2)
       paddle = game.players[PlayerDefinitions.PLAYER1].paddle;
     else
       paddle = game.players[PlayerDefinitions.PLAYER2].paddle;
@@ -173,14 +173,18 @@ export class GameService {
     ball.x += ball.xDirection;
     ball.y += ball.yDirection;
 
-    // check if ball hits the top or bottom of the map then invert its direction
+    // check if ball hits the top or bottom of the map then invert it's y direction
     if (ball.y + ball.radius > MapSize.HEIGHT || ball.y - ball.radius < 0)
-      ball.yDirection -= ball.yDirection;
+      ball.yDirection -= ball.yDirection * 2;
 
     if (this.ballPaddleCollision(ball, paddle)) {
       const speed = ball.acceleration * MoveSpeedPerTick.BALL;
       const collisionPoint = ball.y - paddle.y + paddle.height / 2; // gets a point on the paddle that has a value between the paddle's height / 2 and negative paddle's height / 2
+      console.log('Balls collision point:');
+      console.log(collisionPoint);
       const normalizedCollisionPoint = collisionPoint / paddle.height / 2; // sets the entire length of the paddle's collision points to be between -1 and 1
+      console.log('Normalized collision point:');
+      console.log(normalizedCollisionPoint);
       const returnAngle = Math.PI / 4 * normalizedCollisionPoint; // 45 degrees (Pi / 4) times the normalized paddle collision point which is between 1 and -1
       const returnDirection = (ball.x + ball.radius < MapSize.WIDTH / 2) ? 1 : -1;
 
@@ -196,14 +200,45 @@ export class GameService {
       this.scored(game, PlayerDefinitions.PLAYER2);
     else if (ball.x + ball.radius > MapSize.WIDTH)
       this.scored(game, PlayerDefinitions.PLAYER1);
+  
+  if (game.isFinished) // use this for temporary debugging
+    this.resetGame(game);
+  }
+
+  private resetGame(game: GameData) {
+    game.ball.x = MapSize.WIDTH / 2;
+    game.ball.y = MapSize.HEIGHT / 2;
+    game.ball.radius = DefaultElementSize.BALLRADIUS;
+    game.score = [0, 0];
+    game.isFinished = false;
   }
 
   private ballPaddleCollision(ball: Ball, paddle: Paddle) {
-    if (paddle.x + paddle.width >= ball.x - ball.radius && paddle.x <= ball.x + ball.radius &&  // Checks if the ball's x coordinate is within the paddle's coordinate range
-        paddle.y + paddle.height >= ball.y - ball.radius && paddle.y <= ball.y + ball.radius) { // Checks if the ball's y coordinate is within the paddle's coordinate range
-      return (true);
-    }
-    return (false);
+    // temporary variables to set edges for testing
+    let tempX: number = ball.x;
+    let tempY: number = ball.y;
+    
+    // sets the closest edges into the temp variables
+    if (ball.x <= paddle.x)
+      tempX = paddle.x;
+    else
+      tempX = paddle.x + paddle.width;
+
+    if (ball.y <= paddle.y)
+      tempY = paddle.y;
+    else
+      tempY = paddle.y + paddle.height
+
+    // get distance from closest edges
+    let distX: number = ball.x - tempX;
+    let distY: number = ball.y - tempY;
+    let distance: number = Math.sqrt((distX*distX) + (distY*distY));
+  
+    // if the distance is less than or equal to the radius there is a collision
+    if (distance <= ball.radius)
+      return true;
+
+    return false;
   }
 
   private scored(game: GameData, player: PlayerDefinitions) {
@@ -218,7 +253,7 @@ export class GameService {
         game.score[PlayerDefinitions.PLAYER2] === game.pointsToWin)
       game.isFinished = true;
     ball.x = MapSize.WIDTH / 2;
-    ball.y = MapSize.HEIGHT / 2 - DefaultElementSize.PADDLEHEIGHT / 2;
+    ball.y = MapSize.HEIGHT / 2;
     ball.xDirection = (getRandomInt(100) % 2) ? (1.0 * MoveSpeedPerTick.BALL) : (-1.0 * MoveSpeedPerTick.BALL);
     ball.yDirection = 0.0;
     ball.acceleration = 1;

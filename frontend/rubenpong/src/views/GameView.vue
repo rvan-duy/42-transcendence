@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 
 </script>
@@ -19,13 +18,7 @@
 <script lang="ts">
 import io from 'socket.io-client';
 // import CurrentGameState from 'game.service'
-function increaseArraySize(inputArray: Uint8ClampedArray): Uint8ClampedArray {
-  const outputArray = new Uint8ClampedArray(64);
-  for (let i = 0; i < 64; i++) {
-    outputArray[i] = inputArray[i % 4];
-  }
-  return outputArray;
-}
+
 export default {
   mounted() {
     var init: boolean = false;
@@ -36,13 +29,6 @@ export default {
     socket.on('connect_error', (err) => {
       console.log(`connect_error due to ${err.message}`);
     });
- 
-    // class GameData {
-    //   ball: number[] = [500, 300];
-    //   paddle1:  number[] = [0, 275];
-    //   paddle2:  number[] = [980, 275];
-    //   score:    number[] = [0, 0];
-    // }
 
 enum MapSize {
   WIDTH = 1000,
@@ -69,85 +55,52 @@ class CurrentGameState {
 
 socket.on('pos', (data: any) => {
   const datas: CurrentGameState = data;
+
   //draw background
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  //draw plateau player 1
   ctx.fillStyle = 'white';
-  // if (datas.score[1] >= 10 || datas.score[0] >= 10 )
-  // {
-  //   ctx.fillStyle = 'black';
-  //   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  //   ctx.fillStyle = 'white';
-  //   if (datas.score[1] >= 10 )
-  //     ctx.fillText('You won!', canvas.width / 2 - 100, canvas.height / 2);
-  //   if (datas.score[0] >= 10 )
-  //     ctx.fillText('You lost!', canvas.width /  2 - 100, canvas.height / 2);
-  // }
-  //draw plateau other player
-  // else if (datas.score[1] < 10 || datas.score[0] < 10) {
   ctx.fillRect(datas.leftPaddleCoords[0], datas.leftPaddleCoords[1], datas.leftPaddleWidth, datas.leftPaddleHeight);
-  //draw plateau you
+  
+  //draw plateau player 2
   ctx.fillStyle = 'white';
   ctx.fillRect(datas.rightPaddleCoords[0], datas.rightPaddleCoords[1], datas.rightPaddleWidth, datas.rightPaddleHeight);
+  
   //draw ball
   ctx.fillStyle = 'red';
   ctx.beginPath();
   ctx.arc(datas.ballCoords[0], datas.ballCoords[1], datas.ballRadius, 0, Math.PI * 2, false);
   ctx.closePath();
   ctx.fill();
-  //draw text
+  
+  //draw text player 1
   ctx.fillStyle = 'white';
   ctx.font = '50px arial';
-  ctx.fillText('other', canvas.width / 4, canvas.height / 8);
-  //draw text
+  ctx.fillText('Player 1', canvas.width / 4, canvas.height / 8);
+ 
+  //draw text score player 1
   ctx.fillStyle = 'white';
   ctx.font = '50px arial';
   ctx.fillText(datas.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
-  //draw text
+  
+  //draw text player 2
   ctx.fillStyle = 'white';
   ctx.font = '50px arial';
-  ctx.fillText('you', canvas.width / 4 * 3 - 100, canvas.height / 8);
-  //draw text
+  ctx.fillText('Player 2', canvas.width / 4 * 3 - 100, canvas.height / 8);
+  
+  //draw text score player 2
   ctx.fillStyle = 'white';
   ctx.font = '50px arial';
   ctx.fillText(datas.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
+  
   //draw net
   for(let i = 0; i <= canvas.height; i+=15){
     ctx.fillStyle = 'white';
     ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
   }
-  // }
 });
-
-// function render()
-// {
-//   socket.emit('pos');
-// }
-
-const ball: {x: number, y: number, speed: number, Xvelocity: number, Yvelocity: number, rad: number} = {
-  x: canvas.width/2,
-  y: canvas.height/2,
-  speed: 5,
-  Xvelocity: 5,
-  Yvelocity: 5,
-  rad: 20,
-};
-
-const plat: {x: number, y: number, height: number, width: number, score:number} = {
-  x: canvas.width - DefaultElementSize.PADDLEWIDTH,
-  y: canvas.height / 2 - DefaultElementSize.PADDLEHEIGHT / 2,
-  height: 100,
-  width: 20,
-  score: 0
-};
-
-const other: {x: number, y: number, height: number, width: number, score:number} = {
-  x: 0,
-  y : canvas.height / 2 - DefaultElementSize.PADDLEHEIGHT / 2,
-  height: 100,
-  width: 20,
-  score: 0
-};
 
 var arrowUp: Boolean = false;
 var arrowDown: Boolean = false;
@@ -219,13 +172,6 @@ function stopMovePlat(e: KeyboardEvent)
     arrowLeft = false;
   }
 }
-
-// function rubenpong()
-// {
-//   render();
-// }
-const fps: number = 60;
-// setInterval(rubenpong, 1000/fps);
 
 document.addEventListener('keydown', movePlat);
 document.addEventListener('keyup', stopMovePlat);
