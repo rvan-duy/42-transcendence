@@ -43,19 +43,30 @@ export default {
     //   paddle2:  number[] = [980, 275];
     //   score:    number[] = [0, 0];
     // }
-  class CurrentGameState {
-  constructor (score: number[], leftPaddleCoords: number[], rightPaddleCoords: number[], ballCoords: number[]) {
-    this.score = score;
-    this.leftPaddleCoords = leftPaddleCoords;
-    this.rightPaddleCoords = rightPaddleCoords;
-    this.ballCoords = ballCoords;
-  }
 
-  score:number[] = [0, 0];
-  leftPaddleCoords: number[] = [0, canvas.height / 2];
-  rightPaddleCoords: number[] = [canvas.width, canvas.height / 2];
-  ballCoords: number[] = [canvas.width / 2, canvas.height / 2];
+enum MapSize {
+  WIDTH = 1000,
+  HEIGHT = 600,
 }
+
+enum DefaultElementSize {
+  PADDLEWIDTH = 20,
+  PADDLEHEIGHT = 100,
+  BALLRADIUS = 20,
+}
+
+class CurrentGameState {
+  score:number[] = [0, 0];
+  leftPaddleCoords: number[] = [0, MapSize.HEIGHT / 2];
+  leftPaddleHeight: number = DefaultElementSize.PADDLEHEIGHT;
+  leftPaddleWidth: number = DefaultElementSize.PADDLEWIDTH;
+  rightPaddleCoords: number[] = [MapSize.WIDTH, MapSize.HEIGHT / 2];
+  rightPaddleHeight: number = DefaultElementSize.PADDLEHEIGHT;
+  rightPaddleWidth: number = DefaultElementSize.PADDLEWIDTH;
+  ballCoords: number[] = [MapSize.WIDTH / 2, MapSize.HEIGHT / 2];
+  ballRadius: number = DefaultElementSize.BALLRADIUS;
+}
+
 socket.on('pos', (data: any) => {
         const datas: CurrentGameState = data;
         //draw background
@@ -74,14 +85,14 @@ socket.on('pos', (data: any) => {
         // }
         //draw plateau other player
         // else if (datas.score[1] < 10 || datas.score[0] < 10) {
-          ctx.fillRect(datas.leftPaddleCoords[0], datas.leftPaddleCoords[1], other.width, other.height);
+          ctx.fillRect(datas.leftPaddleCoords[0], datas.leftPaddleCoords[1], datas.leftPaddleWidth, datas.leftPaddleHeight);
           //draw plateau you
           ctx.fillStyle = 'white';
-          ctx.fillRect(datas.rightPaddleCoords[0], datas.rightPaddleCoords[1], plat.width, plat.height);
+          ctx.fillRect(datas.rightPaddleCoords[0], datas.rightPaddleCoords[1], datas.rightPaddleWidth, datas.rightPaddleHeight);
           //draw ball
           ctx.fillStyle = 'red';
           ctx.beginPath();
-          ctx.arc(datas.ballCoords[0], datas.ballCoords[1],ball.rad,0,Math.PI*2,false);
+          ctx.arc(datas.ballCoords[0], datas.ballCoords[1], datas.ballRadius, 0, Math.PI * 2, false);
           ctx.closePath();
           ctx.fill();
           //draw text
@@ -107,10 +118,11 @@ socket.on('pos', (data: any) => {
           }
         // }
       });
-    function render()
-    {
-      socket.emit('pos');
-    }
+
+    // function render()
+    // {
+    //   socket.emit('pos');
+    // }
 
     const ball: {x: number, y: number, speed: number, Xvelocity: number, Yvelocity: number, rad: number} = {
       x: canvas.width/2,
@@ -122,18 +134,18 @@ socket.on('pos', (data: any) => {
     };
 
     const plat: {x: number, y: number, height: number, width: number, score:number} = {
-      x: canvas.width - 20,
-      y: canvas.height / 2 - 25,
+      x: canvas.width - DefaultElementSize.PADDLEWIDTH,
+      y: canvas.height / 2 - DefaultElementSize.PADDLEHEIGHT / 2,
       height: 100,
       width: 20,
       score: 0
     };
 
     const other: {x: number, y: number, height: number, width: number, score:number} = {
-      x: 0,
-      y : canvas.height / 2 - 25,
-      height: 100,
-      width: 20,
+		x: 0,
+		y : canvas.height / 2 - DefaultElementSize.PADDLEHEIGHT / 2,
+		height: 100,
+		width: 20,
       score: 0
     };
 
