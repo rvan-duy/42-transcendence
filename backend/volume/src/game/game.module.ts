@@ -8,7 +8,7 @@ import { GameGateway } from './game.gateway';
 @Module({
   imports: [PrismaClient],
   controllers: [GameController],
-  providers: [PrismaGameService, PrismaService, GameGateway],
+  providers: [PrismaGameService, PrismaService, GameController, GameGateway],
   exports: [GameController],
 })
 export class GameModule {}

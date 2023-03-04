@@ -27,27 +27,34 @@ enum MapSize {
 
 enum MoveSpeedPerTick {
   PADDLE = 2,
-  BALL = 5,
+  BALL = 3,
+}
+
+enum DefaultElementSize {
+  PADDLEWIDTH = 20,
+  PADDLEHEIGHT = 100,
+  BALLRADIUS = 20,
 }
 
 class Paddle {
   x: number = 0;
   y: number = 0;
-  width: number = 20;
-  height: number = 100;
+  width: number = DefaultElementSize.PADDLEWIDTH;
+  height: number = DefaultElementSize.PADDLEHEIGHT;
   acceleration: number = 1;
 }
 
 class Player {
   constructor(id: number, side: PlayerDefinitions) {
+    this.paddle = new Paddle;
     this.userId = id;
     if (side === PlayerDefinitions.PLAYER1) {
       this.paddle.x = 0;
-      this.paddle.y = MapSize.HEIGHT / 2;
+      this.paddle.y = MapSize.HEIGHT / 2 - DefaultElementSize.PADDLEHEIGHT / 2;
     }
     else {
-      this.paddle.x = MapSize.WIDTH;
-      this.paddle.y = MapSize.HEIGHT / 2;
+      this.paddle.x = MapSize.WIDTH - DefaultElementSize.PADDLEWIDTH;
+      this.paddle.y = MapSize.HEIGHT / 2 - DefaultElementSize.PADDLEHEIGHT / 2;
     }
   }
 
@@ -62,7 +69,7 @@ class Player {
 class Ball {
   x: number = MapSize.WIDTH / 2;
   y: number = MapSize.HEIGHT / 2;
-  xDirection: number = (getRandomInt(10) % 2) ? 1.0 : -1.0;
+  xDirection: number = (getRandomInt(10) % 2) ? (1.0 * MoveSpeedPerTick.BALL) : (-1.0 * MoveSpeedPerTick.BALL);
   yDirection: number = 0;
   acceleration: number = 1;
   radius: number = 20;
@@ -70,8 +77,8 @@ class Ball {
 
 class GameData {
   gameID: number;
-  players: Player[] = null;
-  spectators: number[] = null;
+  players: Player[] = [];
+  spectators: number[] = [];
   mapSize: number[] = [MapSize.WIDTH, MapSize.HEIGHT];
   mode: GameMode = GameMode.NORMAL;
   score: number[] = [0, 0];
@@ -82,32 +89,48 @@ class GameData {
 }
 
 export class CurrentGameState {
-  constructor (score: number[], leftPaddleCoords: number[], rightPaddleCoords: number[], ballCoords: number[]) {
+  constructor (score: number[],
+    leftPaddleCoords: number[], leftPaddleHeight: number, leftPaddleWidth: number,
+    rightPaddleCoords: number[], rightPaddleHeight:number, rightPaddleWidth: number,
+    ballCoords: number[],
+    ballRadius: number) {
     this.score = score;
     this.leftPaddleCoords = leftPaddleCoords;
+    this.leftPaddleHeight = leftPaddleHeight;
+    this.leftPaddleWidth = leftPaddleWidth;
     this.rightPaddleCoords = rightPaddleCoords;
+    this.rightPaddleHeight = rightPaddleHeight;
+    this.rightPaddleWidth = rightPaddleWidth;
     this.ballCoords = ballCoords;
+    this.ballRadius = ballRadius;
   }
 
-  score:number[] = null;
+  score:number[] = [0, 0];
   leftPaddleCoords: number[] = [0, MapSize.HEIGHT / 2];
+  leftPaddleHeight: number = DefaultElementSize.PADDLEHEIGHT;
+  leftPaddleWidth: number = DefaultElementSize.PADDLEWIDTH;
   rightPaddleCoords: number[] = [MapSize.WIDTH, MapSize.HEIGHT / 2];
-  ballCoords: number[] = null;
+  rightPaddleHeight: number = DefaultElementSize.PADDLEHEIGHT;
+  rightPaddleWidth: number = DefaultElementSize.PADDLEWIDTH;
+  ballCoords: number[] = [MapSize.WIDTH / 2, MapSize.HEIGHT / 2];
+  ballRadius: number = DefaultElementSize.BALLRADIUS;
 }
 
 export class GameService {
-  private games: GameData[] = null;
+  private games: GameData[] = [];
   private gamesPlayed: number = 0;
   private prismaGameService: PrismaGameService;
   private server: Server;
 
   constructor(server: Server) {
-	this.server = server;
+  this.server = server;
   }
 
+  private i: number = 0;
   updateGames() {
-    if (this.games.length === 0)
+    if (this.games === undefined ||  this.games.length === 0) {
       return;
+    }
 
     for (let index = 0; index < this.games.length; index++) {
       this.updatePaddles(this.games[index]);
@@ -195,8 +218,8 @@ export class GameService {
         game.score[PlayerDefinitions.PLAYER2] === game.pointsToWin)
       game.isFinished = true;
     ball.x = MapSize.WIDTH / 2;
-    ball.y = MapSize.HEIGHT / 2;
-    ball.xDirection = (getRandomInt(100) % 2) ? 1.0 : -1.0;
+    ball.y = MapSize.HEIGHT / 2 - DefaultElementSize.PADDLEHEIGHT / 2;
+    ball.xDirection = (getRandomInt(100) % 2) ? (1.0 * MoveSpeedPerTick.BALL) : (-1.0 * MoveSpeedPerTick.BALL);
     ball.yDirection = 0.0;
     ball.acceleration = 1;
   }
@@ -207,9 +230,15 @@ export class GameService {
     newGame.gameID = this.gamesPlayed;
     newGame.players.push(new Player(player1, PlayerDefinitions.PLAYER1));
     newGame.players.push(new Player(player2, PlayerDefinitions.PLAYER2));
+    newGame.ball = new Ball();
     newGame.mode = mode;
     this.games.push(newGame);
     this.gamesPlayed++;
+  }
+
+  logGames() {
+    console.log("\n\nLogging games:");
+    console.log(this.games);
   }
 
   private removeFinishedGames() {
@@ -255,8 +284,9 @@ export class GameService {
       if (this.games[index].gameID === gameID) {
         const indexOfSpectator = this.games[index].spectators.indexOf(spectator);
 
-		if (indexOfSpectator === -1)
-			return;
+        if (indexOfSpectator === -1)
+          return;
+
         this.games[index].spectators.splice(indexOfSpectator, 1);
         return;
       }
@@ -264,12 +294,16 @@ export class GameService {
   }
 
   private sendGameInfo(game: GameData) {
+    const player1 = game.players[PlayerDefinitions.PLAYER1];
+    const player2 = game.players[PlayerDefinitions.PLAYER2];
     const toSend = new CurrentGameState(game.score,
-      [game.players[PlayerDefinitions.PLAYER1].paddle.x, game.players[PlayerDefinitions.PLAYER1].paddle.y],
-      [game.players[PlayerDefinitions.PLAYER2].paddle.x, game.players[PlayerDefinitions.PLAYER2].paddle.y],
-      [game.ball.x, game.ball.y]);
-    // send current game state back through socket
-	this.server.emit('/game', toSend);
+      [player1.paddle.x, player1.paddle.y], player1.paddle.height, player1.paddle.width,
+      [player2.paddle.x, player2.paddle.y], player2.paddle.height, player2.paddle.width,
+      [game.ball.x, game.ball.y], game.ball.radius);
+
+      // send current game state back through socket
+      this.server.emit('pos', toSend);
+      // console.log(toSend);
   }
 
   UpdatePlayerInput(playerId: number, input: PaddleInput) {
