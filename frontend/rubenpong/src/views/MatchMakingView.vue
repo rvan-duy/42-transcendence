@@ -5,9 +5,10 @@
 <template>
   <div class="item content-center">
     <div class="">
-      <h1 className="text-3xl font-bold underline"> wanna match? ;)</h1>
-  </div>
-
+      <h1 className="text-3xl font-bold underline">
+        wanna match? ;)
+      </h1>
+    </div>
   </div>
 </template>
 

@@ -1,5 +1,5 @@
 import { PrismaGameService } from './prisma/prismaGame.service';
-import { Socket, Server } from 'socket.io';
+import { Server } from 'socket.io';
 
 export enum GameMode {
   NORMAL = 'ModeNormal',
@@ -123,12 +123,12 @@ export class GameService {
   private server: Server;
 
   constructor(server: Server) {
-  this.server = server;
+    this.server = server;
   }
 
   private i: number = 0;
   updateGames() {
-    if (this.games === undefined ||  this.games.length === 0) {
+    if (this.games === undefined || this.games.length === 0) {
       return;
     }
 
@@ -237,7 +237,7 @@ export class GameService {
   }
 
   logGames() {
-    console.log("\n\nLogging games:");
+    console.log('\n\nLogging games:');
     console.log(this.games);
   }
 
@@ -301,9 +301,9 @@ export class GameService {
       [player2.paddle.x, player2.paddle.y], player2.paddle.height, player2.paddle.width,
       [game.ball.x, game.ball.y], game.ball.radius);
 
-      // send current game state back through socket
-      this.server.emit('pos', toSend);
-      // console.log(toSend);
+    // send current game state back through socket
+    this.server.emit('pos', toSend);
+    // console.log(toSend);
   }
 
   UpdatePlayerInput(playerId: number, input: PaddleInput) {

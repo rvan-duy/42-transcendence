@@ -1,5 +1,5 @@
-import { GameService } from "./game.service";
-import { GameMode } from "./game.service";
+import { GameService } from './game.service';
+import { GameMode } from './game.service';
 
 class QueuedUser {
   constructor (mode: GameMode, userId: number) {
