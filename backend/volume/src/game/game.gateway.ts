@@ -262,6 +262,18 @@ handleConnection(client: Socket) {
   handleKeyUp(client: any, payload: any) {
     this.gameService.UpdatePlayerInput(1, PaddleInput.UP); // magic 
   }
+
+  @SubscribeMessage('ArrowRight')
+  handleKeyRight(client: any, payload: any) {
+    // console.log('Received payload:', payload);
+    // return 'Server says hello!';
+    this.gameService.UpdatePlayerInput(1, PaddleInput.RIGHT); // magic 
+  }
+
+  @SubscribeMessage('ArrowLeft')
+  handleKeyLeft(client: any, payload: any) {
+    this.gameService.UpdatePlayerInput(1, PaddleInput.LEFT); // magic 
+  }
   // @SubscribeMessage('start')
   // onStart(client: Socket): void {
   //   try {

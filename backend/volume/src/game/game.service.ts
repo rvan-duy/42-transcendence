@@ -150,12 +150,20 @@ export class GameService {
         player.paddle.y -= paddleMovement;
       if (player.moveDown)
         player.paddle.y += paddleMovement;
+      if (player.moveLeft)
+        player.paddle.x -= paddleMovement;
+      if (player.moveRight)
+        player.paddle.x += paddleMovement;
 
       // Check if paddle goes out of bounds
       if (player.paddle.y < 0)
         player.paddle.y = 0;
       else if (player.paddle.y + player.paddle.height > MapSize.HEIGHT)
         player.paddle.y = MapSize.HEIGHT - player.paddle.height;
+      else if (player.paddle.x < 0)
+        player.paddle.x = 0;
+      else if (player.paddle.x + player.paddle.width > MapSize.WIDTH)
+        player.paddle.x = MapSize.WIDTH - player.paddle.width;
     }
   }
 
@@ -339,7 +347,7 @@ export class GameService {
     this.server.emit('pos', toSend);
     // console.log(toSend);
   }
-
+  
   UpdatePlayerInput(playerId: number, input: PaddleInput) {
     for (let index = 0; index < this.games.length; index++) { // make this faster, store all players inside an array?
       const games = this.games[index];
