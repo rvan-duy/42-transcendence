@@ -52,45 +52,57 @@ socket.on('pos', (data: any) => {
   //draw background
   ctx.fillStyle = 'black';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  //draw plateau player 1
-  ctx.fillStyle = 'white';
-  ctx.fillRect(datas.leftPaddleCoords[0], datas.leftPaddleCoords[1], datas.leftPaddleWidth, datas.leftPaddleHeight);
-  
-  //draw plateau player 2
-  ctx.fillStyle = 'white';
-  ctx.fillRect(datas.rightPaddleCoords[0], datas.rightPaddleCoords[1], datas.rightPaddleWidth, datas.rightPaddleHeight);
-  
-  //draw ball
-  ctx.fillStyle = 'red';
-  ctx.beginPath();
-  ctx.arc(datas.ballCoords[0], datas.ballCoords[1], datas.ballRadius, 0, Math.PI * 2, false);
-  ctx.closePath();
-  ctx.fill();
-  
-  //draw text player 1
-  ctx.fillStyle = 'white';
-  ctx.font = '50px arial';
-  ctx.fillText('Player 1', canvas.width / 4, canvas.height / 8);
- 
-  //draw text score player 1
-  ctx.fillStyle = 'white';
-  ctx.font = '50px arial';
-  ctx.fillText(datas.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
-  
-  //draw text player 2
-  ctx.fillStyle = 'white';
-  ctx.font = '50px arial';
-  ctx.fillText('Player 2', canvas.width / 4 * 3 - 100, canvas.height / 8);
-  
-  //draw text score player 2
-  ctx.fillStyle = 'white';
-  ctx.font = '50px arial';
-  ctx.fillText(datas.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
-  
-  //draw net
-  for(let i = 0; i <= canvas.height; i+=15){
+  if (datas.score[1] >= 5 || datas.score[0] >= 5 )
+  {
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = 'white';
-    ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
+    if (datas.score[1] >= 5 )
+      ctx.fillText('You lost!', canvas.width / 2 - 100, canvas.height / 2);
+    if (datas.score[0] >= 5 )
+      ctx.fillText('You won!', canvas.width /  2 - 100, canvas.height / 2);
+  }
+  else {
+    //draw plateau player 1
+    ctx.fillStyle = 'white';
+    ctx.fillRect(datas.leftPaddleCoords[0], datas.leftPaddleCoords[1], datas.leftPaddleWidth, datas.leftPaddleHeight);
+    
+    //draw plateau player 2
+    ctx.fillStyle = 'white';
+    ctx.fillRect(datas.rightPaddleCoords[0], datas.rightPaddleCoords[1], datas.rightPaddleWidth, datas.rightPaddleHeight);
+    
+    //draw ball
+    ctx.fillStyle = 'red';
+    ctx.beginPath();
+    ctx.arc(datas.ballCoords[0], datas.ballCoords[1], datas.ballRadius, 0, Math.PI * 2, false);
+    ctx.closePath();
+    ctx.fill();
+    
+    //draw text player 1
+    ctx.fillStyle = 'white';
+    ctx.font = '50px arial';
+    ctx.fillText('Player 1', canvas.width / 4, canvas.height / 8);
+  
+    //draw text score player 1
+    ctx.fillStyle = 'white';
+    ctx.font = '50px arial';
+    ctx.fillText(datas.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
+    
+    //draw text player 2
+    ctx.fillStyle = 'white';
+    ctx.font = '50px arial';
+    ctx.fillText('Player 2', canvas.width / 4 * 3 - 100, canvas.height / 8);
+    
+    //draw text score player 2
+    ctx.fillStyle = 'white';
+    ctx.font = '50px arial';
+    ctx.fillText(datas.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
+    
+    //draw net
+    for(let i = 0; i <= canvas.height; i+=15){
+      ctx.fillStyle = 'white';
+      ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
+    }
   }
 });
 var arrowUp: Boolean = false;
