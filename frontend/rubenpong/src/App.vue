@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router';
-import HelloWorld from './components/HelloWorld.vue';
+
 </script>
 
 <template>
@@ -41,6 +40,17 @@ import HelloWorld from './components/HelloWorld.vue';
 
   <RouterView />
 </template>
+<script lang="ts">
+import { RouterLink, RouterView } from 'vue-router';
+import HelloWorld from './components/HelloWorld.vue';
+import { defineComponent } from 'vue';
+
+export default defineComponent({
+  components:{
+    HelloWorld
+  }
+})
+</script>
 
 <style scoped>
 header {
