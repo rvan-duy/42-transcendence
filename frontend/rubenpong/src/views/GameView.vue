@@ -84,10 +84,12 @@ socket.on('pos', (data: any) => {
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       ctx.fillStyle = 'white';
+      ctx.font = '50px arial';
       if (datas.score[1] >= 5 )
         ctx.fillText('You lost!', canvas.width / 2 - 100, canvas.height / 2);
       if (datas.score[0] >= 5 )
         ctx.fillText('You won!', canvas.width /  2 - 100, canvas.height / 2);
+      return ;
     }
     else {
       //draw plateau player 1
