@@ -209,12 +209,12 @@ socket.on('pos', (data: any) => {
       }
     }
 
-    // function rubenpong()
-    // {
-    //   render();
-    // }
+    function rubenpong()
+    {
+      render();
+    }
     const fps: number = 60;
-    // setInterval(rubenpong, 1000/fps);
+    setInterval(rubenpong, 1000/fps);
 
     document.addEventListener('keydown', movePlat);
     document.addEventListener('keyup', stopMovePlat);
