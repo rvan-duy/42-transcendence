@@ -73,18 +73,18 @@ socket.on('pos', (data: any) => {
         ctx.fillStyle = 'black';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = 'white';
-        // if (datas.score[1] >= 10 || datas.score[0] >= 10 )
-        // {
-        //   ctx.fillStyle = 'black';
-        //   ctx.fillRect(0, 0, canvas.width, canvas.height);
-        //   ctx.fillStyle = 'white';
-        //   if (datas.score[1] >= 10 )
-        //     ctx.fillText('You won!', canvas.width / 2 - 100, canvas.height / 2);
-        //   if (datas.score[0] >= 10 )
-        //     ctx.fillText('You lost!', canvas.width /  2 - 100, canvas.height / 2);
-        // }
+        if (datas.score[1] >= 10 || datas.score[0] >= 10 )
+        {
+          ctx.fillStyle = 'black';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = 'white';
+          if (datas.score[1] >= 10 )
+            ctx.fillText('You won!', canvas.width / 2 - 100, canvas.height / 2);
+          if (datas.score[0] >= 10 )
+            ctx.fillText('You lost!', canvas.width /  2 - 100, canvas.height / 2);
+        }
         //draw plateau other player
-        // else if (datas.score[1] < 10 || datas.score[0] < 10) {
+        else if (datas.score[1] < 10 || datas.score[0] < 10) {
           ctx.fillRect(datas.leftPaddleCoords[0], datas.leftPaddleCoords[1], datas.leftPaddleWidth, datas.leftPaddleHeight);
           //draw plateau you
           ctx.fillStyle = 'white';
@@ -116,7 +116,7 @@ socket.on('pos', (data: any) => {
             ctx.fillStyle = 'white';
             ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
           }
-        // }
+        }
       });
 
     // function render()
@@ -221,12 +221,12 @@ socket.on('pos', (data: any) => {
       }
     }
 
-    function rubenpong()
-    {
-      render();
-    }
-    const fps: number = 60;
-    setInterval(rubenpong, 1000/fps);
+    // function rubenpong()
+    // {
+    //   render();
+    // }
+    // const fps: number = 60;
+    // setInterval(rubenpong, 1000/fps);
 
     document.addEventListener('keydown', movePlat);
     document.addEventListener('keyup', stopMovePlat);
