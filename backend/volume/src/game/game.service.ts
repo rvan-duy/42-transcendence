@@ -179,12 +179,8 @@ export class GameService {
 
     if (this.ballPaddleCollision(ball, paddle)) {
       const speed = ball.acceleration * MoveSpeedPerTick.BALL;
-      const collisionPoint = ball.y - paddle.y + paddle.height / 2; // gets a point on the paddle that has a value between the paddle's height / 2 and negative paddle's height / 2
-      console.log('Balls collision point:');
-      console.log(collisionPoint);
+      const collisionPoint = ball.y - (paddle.y + paddle.height / 2); // gets a point on the paddle that has a value between the paddle's height / 2 and negative paddle's height / 2
       const normalizedCollisionPoint = collisionPoint / paddle.height / 2; // sets the entire length of the paddle's collision points to be between -1 and 1
-      console.log('Normalized collision point:');
-      console.log(normalizedCollisionPoint);
       const returnAngle = Math.PI / 4 * normalizedCollisionPoint; // 45 degrees (Pi / 4) times the normalized paddle collision point which is between 1 and -1
       const returnDirection = (ball.x + ball.radius < MapSize.WIDTH / 2) ? 1 : -1;
 
