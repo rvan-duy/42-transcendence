@@ -219,25 +219,26 @@ export class GameService {
     let tempY: number = ball.y;
     
     // sets the closest edges into the temp variables
+	// compare to left or right edges
     if (ball.x <= paddle.x)
       tempX = paddle.x;
-    else
+    else if (ball.x > paddle.x + paddle.width)
       tempX = paddle.x + paddle.width;
 
+	// compare to top or bottom edge
     if (ball.y <= paddle.y)
       tempY = paddle.y;
-    else
-      tempY = paddle.y + paddle.height
+    else if (ball.y > paddle.y + paddle.height)
+      tempY = paddle.y + paddle.height;
 
     // get distance from closest edges
     let distX: number = ball.x - tempX;
     let distY: number = ball.y - tempY;
-    let distance: number = Math.sqrt((distX*distX) + (distY*distY));
+    let distance: number = Math.sqrt((distX * distX) + (distY * distY));
   
     // if the distance is less than or equal to the radius there is a collision
     if (distance <= ball.radius)
       return true;
-
     return false;
   }
 
