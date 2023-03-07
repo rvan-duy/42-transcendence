@@ -197,8 +197,8 @@ export class GameService {
     else if (ball.x + ball.radius > MapSize.WIDTH)
       this.scored(game, PlayerDefinitions.PLAYER1);
   
-  if (game.isFinished) // use this for temporary debugging
-    this.resetGame(game);
+    if (game.isFinished) // use this for temporary debugging
+      this.resetGame(game);
   }
 
   private resetGame(game: GameData) {
@@ -215,22 +215,22 @@ export class GameService {
     let tempY: number = ball.y;
     
     // sets the closest edges into the temp variables
-	// compare to left or right edges
+    // compare to left or right edges
     if (ball.x <= paddle.x)
       tempX = paddle.x;
     else if (ball.x > paddle.x + paddle.width)
       tempX = paddle.x + paddle.width;
 
-	// compare to top or bottom edge
+    // compare to top or bottom edge
     if (ball.y <= paddle.y)
       tempY = paddle.y;
     else if (ball.y > paddle.y + paddle.height)
       tempY = paddle.y + paddle.height;
 
     // get distance from closest edges
-    let distX: number = ball.x - tempX;
-    let distY: number = ball.y - tempY;
-    let distance: number = Math.sqrt((distX * distX) + (distY * distY));
+    const distX: number = ball.x - tempX;
+    const distY: number = ball.y - tempY;
+    const distance: number = Math.sqrt((distX * distX) + (distY * distY));
   
     // if the distance is less than or equal to the radius there is a collision
     if (distance <= ball.radius)
