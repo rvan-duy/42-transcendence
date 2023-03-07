@@ -31,7 +31,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   afterInit(server: Server) {
     this.server = server;
     this.gameService = new GameService(this.server);
-    this.gameService.createGame(1, 2, GameMode.NORMAL);
+    this.gameService.createGame(1, 2, GameMode.FREEMOVE);
     const fps: number = 60;
     setInterval(function() {this.gameService.updateGames();}.bind(this), 1000/fps);
   }
