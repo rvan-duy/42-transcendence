@@ -8,18 +8,17 @@ import LoginButton from '@/components/buttons/LoginButton.vue';
 function onclickMeow(){
   const about_text_element = document.getElementById('about_text');
 
-  if (about_text_element.innerHTML === 'cat')
+  if (about_text_element.innerHTML !== 'dog')
     about_text_element.innerHTML = 'dog';
   else
   {
     console.log('Fetching...');
-    fetch('http://localhost:3000/cat') // TODO this now generates a CORS error ever since we turned CORS off lmaofml.
+    fetch('http://localhost:3000/user/me')
       .then(function(res){
-        // console.log(res);
-        return res.text();
+        return res.json();
       })
       .then(function(data){
-        about_text_element.innerHTML = data;
+        about_text_element.innerHTML = data.name;
         console.log(data);
       });
   }
