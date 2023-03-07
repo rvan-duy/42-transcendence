@@ -18,6 +18,12 @@ export class UserController {
     return this.userService.user({ id: Number(id) });
   }
 
+  @Get('me')
+  async getMe(): Promise<UserModel> {
+    return this.userService.user({id: 1});  // magic
+    // return this.userService.user({ id: Number(id) }); // myself
+  }
+
   @Get('all')
   async getUsers(): Promise<UserModel[]> {
     return this.userService.users({});

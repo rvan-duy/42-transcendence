@@ -6,12 +6,20 @@
 # @rvan-duy
 /.github/ @rvan-duy
 /frontend/rubenpong/.eslintrc.cjs @rvan-duy
-/backend/volume/src/auth/ @rvan-duy
 
 # @LJmartin94
 /docs/ @LJmartin94
 
 # @Obult
-/backend/ @Obult
 Dockerfile @Obult
 /docker-compose.yml @Obult
+
+# Backend
+/backend/volume/src/chat @LJmartin94
+/backend/volume/src/auth @rvan-duy
+/backend/volume/src/room @Obult
+/backend/volume/src/user @Obult
+/backend/volume/src/msg @Obult
+/backend/volume/src/prisma @Obult
+/backend/volume/src/game @rvan-mee
+/backend/volume/* @Obult
