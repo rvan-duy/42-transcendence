@@ -6,29 +6,25 @@ import SocketioService from '../services/socketio.service.js';
 <script lang="ts">
 const connection = SocketioService;
 
-var username = getUsername();
+var username;
 
-function getUsername(){
+async function getUsername(){
   if (typeof username !== 'undefined'){
     console.log('Username already fetched');
     return username;
   }
   else{
     console.log('Fetching username');
-    fetch('http://localhost:3000/user/me', {mode: 'cors'})
-      .then(function(res){
-        // console.log(res);
-        return res.json();
-        // return res.text();
-      })
-      .then(function(data){
-        // console.log(data);
+    await fetch('http://localhost:3000/user/me', {mode: 'cors'})
+      .then(async function(res)
+      {
+        var data = await res.json();
         username = data.name;
-        // console.log(username);
-        return username;
       })
       .catch(error => console.log('Failed to fetch user : ' + error.message));
   }
+  //   console.log(`Username returned by getUsername: ${username}`);
+  return username;
 }
 
 connection.setupSocketConnection('/chat');
@@ -40,10 +36,10 @@ connection.socket.on('msgToClient', (msg) => {
 
 // const chatForm = document.getElementById('chat-form');
 
-function chatFormSubmit(e){
+async function chatFormSubmit(e){
   const msg = e.target.elements.msg;
   const packet = {username: getUsername(), msg: (msg.value)};
-  packet.username = getUsername();
+  packet.username = await getUsername();
   console.log(packet.username);
   console.log(packet);
   connection.socket.emit('msgToServer', packet);
