@@ -20,7 +20,7 @@
           id="pixels"
           width="1000"
           height="600"
-          style="border:1px solid #CCCCCC;"
+          style="border:0px solid #CCCCCC;"
         />
       </div>
       </div>
@@ -86,10 +86,15 @@ socket.on('pos', (data: any) => {
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
       if (datas.score[1] >= 5 )
+      {
         ctx.fillText('You lost!', canvas.width / 2 - 100, canvas.height / 2);
+        return ;
+      }
       if (datas.score[0] >= 5 )
+      {
         ctx.fillText('You won!', canvas.width /  2 - 100, canvas.height / 2);
-      return ;
+        return ;
+      }
     }
     else {
       //draw plateau player 1
