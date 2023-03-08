@@ -48,25 +48,30 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('pos')
   handlePos(client: any, payload: any) {
     this.server.emit('pos', this.currGameState);  // magic
+    console.warn(`client ${client} and payload ${payload} unused`);
   }
 
   @SubscribeMessage('ArrowDown')
   handleKeyDown(client: any, payload: any) {
     this.gameService.UpdatePlayerInput(1, PaddleInput.DOWN); // magic
+    console.warn(`client ${client} and payload ${payload} unused`);
   }
 
   @SubscribeMessage('ArrowUp')
   handleKeyUp(client: any, payload: any) {
     this.gameService.UpdatePlayerInput(1, PaddleInput.UP); // magic
+    console.warn(`client ${client} and payload ${payload} unused`);
   }
 
   @SubscribeMessage('ArrowLeft')
   handleKeyLeft(client: any, payload: any) {
     this.gameService.UpdatePlayerInput(1, PaddleInput.LEFT); // magic
+    console.warn(`client ${client} and payload ${payload} unused`);
   }
   @SubscribeMessage('ArrowRight')
   handleKeyRight(client: any, payload: any) {
     this.gameService.UpdatePlayerInput(1, PaddleInput.RIGHT); // magic
+    console.warn(`client ${client} and payload ${payload} unused`);
   }
 
 }
