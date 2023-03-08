@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vue-router';
+import { createRouter, createWebHistory } from 'vue-router';
 import { auth } from './auth';
 import privateRoutes from './private';
 import LoginView from '@/views/LogInView.vue';
