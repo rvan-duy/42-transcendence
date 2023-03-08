@@ -1,25 +1,14 @@
-import { createRouter, createWebHistory } from 'vue-router';
+import { createRouter, createWebHistory, type RouteLocationNormalized } from 'vue-router';
+import { auth } from './auth';
 import privateRoutes from './private';
 import LoginView from '@/views/LogInView.vue';
-
-/*
- * TODO's:
- * 1. Add a beforeEnter hook to routes that require authentication
- *  - import { checkAuth } from '@/auth';
- *  - import HomeView from '@/views/HomeView.vue';
- *  - beforeEnter: checkAuth
- */
+import HomeView from '@/views/HomeView.vue';
 
 // usefull link: https://itnext.io/vue-router-99e334094362
 
 /*
  * This is the router for the application, it is used to navigate between
  * different views.
- *
- * Important note: you are forced to login before you can access any other
- * route. This is done by adding a beforeEnter hook to the routes that require
- * authentication. This hook checks if the user is authenticated, if not the
- * user is redirected to the login page.
  */
 const router = createRouter({
   history: createWebHistory(),
@@ -32,16 +21,38 @@ const router = createRouter({
         public: true,
         loginPage: true // probaly needed, or not idk we'll see
       },
+    },
+    {
+      path: '/',
+      name: 'home',
+      component: HomeView,
+      meta: {
+        public: true,
+        loginPage: false
+      }
     }
   ].concat(privateRoutes), // private routes are in a separate file for readability
 });
 
+/*
+ * This hook is called before each route is navigated to.
+ */
 router.beforeEach((to, from, next) => {
-  // user is not logged in and is trying to access a private route
-  // user is not logged in and is trying to access a login route
-  // user is logged in and is trying to access a public route
-  // user is logged in and is trying to access a private route
-  next();
+  const userIsLoggedIn: boolean = auth.isLoggedIn();
+  const pageIsPublic: boolean = to.meta.public as boolean;
+  const pageIsLoginPage: boolean = to.meta.loginPage as boolean;
+  
+  if (userIsLoggedIn) {
+    if (pageIsLoginPage)
+      next('/');
+    else
+      next();
+  } else {
+    if (pageIsPublic)
+      next();
+    else
+      next('/login');
+  }
 });
 
 export default router;
