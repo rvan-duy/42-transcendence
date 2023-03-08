@@ -91,13 +91,16 @@ a {
 	overflow-y: scroll;
 }
 
+/* text */
 .chat-messages .message {
 	padding: 10px;
 	margin-bottom: 15px;
 	background-color: var(--light-color);
 	border-radius: 5px;
+	color: #444;
 }
 
+/* name */
 .chat-messages .message .meta {
 	font-size: 15px;
 	font-weight: bold;
@@ -106,6 +109,7 @@ a {
 	margin-bottom: 7px;
 }
 
+/* time */
 .chat-messages .message .meta span {
 	color: #777;
 }
