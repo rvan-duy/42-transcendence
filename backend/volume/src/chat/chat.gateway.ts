@@ -67,7 +67,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return {
       username: username,
       body: message_body,
-      time: moment().format('HH:mm ZZ') //TODO: Make not GMT maybe?
+      time: moment().add(1, 'hours').format('HH:mm')
     };
   }
 
