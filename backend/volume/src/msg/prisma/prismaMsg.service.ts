@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Msg, Prisma } from '@prisma/client';
-import { MsgDto } from '../chat.service';
+import { MsgDto } from '../msg.service';
 
 @Injectable()
 export class PrismaMsgService {
@@ -60,13 +60,10 @@ export class PrismaMsgService {
     
     // Authenticate here?
 
-    // retrieve the Room and User objects using their IDs
+    // retrieve the Room object using id
     const room = await this.prisma.room.findUnique({
       where: { id: roomId },
     });
-    // const author = await this.prisma.user.findUnique({
-    //   where: { id: authorId },
-    // });
 
     // update the lastId so there are no duplicates
     room.lastId++;

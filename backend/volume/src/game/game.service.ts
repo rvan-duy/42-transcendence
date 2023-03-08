@@ -141,8 +141,8 @@ export class GameService {
   }
 
   private updatePaddles(game: GameData) {
-    for (let index = 0; index < game.players.length; index++) {
-      const player:Player = game.players[index];
+    for (let playerNbr = 0; playerNbr < 2; playerNbr++) {
+      const player:Player = game.players[playerNbr];
       const paddleMovement:number = player.paddle.acceleration * MoveSpeedPerTick.PADDLE;
 
       // Get new y coordinate of paddle
@@ -160,10 +160,27 @@ export class GameService {
         player.paddle.y = 0;
       else if (player.paddle.y + player.paddle.height > MapSize.HEIGHT)
         player.paddle.y = MapSize.HEIGHT - player.paddle.height;
-      else if (player.paddle.x < 0)
-        player.paddle.x = 0;
-      else if (player.paddle.x + player.paddle.width > MapSize.WIDTH)
-        player.paddle.x = MapSize.WIDTH - player.paddle.width;
+
+      if (game.mode === GameMode.FREEMOVE || game.mode === GameMode.FIESTA) {
+        if (player.moveLeft)
+          player.paddle.x -= paddleMovement;
+        if (player.moveRight)
+          player.paddle.x += paddleMovement;
+
+        // Out of bounds check for both sides of the map depending on the player's side
+        if (playerNbr == PlayerDefinitions.PLAYER1) {
+          if (player.paddle.x + player.paddle.width > MapSize.WIDTH / 2 - DefaultElementSize.PADDLEWIDTH * 5)
+            player.paddle.x = MapSize.WIDTH / 2 - player.paddle.width - DefaultElementSize.PADDLEWIDTH * 5;
+          if (player.paddle.x < 0)
+            player.paddle.x = 0;
+        }
+        else if (playerNbr == PlayerDefinitions.PLAYER2) {
+          if (player.paddle.x + player.paddle.width < MapSize.WIDTH / 2 + DefaultElementSize.PADDLEWIDTH * 5)
+            player.paddle.x = MapSize.WIDTH / 2 + player.paddle.width + DefaultElementSize.PADDLEWIDTH * 5;
+          if (player.paddle.x + player.paddle.width > MapSize.WIDTH )
+            player.paddle.x = MapSize.WIDTH - player.paddle.width;
+        }
+      }
     }
   }
 
@@ -186,16 +203,15 @@ export class GameService {
       ball.yDirection -= ball.yDirection * 2;
 
     if (this.ballPaddleCollision(ball, paddle)) {
-      const speed = ball.acceleration * MoveSpeedPerTick.BALL;
-      const collisionPoint = ball.y - paddle.y + paddle.height / 2; // gets a point on the paddle that has a value between the paddle's height / 2 and negative paddle's height / 2
-      console.log('Balls collision point:');
-      console.log(collisionPoint);
+      let speed = ball.acceleration * MoveSpeedPerTick.BALL;
+      const collisionPoint = ball.y - (paddle.y + paddle.height / 2); // gets a point on the paddle that has a value between the paddle's height / 2 and negative paddle's height / 2
       const normalizedCollisionPoint = collisionPoint / paddle.height / 2; // sets the entire length of the paddle's collision points to be between -1 and 1
-      console.log('Normalized collision point:');
-      console.log(normalizedCollisionPoint);
       const returnAngle = Math.PI / 4 * normalizedCollisionPoint; // 45 degrees (Pi / 4) times the normalized paddle collision point which is between 1 and -1
       const returnDirection = (ball.x + ball.radius < MapSize.WIDTH / 2) ? 1 : -1;
 
+      // prevent ball from moving through paddle
+      if (speed > DefaultElementSize.PADDLEWIDTH)
+        speed = DefaultElementSize.PADDLEWIDTH - 1;
       ball.xDirection = returnDirection * speed * Math.cos(returnAngle); // cos gets the value between the ball and the x angle
       ball.yDirection = speed * Math.sin(returnAngle); // sin gets the value between the ball and the y angle
 
@@ -209,8 +225,8 @@ export class GameService {
     else if (ball.x + ball.radius > MapSize.WIDTH)
       this.scored(game, PlayerDefinitions.PLAYER1);
   
-  if (game.isFinished) // use this for temporary debugging
-    this.resetGame(game);
+    if (game.isFinished) // use this for temporary debugging
+      this.resetGame(game);
   }
 
   private resetGame(game: GameData) {
@@ -227,25 +243,26 @@ export class GameService {
     let tempY: number = ball.y;
     
     // sets the closest edges into the temp variables
+    // compare to left or right edges
     if (ball.x <= paddle.x)
       tempX = paddle.x;
-    else
+    else if (ball.x > paddle.x + paddle.width)
       tempX = paddle.x + paddle.width;
 
+    // compare to top or bottom edge
     if (ball.y <= paddle.y)
       tempY = paddle.y;
-    else
-      tempY = paddle.y + paddle.height
+    else if (ball.y > paddle.y + paddle.height)
+      tempY = paddle.y + paddle.height;
 
     // get distance from closest edges
-    let distX: number = ball.x - tempX;
-    let distY: number = ball.y - tempY;
-    let distance: number = Math.sqrt((distX*distX) + (distY*distY));
+    const distX: number = ball.x - tempX;
+    const distY: number = ball.y - tempY;
+    const distance: number = Math.sqrt((distX * distX) + (distY * distY));
   
     // if the distance is less than or equal to the radius there is a collision
     if (distance <= ball.radius)
       return true;
-
     return false;
   }
 

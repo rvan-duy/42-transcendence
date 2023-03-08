@@ -44,10 +44,8 @@ export default  defineComponent({
     }
   },
   mounted() {
-    var init: boolean = false;
     var canvas: HTMLCanvasElement = document.getElementById('pixels') as HTMLCanvasElement;
     var ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
-    var queue: ImageData[];
     const socket: any = io('http://localhost:3000/game');
     socket.on('connect_error', (err) => {
       console.log(`connect_error due to ${err.message}`);

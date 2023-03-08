@@ -54,13 +54,17 @@ export class AuthService {
     return data;
   }
 
-  // get_or_create(intraId: number, name: string) {
-  //   const currentUser = this.userService.user({intraId: intraId});
-  //   if (currentUser)
-  //     return currentUser;
-  //   return this.userService.createUser({
-  //     intraId: intraId,
-  //     name: name,
-  //   });
-  // }
+  /*
+   * Get or create user
+   */
+  async getOrCreateUser(intraId: number, name: string) {
+    const currentUser = await this.userService.user({intraId: intraId});
+    if (currentUser)
+      return currentUser;
+    return this.userService.createUser({
+      intraId: intraId,
+      name: name,
+    });
+  }
+
 }
