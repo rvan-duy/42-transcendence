@@ -50,6 +50,9 @@ import HelloWorld from './components/HelloWorld.vue';
         <RouterLink to="/game">
           Game
         </RouterLink>
+        <RouterLink to="/matchmaking">
+          Matchmaking
+        </RouterLink>
         <RouterLink to="/chat">
           Chat
         </RouterLink>

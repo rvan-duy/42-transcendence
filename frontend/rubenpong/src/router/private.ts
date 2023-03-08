@@ -2,6 +2,7 @@ import AboutView from '@/views/AboutView.vue';
 import ChatView from '@/views/ChatView.vue';
 import ChatRoomView from '@/views/ChatRoomView.vue';
 import GameView from '@/views/GameView.vue';
+import MatchMakingView from '@/views/MatchMakingView.vue';
 
 const routes = [
   {
@@ -23,6 +24,11 @@ const routes = [
     path: '/game',
     name: 'game',
     component: GameView,
+  },
+  {
+    path: '/matchmaking',
+    name: 'matchmaking',
+    component: MatchMakingView,
   },
 ];
 

@@ -1,27 +1,20 @@
 import { SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 // import { Game } from '@prisma/client';
 import { Socket, Server } from 'socket.io';
+import { CurrentGameState, GameService } from './game.service';
 
 enum GameMode {
-  SURVIVAL = 'Survival',
-  CREATIVE = 'Creative',
-  ADVENTURE = 'Adventure',
-  SPECTATOR = 'Spectator',
+  NORMAL = 'ModeNormal',
+  FREEMOVE = 'ModeFreeMove',
+  POWERUP = 'ModePowerUp',
+  FIESTA = 'ModeFiesta',
 }
 
-class Player {
-  userId: number;
-  batXY: number[];
-  score: number;
-  acceleration: number;
-}
-
-class Games {
-  player: Player[];
-  watchers: number[];
-  mapsize: number[];
-  mode: GameMode;
-  texturePath: string;
+enum PaddleInput {
+  UP = 'KeyUp',
+  DOWN = 'KeyDown',
+  LEFT = 'KeyLeft',
+  RIGHT = 'KeyRight',
 }
 
 @WebSocketGateway({
@@ -32,10 +25,15 @@ class Games {
 })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private server: Server;
-  private games: Games[];
+  private gameService: GameService;
+  private currGameState: CurrentGameState;
 
   afterInit(server: Server) {
     this.server = server;
+    this.gameService = new GameService(this.server);
+    this.gameService.createGame(1, 2, GameMode.FREEMOVE);
+    const fps: number = 60;
+    setInterval(function() {this.gameService.updateGames();}.bind(this), 1000/fps);
   }
 
   handleConnection(client: Socket) {
@@ -47,16 +45,33 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log(`Client disconnected: ${client.id}`);
   }
 
-  @SubscribeMessage('up')
-  handleUp(client: any, payload: any): string {
-    console.log('Received payload:', payload);
-    return 'Server says hello!';
+  @SubscribeMessage('pos')
+  handlePos(client: any, payload: any) {
+    this.server.emit('pos', this.currGameState);  // magic
+    console.warn(`client ${client} and payload ${payload} unused`);
   }
 
-  @SubscribeMessage('down')
-  handleDown(client: any, payload: any): string {
-    console.log('Received payload:', payload);
-    return 'Server says hello!';
+  @SubscribeMessage('ArrowDown')
+  handleKeyDown(client: any, payload: any) {
+    this.gameService.UpdatePlayerInput(1, PaddleInput.DOWN); // magic
+    console.warn(`client ${client} and payload ${payload} unused`);
+  }
+
+  @SubscribeMessage('ArrowUp')
+  handleKeyUp(client: any, payload: any) {
+    this.gameService.UpdatePlayerInput(1, PaddleInput.UP); // magic
+    console.warn(`client ${client} and payload ${payload} unused`);
+  }
+
+  @SubscribeMessage('ArrowLeft')
+  handleKeyLeft(client: any, payload: any) {
+    this.gameService.UpdatePlayerInput(1, PaddleInput.LEFT); // magic
+    console.warn(`client ${client} and payload ${payload} unused`);
+  }
+  @SubscribeMessage('ArrowRight')
+  handleKeyRight(client: any, payload: any) {
+    this.gameService.UpdatePlayerInput(1, PaddleInput.RIGHT); // magic
+    console.warn(`client ${client} and payload ${payload} unused`);
   }
 
 }
