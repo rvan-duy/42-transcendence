@@ -52,6 +52,7 @@ export default  defineComponent({
     socket.on('connect_error', (err) => {
       console.log(`connect_error due to ${err.message}`);
     });
+
 enum MapSize {
   WIDTH = 1000,
   HEIGHT = 600,
@@ -183,6 +184,7 @@ function movePlat(e: KeyboardEvent)
     }
   }
 }
+
 function stopMovePlat(e: KeyboardEvent)
 {
   console.log ('keyup');
@@ -208,8 +210,10 @@ function stopMovePlat(e: KeyboardEvent)
     arrowLeft = false;
   }
 }
+
 document.addEventListener('keydown', movePlat);
 document.addEventListener('keyup', stopMovePlat);
+
     //start of game define which plat - b / f?
     //update() function in backend
     //position plat, ball and player in backend?

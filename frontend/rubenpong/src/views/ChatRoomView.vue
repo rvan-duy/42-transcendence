@@ -1,4 +1,40 @@
 <script setup lang="ts">
+import SocketioService from '../services/socketio.service.js';
+</script>
+
+<script lang="ts">
+const connection = SocketioService;
+
+connection.setupSocketConnection('/chat');
+// connection.socket.on('connection', () => {console.log('Chat client connected');});
+connection.socket.on('msgToClient', (msg) => {
+  console.log(`client received message: ${msg}`);
+  outputMessages(msg);
+});
+
+// const chatForm = document.getElementById('chat-form');
+
+function chatFormSubmit(e){
+  const msg = e.target.elements.msg;
+  connection.socket.emit('msgToServer', msg.value);
+  msg.value = ''; //clears the message text you just entered
+  msg.focus(); //focuses on the text input area again after sending
+}
+
+// Displays the messages that the frontend receives from the server.
+function outputMessages(message)
+{
+  const div = document.createElement('div');
+  div.classList.add('message');
+  div.innerHTML =
+	`<p class="meta">${message.username} <span>${message.time}</span></p>
+	<p class="text">
+		${message.body}
+	</p>`;
+  const chatMessages = document.querySelector('.chat-messages');
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+}
 
 </script>
 
@@ -30,28 +66,14 @@
             </ul>
           </div>
           <div class="chat-messages">
-            <div class="message">
-              <p class="meta">
-                Ruben 1<span>9:12pm</span>
-              </p>
-              <p class="text">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi,
-                repudiandae.
-              </p>
-            </div>
-            <div class="message">
-              <p class="meta">
-                Ruben 2<span>9:15pm</span>
-              </p>
-              <p class="text">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Eligendi,
-                repudiandae.
-              </p>
-            </div>
+            <!-- CHAT MESSAGES APPEAR HERE -->
           </div>
         </main>
         <div class="chat-form-container">
-          <form id="chat-form">
+          <form
+            id="chat-form"
+            @submit.prevent="chatFormSubmit($event)"
+          >
             <input
               id="msg"
               type="text"

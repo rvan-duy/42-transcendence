@@ -217,6 +217,7 @@ export class GameService {
     game.ball.x = MapSize.WIDTH / 2;
     game.ball.y = MapSize.HEIGHT / 2;
     game.ball.radius = DefaultElementSize.BALLRADIUS;
+    game.score = [0, 0];
     game.isFinished = false;
   }
 

@@ -4,10 +4,10 @@ import { Socket, Server } from 'socket.io';
 import { CurrentGameState, GameService } from './game.service';
 
 enum GameMode {
-  NORMAL = "ModeNormal",
-  FREEMOVE = "ModeFreeMove",
-  POWERUP = "ModePowerUp",
-  FIESTA = "ModeFiesta",
+  NORMAL = 'ModeNormal',
+  FREEMOVE = 'ModeFreeMove',
+  POWERUP = 'ModePowerUp',
+  FIESTA = 'ModeFiesta',
 }
 
 // class Player {
@@ -105,8 +105,6 @@ enum GameMode {
 //   ball.speed = 5;
 // }
 
-
-
 // // function movePlat(e: KeyboardEvent)
 // // {
 // //   if (e.key === 'ArrowDown')
@@ -186,13 +184,11 @@ enum GameMode {
 //   }
 // }
 enum PaddleInput {
-  UP = "KeyUp",
-  DOWN = "KeyDown",
-  LEFT = "KeyLeft",
-  RIGHT = "KeyRight",
+  UP = 'KeyUp',
+  DOWN = 'KeyDown',
+  LEFT = 'KeyLeft',
+  RIGHT = 'KeyRight',
 }
-
-
 
 // function SEND(){
 //   this.server.emit('pos', this.games[0].data);
@@ -215,13 +211,13 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // this.games.push(new Games());
     this.gameService = new GameService(this.server);
     this.gameService.createGame(1, 2, GameMode.NORMAL);
-	const fps: number = 60;
-	setInterval(function() {this.gameService.updateGames()}.bind(this), 1000/fps);
-	// setInterval(this.gameService.updateGames, 1000/fps);
+    const fps: number = 60;
+    setInterval(function() {this.gameService.updateGames();}.bind(this), 1000/fps);
+    // setInterval(this.gameService.updateGames, 1000/fps);
     // console.log(this.gameService.updateGames);
-}
+  }
 
-handleConnection(client: Socket) {
+  handleConnection(client: Socket) {
     console.log(`Client connected: ${client.id}`);
     // await rubenpong();
     // client.emit('pos', this.games[0].data);  // magic
@@ -255,12 +251,12 @@ handleConnection(client: Socket) {
   handleKeyDown(client: any, payload: any) {
     // console.log('Received payload:', payload);
     // return 'Server says hello!';
-    this.gameService.UpdatePlayerInput(1, PaddleInput.DOWN); // magic 
+    this.gameService.UpdatePlayerInput(1, PaddleInput.DOWN); // magic
   }
 
   @SubscribeMessage('ArrowUp')
   handleKeyUp(client: any, payload: any) {
-    this.gameService.UpdatePlayerInput(1, PaddleInput.UP); // magic 
+    this.gameService.UpdatePlayerInput(1, PaddleInput.UP); // magic
   }
 
   @SubscribeMessage('ArrowRight')

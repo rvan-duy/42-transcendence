@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 </script>
 
 <template>
@@ -24,7 +23,7 @@
         <RouterLink to="/game">
           Game
         </RouterLink>
-         <RouterLink to="/matchmaking">
+        <RouterLink to="/matchmaking">
           Matchmaking
         </RouterLink>
         <RouterLink to="/chat">
@@ -33,6 +32,7 @@
         <RouterLink to="/login">
           Log in
         </RouterLink>
+        <!-- <RouterLink to="/canvas">Canvas</RouterLink> -->
       </nav>
     </div>
   </header>
