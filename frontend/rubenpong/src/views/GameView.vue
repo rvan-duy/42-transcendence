@@ -5,7 +5,7 @@
   <div class="item">
     <div>
       <div v-if="!matched" style="text-align: center">
-        <h1> wanna match? ;)</h1>
+        <h1 class="text-blue-600"> wanna match? ;)</h1>
         <div>
         <button v-if="!selectGameMode" @click="selectGameMode = true">Play game </button>
         <div><button v-if="selectGameMode" @click="createGame('ModeNormal')">NORMAL</button></div>
@@ -227,7 +227,7 @@ document.addEventListener('keyup', stopMovePlat);
 </script>
 
 <style scoped>
-.item {
+/* .item {
 	image-rendering: pixelated;
 	margin-top: 2rem;
 	display: flex;
@@ -287,5 +287,5 @@ h3 {
 	.item:last-of-type:after {
 		display: none;
 	}
-}
+} */
 </style>
