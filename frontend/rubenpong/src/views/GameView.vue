@@ -1,25 +1,48 @@
 <script setup lang="ts">
-
 </script>
 
 <template>
   <div class="item">
     <div>
-      <canvas
-        id="pixels"
-        width="1000"
-        height="600"
-        style="border:1px solid #CCCCCC;"
-      />
-    </div>
+      <div v-if="!matched" style="text-align: center">
+        <h1 class="text-blue-600"> wanna match? ;)</h1>
+        <div>
+        <button v-if="!selectGameMode" @click="selectGameMode = true">Play game </button>
+        <div><button v-if="selectGameMode" @click="createGame('ModeNormal')">NORMAL</button></div>
+        
+        <div><button v-if="selectGameMode" @click="createGame('ModeFreeMove')">FREEMOVE</button></div>
+        <div><button v-if="selectGameMode" @click="createGame('ModePowerUp')">POWERUP</button></div>
+        <div><button v-if="selectGameMode" @click="createGame('ModeFiesta')">FIESTA</button></div>
+        </div>
+      </div>
+      <div>
+        <canvas
+          id="pixels"
+          width="1000"
+          height="600"
+          style="border:0px solid #CCCCCC;"
+        />
+      </div>
+      </div>
   </div>
 </template>
 
 <script lang="ts">
 import io from 'socket.io-client';
+import { defineComponent } from 'vue';
+import HelloWorld from './../components/HelloWorld.vue';
 // import CurrentGameState from 'game.service'
-
-export default {
+export default  defineComponent({
+  components:{
+    HelloWorld,
+  },
+  data()
+  {
+    return {
+      selectGameMode: false,
+      matched: false
+    }
+  },
   mounted() {
     var canvas: HTMLCanvasElement = document.getElementById('pixels') as HTMLCanvasElement;
     var ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
@@ -32,13 +55,11 @@ enum MapSize {
   WIDTH = 1000,
   HEIGHT = 600,
 }
-
 enum DefaultElementSize {
   PADDLEWIDTH = 20,
   PADDLEHEIGHT = 100,
   BALLRADIUS = 20,
 }
-
 class CurrentGameState {
   score:number[] = [0, 0];
   leftPaddleCoords: number[] = [0, MapSize.HEIGHT / 2];
@@ -50,61 +71,78 @@ class CurrentGameState {
   ballCoords: number[] = [MapSize.WIDTH / 2, MapSize.HEIGHT / 2];
   ballRadius: number = DefaultElementSize.BALLRADIUS;
 }
-
 socket.on('pos', (data: any) => {
   const datas: CurrentGameState = data;
-
   //draw background
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-  //draw plateau player 1
-  ctx.fillStyle = 'white';
-  ctx.fillRect(datas.leftPaddleCoords[0], datas.leftPaddleCoords[1], datas.leftPaddleWidth, datas.leftPaddleHeight);
-  
-  //draw plateau player 2
-  ctx.fillStyle = 'white';
-  ctx.fillRect(datas.rightPaddleCoords[0], datas.rightPaddleCoords[1], datas.rightPaddleWidth, datas.rightPaddleHeight);
-  
-  //draw ball
-  ctx.fillStyle = 'red';
-  ctx.beginPath();
-  ctx.arc(datas.ballCoords[0], datas.ballCoords[1], datas.ballRadius, 0, Math.PI * 2, false);
-  ctx.closePath();
-  ctx.fill();
-  
-  //draw text player 1
-  ctx.fillStyle = 'white';
-  ctx.font = '50px arial';
-  ctx.fillText('Player 1', canvas.width / 4, canvas.height / 8);
- 
-  //draw text score player 1
-  ctx.fillStyle = 'white';
-  ctx.font = '50px arial';
-  ctx.fillText(datas.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
-  
-  //draw text player 2
-  ctx.fillStyle = 'white';
-  ctx.font = '50px arial';
-  ctx.fillText('Player 2', canvas.width / 4 * 3 - 100, canvas.height / 8);
-  
-  //draw text score player 2
-  ctx.fillStyle = 'white';
-  ctx.font = '50px arial';
-  ctx.fillText(datas.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
-  
-  //draw net
-  for(let i = 0; i <= canvas.height; i+=15){
-    ctx.fillStyle = 'white';
-    ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
+  if (this.matched)
+  {
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (datas.score[1] >= 5 || datas.score[0] >= 5 )
+    {
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'white';
+      ctx.font = '50px arial';
+      if (datas.score[1] >= 5 )
+      {
+        ctx.fillText('You lost!', canvas.width / 2 - 100, canvas.height / 2);
+        return ;
+      }
+      if (datas.score[0] >= 5 )
+      {
+        ctx.fillText('You won!', canvas.width /  2 - 100, canvas.height / 2);
+        return ;
+      }
+    }
+    else {
+      //draw plateau player 1
+      ctx.fillStyle = 'white';
+      ctx.fillRect(datas.leftPaddleCoords[0], datas.leftPaddleCoords[1], datas.leftPaddleWidth, datas.leftPaddleHeight);
+      
+      //draw plateau player 2
+      ctx.fillStyle = 'white';
+      ctx.fillRect(datas.rightPaddleCoords[0], datas.rightPaddleCoords[1], datas.rightPaddleWidth, datas.rightPaddleHeight);
+      
+      //draw ball
+      ctx.fillStyle = 'red';
+      ctx.beginPath();
+      ctx.arc(datas.ballCoords[0], datas.ballCoords[1], datas.ballRadius, 0, Math.PI * 2, false);
+      ctx.closePath();
+      ctx.fill();
+      
+      //draw text player 1
+      ctx.fillStyle = 'white';
+      ctx.font = '50px arial';
+      ctx.fillText('Player 1', canvas.width / 4, canvas.height / 8);
+    
+      //draw text score player 1
+      ctx.fillStyle = 'white';
+      ctx.font = '50px arial';
+      ctx.fillText(datas.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
+      
+      //draw text player 2
+      ctx.fillStyle = 'white';
+      ctx.font = '50px arial';
+      ctx.fillText('Player 2', canvas.width / 4 * 3 - 100, canvas.height / 8);
+      
+      //draw text score player 2
+      ctx.fillStyle = 'white';
+      ctx.font = '50px arial';
+      ctx.fillText(datas.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
+      
+      //draw net
+      for(let i = 0; i <= canvas.height; i+=15){
+        ctx.fillStyle = 'white';
+        ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
+      }
+    }
   }
 });
-
 var arrowUp: Boolean = false;
 var arrowDown: Boolean = false;
 var arrowLeft: Boolean = false;
 var arrowRight: Boolean = false;
-
 function movePlat(e: KeyboardEvent)
 {
   if (!arrowDown)
@@ -177,15 +215,19 @@ document.addEventListener('keyup', stopMovePlat);
     //start of game define which plat - b / f?
     //update() function in backend
     //position plat, ball and player in backend?
-
     //powerups
-
-  }
-};
+  },
+  methods: {
+    createGame(gameMode:string)
+    {
+      this.matched = true;
+    }
+  },
+});
 </script>
 
 <style scoped>
-.item {
+/* .item {
 	image-rendering: pixelated;
 	margin-top: 2rem;
 	display: flex;
@@ -245,5 +287,5 @@ h3 {
 	.item:last-of-type:after {
 		display: none;
 	}
-}
+} */
 </style>
