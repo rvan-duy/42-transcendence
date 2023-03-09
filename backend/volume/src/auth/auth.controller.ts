@@ -18,7 +18,7 @@
  * - Add tests
 */
 
-import { Controller, Get, Req, Query, Res, } from '@nestjs/common';
+import { Controller, Get, Post, Req, Query, Res, } from '@nestjs/common';
 // import { Request, Response } from 'express'; // will be used later
 import { AuthService } from './auth.service';
 import { StatusCodes, ResponseMessages } from '../constants';
@@ -27,6 +27,12 @@ import axios from 'axios';
 @Controller('auth')
 export class AuthController {
   constructor(private readonly AuthService: AuthService) {}
+
+  @Post('authorize')
+  async authorize(@Req() req, @Res() res) {
+    console.log('hello', req.body);
+    return res.status(StatusCodes.Ok).send('hello');
+  }
 
   @Get('callback')
   async callback(@Req() req, @Res() res, @Query('code') code: string, @Query('state') state: string) {
