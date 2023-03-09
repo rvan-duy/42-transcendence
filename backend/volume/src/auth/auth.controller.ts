@@ -9,23 +9,20 @@
   * 6. The user is redirected to the home page        (backend -> frontend)
 */
 
+/*
+ * TODO's
+ * - Implement frontend Logic
+ * - Store access token in cookie and possibly in database
+ * - Maybe better error handling
+ * - Maybe better security
+ * - Add tests
+*/
+
 import { Controller, Get, Req, Query, Res, } from '@nestjs/common';
+// import { Request, Response } from 'express'; // will be used later
 import { AuthService } from './auth.service';
+import { StatusCodes, ResponseMessages } from '../constants';
 import axios from 'axios';
-
-// TODO: move these enums to a separate file
-
-enum StatusCodes {
-  Ok = 200,
-  BadRequest = 400,
-  InternalServerError = 500,
-}
-
-enum ResponseMessages {
-  SuccessLogin = 'Successfully logged in',
-  InvalidRequest = 'The provided state value is invalid.',
-  InternalServerError = 'An unexpected error occurred',
-}
 
 @Controller('auth')
 export class AuthController {
@@ -40,18 +37,23 @@ export class AuthController {
 
     try {
       const token = await this.AuthService.requestAccessToken(code);
-      const user = await this.AuthService.requestUserData(token); // the user object contains user data
-
-      console.log(`TODO - check if the user exists in the database (${user.login})`);
-
-      // if this response is successful we can verify the user
-      // check if the user exists in the database
-      // - if the user exists, log the user in
-      // - if the user does not exist, create the user and log the user in
+      const { id, login } = await this.AuthService.requestUserData(token);
+      const my_user = await this.AuthService.getOrCreateUser(id, login);
+      console.log('user logged in: ', my_user);
+      
       // cookie the user
 
-      return res.status(StatusCodes.Ok).send(ResponseMessages.SuccessLogin);
+      res.status(StatusCodes.Ok);
       
+      res.cookie('cookie', token, {
+        httpOnly: true,
+        secure: false,
+        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      });
+      
+      res.redirect('http://localhost:8000');
+      return;
+
     } catch (error) {
       if (axios.isAxiosError(error)) {
         console.log(error.message);

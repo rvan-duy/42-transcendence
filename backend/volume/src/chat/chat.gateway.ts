@@ -14,6 +14,7 @@ import { RoomService, roomDto } from 'src/room/room.service';
 @WebSocketGateway({
   cors: {
     origin: '*',
+    credentials: false
   },
   namespace: '/chat',
 })
@@ -25,9 +26,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @WebSocketServer() all_clients: Server; //all clients
 
   @SubscribeMessage('msgToServer')
-  handleMessage(client: Socket, text: string) {
-    console.log(`Server received msg: "${text}" from client: ${client.id}`);
-    this.all_clients.emit('msgToClient', this.formatMessage('USER', text));
+  handleMessage(client: Socket, packet: any) {
+    const user = packet.username;
+    const text = packet.msg;
+    console.log(`Server received msg: "${text}" from client: ${client.id} (${user})`);
+    this.all_clients.emit('msgToClient', this.formatMessage(user, text));
   }
 
   afterInit(server: Server) {
@@ -53,7 +56,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return {
       username: username,
       body: message_body,
-      time: moment().format('HH:mm ZZ') //TODO: Make not GMT maybe?
+      time: moment().add(1, 'hours').format('HH:mm')
     };
   }
 
