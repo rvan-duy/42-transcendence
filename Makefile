@@ -26,7 +26,9 @@ fre: 			fclean build run
 ps:
 		docker-compose ps
 
-# lint and fix minor issues
+# linting
+lint:
+		@bash .github/scripts/eslint.sh
 lfix:
 		@bash .github/scripts/eslint.sh --fix
 
