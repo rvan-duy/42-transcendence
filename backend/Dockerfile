@@ -20,4 +20,4 @@ EXPOSE 3000
 ENV DATABASE_URL postgres://dbuser:dbpassword@db:5432/dbname
 
 # Start the application
-CMD ["npm", "run", "start"]
+CMD ["npm", "run", "start:db"]
