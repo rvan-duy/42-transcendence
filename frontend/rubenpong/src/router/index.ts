@@ -1,54 +1,58 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { auth } from './auth';
+import privateRoutes from './private';
+import LoginView from '@/views/LogInView.vue';
 import HomeView from '@/views/HomeView.vue';
 
+// usefull link: https://itnext.io/vue-router-99e334094362
+
+/*
+ * This is the router for the application, it is used to navigate between
+ * different views.
+ */
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginView,
+      meta: {
+        public: true,
+        loginPage: true // probaly needed, or not idk we'll see
+      },
+    },
     {
       path: '/',
       name: 'home',
       component: HomeView,
-    },
-    {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('@/views/AboutView.vue'),
-    },
-    {
-      path: '/chat',
-      name: 'chat',
-      component: () => import('@/views/ChatView.vue'),
-    },
-    {
-      path: '/matchmaking',
-      name: 'matchmaking',
-      component: () => import('@/views/MatchMakingView.vue'),
-    },
-    {
-      path: '/game',
-      name: 'game',
-      component: () => import('@/views/GameView.vue'),
-    },
-    {
-      path: '/chatroom',
-      name: 'chatroom',
-      component: () => import('@/views/ChatRoomView.vue'),
-      //   props: route=> ({ username: route.query.username, room: route.query.room})
-    },
-    {
-      path: '/login',
-      name: 'login',
-      component: () => import('@/views/LogInView.vue'),
-    },
-    {
-      path: '/:pathMatch(.*)*',
-      name: 'not-found',
-      component: () => import('@/views/NotFoundView.vue'),
-    },
-  ],
+      meta: {
+        public: true,
+        loginPage: false
+      }
+    }
+  ].concat(privateRoutes), // private routes are in a separate file for readability
+});
+
+/*
+ * This hook is called before each route is navigated to.
+ */
+router.beforeEach((to, from, next) => {
+  const userIsLoggedIn: boolean = auth.isLoggedIn();
+  const pageIsPublic: boolean = to.meta.public as boolean;
+  const pageIsLoginPage: boolean = to.meta.loginPage as boolean;
+  
+  if (userIsLoggedIn) {
+    if (pageIsLoginPage)
+      next('/');
+    else
+      next();
+  } else {
+    if (pageIsPublic)
+      next();
+    else
+      next('/login');
+  }
 });
 
 export default router;
