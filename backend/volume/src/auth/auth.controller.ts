@@ -46,7 +46,7 @@ export class AuthController {
       res.status(StatusCodes.Ok);
       
       res.cookie('cookie', token, {
-        httpOnly: true,
+        httpOnly: false, // temporary for debugging, should be true in production
         secure: false,
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
       });
