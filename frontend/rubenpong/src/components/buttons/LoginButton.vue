@@ -13,13 +13,13 @@ const loginWith42 = () => {
 </script>
 
 <template>
-  <button @click="loginWith42">
+  <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" @click="loginWith42">
     Log in with 42
   </button>
 </template>
 
 <style scoped>
-  button {
+  /* button {
     background-color: #000000;
     color: #ffffff;
     border: none;
@@ -28,5 +28,5 @@ const loginWith42 = () => {
     font-size: 1.2rem;
     font-weight: 600;
     cursor: pointer;
-  }
+  } */
 </style>

@@ -5,14 +5,14 @@
   <div class="item">
     <div>
       <div v-if="!matched" style="text-align: center">
-        <h1 class="text-blue-600"> wanna match? ;)</h1>
+      <h1 class="text-4xl p-16"> Wanna Match? ;)</h1>
         <div>
-        <button v-if="!selectGameMode" @click="selectGameMode = true">Play game </button>
-        <div><button v-if="selectGameMode" @click="createGame('ModeNormal')">NORMAL</button></div>
-        
-        <div><button v-if="selectGameMode" @click="createGame('ModeFreeMove')">FREEMOVE</button></div>
-        <div><button v-if="selectGameMode" @click="createGame('ModePowerUp')">POWERUP</button></div>
-        <div><button v-if="selectGameMode" @click="createGame('ModeFiesta')">FIESTA</button></div>
+       
+        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-if="!selectGameMode" @click="selectGameMode = true"> <font-awesome-icon icon="play"/> Play game </button>
+        <div class="p-2"><button class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-if="selectGameMode" @click="createGame('ModeNormal')">NORMAL</button></div>
+        <div class="p-2"><button class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-if="selectGameMode" @click="createGame('ModeFreeMove')">FREEMOVE</button></div>
+        <div class="p-2"><button class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-if="selectGameMode" @click="createGame('ModePowerUp')">POWERUP</button></div>
+        <div class="p-2"><button class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-if="selectGameMode" @click="createGame('ModeFiesta')">FIESTA</button></div>
         </div>
       </div>
       <div>

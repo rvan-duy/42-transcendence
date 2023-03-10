@@ -2,39 +2,27 @@
 </script>
 
 <template>
-  <header>
-    <!-- <img
-      alt="Vue logo"
-      class="logo"
-      src="@/assets/logo.svg"
-      width="125"
-      height="125"
-    > -->
-
-    <div class="wrapper">
-      <!-- <HelloWorld msg="You did it!" /> -->
-      <nav>
-        <RouterLink to="/">
-          Home
-        </RouterLink>
-        <RouterLink to="/about">
-          About
-        </RouterLink>
-        <RouterLink to="/game">
+  <nav class="flex items-center justify-between flex-wrap bg-blue-400 p-6">
+  <div class="flex items-center flex-shrink-0 text-white mr-6">
+<font-awesome-icon icon="table-tennis-paddle-ball" />    <span class="p-2 font-semibold text-xl tracking-tight">RubenPong</span>
+  </div>
+  <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
+    <div class="text-sm lg:flex-grow">
+      <RouterLink class="text-blue-100 p-2 text-lg hover:text-white" to="/about">
+        About
+      </RouterLink>
+     <RouterLink class="text-blue-100 p-2 text-lg hover:text-white" to="/game">
           Game
         </RouterLink>
-        <RouterLink to="/matchmaking">
-          Matchmaking
-        </RouterLink>
-        <RouterLink to="/chat">
+    <RouterLink class="text-blue-100 p-2 text-lg hover:text-white" to="/chat">
           Chat
         </RouterLink>
-        <RouterLink to="/login">
+     <RouterLink class="text-blue-100 p-2 text-lg hover:text-white" to="/login">
           Log in
         </RouterLink>
-      </nav>
-    </div>
-  </header>
+  </div>
+  </div>
+</nav>
   <br>
 
   <RouterView />

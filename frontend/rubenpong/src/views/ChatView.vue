@@ -8,7 +8,7 @@
     <body class="chat-body">
       <div class="join-container">
         <header class="join-header">
-          <h1><i class="fas fa-smile" /> ChatCord</h1>
+          <h1 class="text-blue-500"><i class="fas fa-smile" /> ChatCord</h1>
         </header>
         <main class="join-main">
           <form action="/chatroom">
@@ -61,7 +61,8 @@
   </div>
 </template>
 
-<style>
+<style src="../assets/chat.css">
+
 @media (min-width: 1024px) {
   .chat {
     min-height: 100vh;

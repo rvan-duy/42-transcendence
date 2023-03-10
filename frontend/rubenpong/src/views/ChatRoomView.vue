@@ -117,7 +117,7 @@ function outputMessages(message)
   </div>
 </template>
 
-<style>
+<style src="../assets/chat.css">
 @media (min-width: 1024px) {
   .chat {
     min-height: 100vh;
