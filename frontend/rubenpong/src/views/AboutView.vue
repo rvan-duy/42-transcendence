@@ -37,7 +37,6 @@ function onclickMeow(){
     <button @click="onclickMeow">
       Meow
     </button>
-    <LoginButton />
   </div>
 </template>
 
