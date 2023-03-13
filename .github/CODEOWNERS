@@ -3,16 +3,21 @@
 
 # More details are here: https://help.github.com/articles/about-codeowners/
 
-# @rvan-duy
+# Github stuff
 /.github/ @rvan-duy
-/frontend/rubenpong/.eslintrc.cjs @rvan-duy
 
-# @LJmartin94
+# ESLint
+.eslintrc.cjs @rvan-duy
+
+# Docs
 /docs/ @LJmartin94
 
-# @Obult
+# Docker
 Dockerfile @Obult
 /docker-compose.yml @Obult
+
+# Frontend
+/frontend/rubenpong/src/router @rvan-duy
 
 # Backend
 /backend/volume/src/chat @LJmartin94

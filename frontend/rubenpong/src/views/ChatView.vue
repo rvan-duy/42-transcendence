@@ -20,6 +20,7 @@
                 name="username"
                 placeholder="Enter username..."
                 required
+                style="border-radius: 20px"
               >
             </div>
             <div class="form-control">
@@ -27,6 +28,7 @@
               <select
                 id="room"
                 name="room"
+                style="border-radius: 20px"
               >
                 <option value="Room 1">
                   Room 1
@@ -50,7 +52,7 @@
             </div>
             <button
               type="submit"
-              class="btn"
+              class="btn bg-blue-100"
             >
               Join Chat
             </button>

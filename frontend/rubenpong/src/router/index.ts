@@ -1,13 +1,28 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import LogInView from '@/views/LogInView.vue';
+import { auth } from './auth';
+import privateRoutes from './private';
+import LoginView from '@/views/LoginView.vue';
+import LogoutView from '@/views/LogoutView.vue';
 
+import HomeView from '@/views/HomeView.vue';
+
+// usefull link: https://itnext.io/vue-router-99e334094362
+
+/*
+ * This is the router for the application, it is used to navigate between
+ * different views.
+ */
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes: [
     {
       path: '/',
       name: 'home',
-      component: LogInView,
+      component: LoginView,
+      meta: {
+        public: true,
+        loginPage: true // probaly needed, or not idk we'll see
+      },
     },
     {
       path: '/about',
@@ -22,11 +37,11 @@ const router = createRouter({
       name: 'chat',
       component: () => import('@/views/ChatView.vue'),
     },
-    {
-      path: '/matchmaking',
-      name: 'matchmaking',
-      component: () => import('@/views/MatchMakingView.vue'),
-    },
+    // {
+    //   path: '/matchmaking',
+    //   name: 'matchmaking',
+    //   component: () => import('@/views/MatchMakingView.vue'),
+    // },
     {
       path: '/game',
       name: 'game',
@@ -38,17 +53,55 @@ const router = createRouter({
       component: () => import('@/views/ChatRoomView.vue'),
       //   props: route=> ({ username: route.query.username, room: route.query.room})
     },
+    // {
+    //   path: '/login',
+    //   name: 'login',
+    //   component: LoginView,
+    //   meta: {
+    //     public: true,
+    //     loginPage: true // probaly needed, or not idk we'll see
+    //   },
+    // },
     {
-      path: '/login',
-      name: 'login',
-      component: () => import('@/views/LogInView.vue'),
+      path: '/logout',
+      name: 'logout',
+      component: LogoutView,
+      meta: {
+        public: true,
+        loginPage: true // probaly needed, or not idk we'll see
+      },
     },
-    {
-      path: '/:pathMatch(.*)*',
-      name: 'not-found',
-      component: () => import('@/views/NotFoundView.vue'),
-    },
-  ],
+    // {
+    //   path: '/',
+    //   name: 'home',
+    //   component: HomeView,
+    //   meta: {
+    //     public: true,
+    //     loginPage: false
+    //   }
+    // }
+  ].concat(privateRoutes), // private routes are in a separate file for readability
+});
+
+/*
+ * This hook is called before each route is navigated to.
+ */
+router.beforeEach((to, from, next) => {
+  const userIsLoggedIn: boolean = auth.isLoggedIn();
+  const pageIsPublic: boolean = to.meta.public as boolean;
+  const pageIsLoginPage: boolean = to.meta.loginPage as boolean;
+  
+  if (userIsLoggedIn) {
+    if (pageIsLoginPage)
+      next('/');
+    else
+      next();
+  } else {
+    if (pageIsPublic)
+      next();
+    else
+      next('/login');
+  }
 });
 
 export default router;

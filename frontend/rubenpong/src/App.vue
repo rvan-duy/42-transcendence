@@ -17,8 +17,8 @@
     <RouterLink class="text-blue-100 p-2 text-lg hover:text-white" to="/chat">
           Chat
         </RouterLink>
-     <RouterLink class="text-blue-100 p-2 text-lg hover:text-white" to="/login">
-          Log in
+     <RouterLink class="text-blue-100 p-2 text-lg hover:text-white" to="/logout">
+          Log Out
         </RouterLink>
   </div>
   </div>
