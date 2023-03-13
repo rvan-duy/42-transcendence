@@ -22,16 +22,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   private server: Server;
   private msgService: MsgService;
   private roomService: RoomService;
-
+  
   @WebSocketServer() all_clients: Server; //all clients
-
-  @SubscribeMessage('msgToServer')
+  
+  @SubscribeMessage('sendMsg')
   handleMessage(client: Socket, packet: any) {
-    const user = packet.username;
-    const text = packet.msg;
-    console.log(`Server received msg: "${text}" from client: ${client.id} (${user})`);
-    this.all_clients.emit('msgToClient', this.formatMessage(user, text));
-  }
+      const user = packet.username;
+      const text = packet.msg;
+      console.log(`Server received msg: "${text}" from client: ${client.id} (${user})`);
+      this.all_clients.emit('msgToClient', this.formatMessage(user, text));
+      // this.msgService.handleIncomingMsg(payload);  // handles db placement of the new msg based on sender id
+    }
 
   afterInit(server: Server) {
     this.server = server;
@@ -43,7 +44,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // client.emit('msgToClient', this.formatMessage('Rubot','Welcome to the chat!')); //this client
     // console.log(`Client ${client.id} connected`);
 
-    client.emit('init'); // data, all chats roomDto[]
+    client.emit('loadAllChats'); // data, all chats roomDto[]
   }
 
   handleDisconnect(client: Socket) {
@@ -56,35 +57,31 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return {
       username: username,
       body: message_body,
-      time: moment().add(1, 'hours').format('HH:mm')
+      time: new Date()
     };
   }
 
-  addMessage(msg: MsgDto) {
-    this.server.emit('add', msg);
+  // send update to all ppl in chat who are online
+  spreadMessage(msg: MsgDto) {
+    this.server.emit('receiveNewMsg', msg);
   }
 
-  @SubscribeMessage('load')
-  handleLoad(client: any, roomId: number) { // client verification?
+  @SubscribeMessage('loadRequest')
+  async handleLoad(client: any, roomId: number) { // client verification?
     console.log('/chat/load received roomId:', roomId);
 
-    const data = this.msgService.getChatHistory(roomId);
-    client.emit('load', data);
+    const data = await this.msgService.getChatHistory(roomId);
+    client.emit('loadChatHistory', data);
   }
 
-  @SubscribeMessage('send')
-  handleNewMsg(client: any, payload: MsgDto) { // client verification?
-    console.log('Received payload:', payload);
 
-    this.msgService.handleIncomingMsg(payload);
-  }
-
-  @SubscribeMessage('delete')
+  @SubscribeMessage('deleteMsg')
   handleDeleteMsg(client: any, payload: MsgDto) { // client verification?
 
     // verify that it is either an admin or the client self?
     console.log('Received delete Request:', payload);
     this.msgService.handleDeleteMsg(payload);
+    // 
   }
 
   // room
