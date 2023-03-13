@@ -68,7 +68,7 @@ function outputMessages(message)
   <div class="chat">
     <!-- <h1 id="chat_text">This is the chat page (for now)</h1> -->
     <body>
-      <div class="chat-container">
+      <div class="chat-container p-8">
         <header class="chat-header">
           <h1><i class="fas fa-smile" /> ChatCord</h1>
           <a
@@ -100,16 +100,21 @@ function outputMessages(message)
             id="chat-form"
             @submit.prevent="chatFormSubmit($event)"
           >
+
             <input
+              style="border-radius: 20px"
               id="msg"
               type="text"
               placeholder="Enter Message"
               required
               autocomplete="off"
             >
-            <button class="btn">
-              <i class="fas fa-paper-plane" /> Send
-            </button>
+
+            <div class="px-2">
+              <button class="btn">
+                <font-awesome-icon icon="paper-plane"/> Send
+              </button>
+            </div>
           </form>
         </div>
       </div>

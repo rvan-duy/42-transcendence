@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
 
 :root {
-	--dark-color-a: #667aff;
-	--dark-color-b: #7386ff;
-	--light-color: #e6e9ff;
+	--dark-color-a: #4299e1;
+	--dark-color-b: #63b3ed;
+	--light-color: #ebf8ff;
 	--success-color: #5cb85c;
 	--error-color: #d9534f;
 }
@@ -30,6 +30,7 @@ a {
 }
 
 .btn {
+	border-radius: 20px;
 	cursor: pointer;
 	padding: 5px 15px;
 	background: var(--light-color);

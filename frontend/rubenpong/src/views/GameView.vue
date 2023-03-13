@@ -3,9 +3,9 @@
 
 <template>
   <div class="item">
-    <div>
-      <div v-if="!matched" style="text-align: center">
-      <h1 class="text-4xl p-16"> Wanna Match? ;)</h1>
+    <div style="text-align: center">
+      <div v-if="!matched" >
+        <h1 class="text-4xl p-16"> Wanna Match? ;)</h1>
         <div>
        
         <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-if="!selectGameMode" @click="selectGameMode = true"> <font-awesome-icon icon="play"/> Play game </button>
@@ -15,13 +15,13 @@
         <div class="p-2"><button class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-if="selectGameMode" @click="createGame('ModeFiesta')">FIESTA</button></div>
         </div>
       </div>
-      <div>
-        <canvas
-          id="pixels"
-          width="1000"
-          height="600"
-          style="border:0px solid #CCCCCC;"
-        />
+      <div class="p-16">
+          <canvas class="canvas"
+            id="pixels"
+            width="1000"
+            height="600"
+            style="border:0px solid #CCCCCC;"
+          />
       </div>
       </div>
   </div>
@@ -227,6 +227,12 @@ document.addEventListener('keyup', stopMovePlat);
 </script>
 
 <style scoped>
+.canvas {
+    padding: 0;
+    margin: auto;
+    display: block;
+    width: 800px;
+}
 /* .item {
 	image-rendering: pixelated;
 	margin-top: 2rem;
