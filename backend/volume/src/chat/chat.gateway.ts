@@ -81,24 +81,38 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // verify that it is either an admin or the client self?
     console.log('Received delete Request:', payload);
     this.msgService.handleDeleteMsg(payload);
-    // 
+  }
+  
+  @SubscribeMessage('createRoom')
+  createNewRoom(client: any, payload: any) { // client verification? / extraction
+      // verify that it is either an admin or the client self?
+      console.log('Received delete Request:', client);
+      this.roomService.createChat(payload);
   }
 
-  // room
-  // create
-  // remove?
-  // invite
-  // admin (make someone admin)
-  
-  // (channel) ban  (ban from channel == cannot rejoin without invite) (with timeout)
-  // mute (player from channel) (with timeout)
+  @SubscribeMessage('destroyRoom')
+  destroyRoom(client: any, payload: any) { // client verification? / extraction
 
-  // creates a chat
-  // @SubscribeMessage('create')
-  // handleCreateChat(client: any, payload: RoomDto) { // client verification?
+  }
 
-  //   // verify that it is either an admin or the client self?
-  //   console.log('Received delete Request:', client);
-  //   this.roomService.createChat(payload);
-  // }
+  // check if this needs to be an invite according to pdf
+  @SubscribeMessage('addUserToRoom')
+  addUserToRoom(client: any, payload: MsgDto) { // client verification? / extraction
+
+  }
+
+  @SubscribeMessage('makeUserAdmin')
+  makeUserAdmin(client: any, payload: MsgDto) { // client verification? / extraction
+
+  }
+
+  @SubscribeMessage('banUserFromRoom')
+  banUserFromRoom(client: any, payload: MsgDto) { // client verification? / extraction
+
+  }
+
+  @SubscribeMessage('muteUserInRoom')
+  muteUserInRoom(client: any, payload: MsgDto) { // client verification? / extraction
+
+  }
 }
