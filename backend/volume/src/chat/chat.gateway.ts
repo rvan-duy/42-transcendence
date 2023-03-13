@@ -9,7 +9,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import * as moment from 'moment';
 import { MsgDto, MsgService } from '../msg/msg.service';
-import { RoomService, roomDto } from 'src/room/room.service';
+import { RoomService } from 'src/room/room.service';
 
 @WebSocketGateway({
   cors: {
@@ -38,7 +38,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log('Gateway initialised.');
   }
 
-  handleConnection(client: Socket, ...args: any[]) {
+  handleConnection(client: Socket) {
     // client.broadcast.emit('msgToClient', this.formatMessage('Rubot','A new user joined the chat.')); //all OTHER clients
     // client.emit('msgToClient', this.formatMessage('Rubot','Welcome to the chat!')); //this client
     // console.log(`Client ${client.id} connected`);
@@ -87,7 +87,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.msgService.handleDeleteMsg(payload);
   }
 
-// room
+  // room
   // create
   // remove?
   // invite

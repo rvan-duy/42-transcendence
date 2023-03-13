@@ -1,7 +1,7 @@
-import { PrismaRoomService } from "./prisma/prismaRoom.service";
-import { Injectable } from "@nestjs/common";
-import { Access, UserTimestamp } from "@prisma/client";
-import { PrismaUserService } from "src/user/prisma/prismaUser.service";
+import { PrismaRoomService } from './prisma/prismaRoom.service';
+import { Injectable } from '@nestjs/common';
+import { Access } from '@prisma/client';
+import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
 
 // enum EAccess {
 //   PRIVATE     = 'private',
@@ -10,9 +10,9 @@ import { PrismaUserService } from "src/user/prisma/prismaUser.service";
 // }
 
 export interface roomDto {
-  name:     string;
-  ownerId:  number;
-  access:   Access;
+  name: string;
+  ownerId: number;
+  access: Access;
 }
 
 @Injectable()
@@ -40,11 +40,11 @@ export class RoomService {
           }
         }
       }
-    })
+    });
   }
 
   async removeChat(roomId: number) {
-    this.prismaRoom.deleteRoom({id: roomId})
+    this.prismaRoom.deleteRoom({id: roomId});
   }
 
   async makeAdmin(roomId: number, userId: number) {
@@ -59,7 +59,7 @@ export class RoomService {
           }
         }
       }
-    })
+    });
   }
 
   async removeAdmin(roomId: number, userId: number) {
@@ -74,7 +74,7 @@ export class RoomService {
           }
         }
       }
-    })
+    });
   }
 
   async banUser(roomId: number, userId: number) {
@@ -90,7 +90,7 @@ export class RoomService {
           }
         }
       }
-    })
+    });
   }
 
   // async muteUser(roomId: number, userId: number) {
