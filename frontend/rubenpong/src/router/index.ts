@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from 'vue-router';
 import { auth } from './auth';
 import privateRoutes from './private';
 import LoginView from '@/views/LoginView.vue';
-import LogoutView from '@/views/LogoutView.vue';
 
 // usefull link: https://itnext.io/vue-router-99e334094362
 
@@ -14,8 +13,8 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
-      path: '/',
-      name: 'home',
+      path: '/login',
+      name: 'login',
       component: LoginView,
       meta: {
         public: true,
@@ -23,38 +22,14 @@ const router = createRouter({
       },
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('@/views/AboutView.vue'),
-    },
-    {
-      path: '/chat',
-      name: 'chat',
-      component: () => import('@/views/ChatView.vue'),
-    },
-    {
-      path: '/game',
-      name: 'game',
-      component: () => import('@/views/GameView.vue'),
-    },
-    {
-      path: '/chatroom',
-      name: 'chatroom',
-      component: () => import('@/views/ChatRoomView.vue'),
-      //   props: route=> ({ username: route.query.username, room: route.query.room})
-    },
-    {
-      path: '/logout',
-      name: 'logout',
-      component: LogoutView,
+      path: '/',
+      name: 'home',
+      component: LoginView,
       meta: {
         public: true,
-        loginPage: true // probaly needed, or not idk we'll see
-      },
-    },
+        loginPage: true
+      }
+    }
   ].concat(privateRoutes), // private routes are in a separate file for readability
 });
 
