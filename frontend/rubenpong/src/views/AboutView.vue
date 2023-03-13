@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import LoginButton from '@/components/buttons/LoginButton.vue';
 
 // This function describes what the Meow-button does onclick.
 // It either runs a GET request to "/cat" of the back-end, and sets the
@@ -27,14 +26,16 @@ function onclickMeow(){
 </script>
 
 <template>
-  <div class="about">
+  <div
+    class="about"
+    style="text-align: center"
+  >
     <h1 id="about_text">
       This is an about page
     </h1>
     <button @click="onclickMeow">
       Meow
     </button>
-    <LoginButton />
   </div>
 </template>
 
