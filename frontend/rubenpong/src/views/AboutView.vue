@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import LoginButton from '@/components/buttons/LoginButton.vue';
 
 // This function describes what the Meow-button does onclick.
 // It either runs a GET request to "/cat" of the back-end, and sets the
