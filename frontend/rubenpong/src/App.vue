@@ -1,132 +1,47 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router';
-import HelloWorld from './components/HelloWorld.vue';
-// import SocketioService from './services/socketio.service.ts';
-// import { useConnectionStore } from './stores/connections.ts';
-</script>
-
-<script lang="ts">
-// const connection_store = useConnectionStore();
-// connection_store.setSocket(SocketioService);
-// const connection = connection_store.getConnection();
-
-// const connection = SocketioService;
-// connection.setupSocketConnection();
-// connection.socket.on('msgToClient', (msg) => {
-//   console.log(`client received message: ${msg}`);
-// });
-// connection.socket.emit('msgToServer', 'Testing');
-
-// export default {
-//   name: 'App',
-//   components: {},
-//   created() {
-// 	const socket = new SocketioService;
-// 	// SocketioService.setupSocketConnection();
-// 	console.log("Please call me :( ");
-//   }
-// }
 </script>
 
 <template>
-  <header>
-    <img
-      alt="Vue logo"
-      class="logo"
-      src="@/assets/logo.svg"
-      width="125"
-      height="125"
-    >
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-      <nav>
-        <RouterLink to="/">
-          Home
-        </RouterLink>
-        <RouterLink to="/about">
+  <nav class="flex items-center justify-between flex-wrap bg-blue-400 p-6">
+    <div class="flex items-center flex-shrink-0 text-white mr-6">
+      <font-awesome-icon icon="table-tennis-paddle-ball" />    <span class="p-2 font-semibold text-xl tracking-tight">RubenPong</span>
+    </div>
+    <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
+      <div class="text-sm lg:flex-grow">
+        <RouterLink
+          class="text-blue-100 p-2 text-lg hover:text-white"
+          to="/about"
+        >
           About
         </RouterLink>
-        <RouterLink to="/game">
+        <RouterLink
+          class="text-blue-100 p-2 text-lg hover:text-white"
+          to="/game"
+        >
           Game
         </RouterLink>
-        <RouterLink to="/matchmaking">
-          Matchmaking
-        </RouterLink>
-        <RouterLink to="/chat">
+        <RouterLink
+          class="text-blue-100 p-2 text-lg hover:text-white"
+          to="/chat"
+        >
           Chat
         </RouterLink>
-        <RouterLink to="/login">
-          Log in
+        <RouterLink
+          class="text-blue-100 p-2 text-lg hover:text-white"
+          to="/logout"
+        >
+          Log Out
         </RouterLink>
-      </nav>
+      </div>
     </div>
-  </header>
+  </nav>
   <br>
 
   <RouterView />
 </template>
+<script lang="ts">
+import { RouterLink, RouterView } from 'vue-router';
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
+</script>
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
-
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
-</style>
+<style src="./assets/main.css"></style>

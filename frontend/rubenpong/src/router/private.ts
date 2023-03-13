@@ -2,7 +2,7 @@ import AboutView from '@/views/AboutView.vue';
 import ChatView from '@/views/ChatView.vue';
 import ChatRoomView from '@/views/ChatRoomView.vue';
 import GameView from '@/views/GameView.vue';
-import MatchMakingView from '@/views/MatchMakingView.vue';
+import LogoutView from '@/views/LogoutView.vue';
 
 const routes = [
   {
@@ -26,9 +26,9 @@ const routes = [
     component: GameView,
   },
   {
-    path: '/matchmaking',
-    name: 'matchmaking',
-    component: MatchMakingView,
+    path: '/logout',
+    name: 'logout',
+    component: LogoutView,
   },
 ];
 

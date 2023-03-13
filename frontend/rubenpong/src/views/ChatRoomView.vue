@@ -68,7 +68,7 @@ function outputMessages(message)
   <div class="chat">
     <!-- <h1 id="chat_text">This is the chat page (for now)</h1> -->
     <body>
-      <div class="chat-container">
+      <div class="chat-container p-8">
         <header class="chat-header">
           <h1><i class="fas fa-smile" /> ChatCord</h1>
           <a
@@ -102,14 +102,18 @@ function outputMessages(message)
           >
             <input
               id="msg"
+              style="border-radius: 20px"
               type="text"
               placeholder="Enter Message"
               required
               autocomplete="off"
             >
-            <button class="btn">
-              <i class="fas fa-paper-plane" /> Send
-            </button>
+
+            <div class="px-2">
+              <button class="btn">
+                <font-awesome-icon icon="paper-plane" /> Send
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -117,7 +121,7 @@ function outputMessages(message)
   </div>
 </template>
 
-<style>
+<style src="../assets/chat.css">
 @media (min-width: 1024px) {
   .chat {
     min-height: 100vh;
