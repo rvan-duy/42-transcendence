@@ -27,7 +27,10 @@ function onclickMeow(){
 </script>
 
 <template>
-  <div class="about" style="text-align: center">
+  <div
+    class="about"
+    style="text-align: center"
+  >
     <h1 id="about_text">
       This is an about page
     </h1>

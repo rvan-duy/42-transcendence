@@ -1,3 +1,4 @@
+/* eslint-env node */
 // const tailwindcss = require('tailwindcss');
 
 module.exports = {
@@ -5,4 +6,4 @@ module.exports = {
     tailwindcss: {},
     autoprefixer: {},
   },
-}
+};

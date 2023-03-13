@@ -100,10 +100,9 @@ function outputMessages(message)
             id="chat-form"
             @submit.prevent="chatFormSubmit($event)"
           >
-
             <input
-              style="border-radius: 20px"
               id="msg"
+              style="border-radius: 20px"
               type="text"
               placeholder="Enter Message"
               required
@@ -112,7 +111,7 @@ function outputMessages(message)
 
             <div class="px-2">
               <button class="btn">
-                <font-awesome-icon icon="paper-plane"/> Send
+                <font-awesome-icon icon="paper-plane" /> Send
               </button>
             </div>
           </form>

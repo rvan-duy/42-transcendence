@@ -5,11 +5,11 @@ import LoginButton from '@/components/buttons/LoginButton.vue';
 
 <template>
   <div class="item">
-    <div class="p-32" style="text-align: center">
-   
-    <LoginButton />
+    <div
+      class="p-32"
+      style="text-align: center"
+    >
+      <LoginButton />
+    </div>
   </div>
- 
-  </div>
-  
 </template>

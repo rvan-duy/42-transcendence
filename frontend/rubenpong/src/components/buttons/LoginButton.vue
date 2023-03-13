@@ -1,20 +1,20 @@
 <script setup lang="ts">
 
-
-
 </script>
 
 <template>
- <div v-if="!loggedIn">
-    <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" @click="loginWith42">
+  <div v-if="!loggedIn">
+    <button
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+      @click="loginWith42"
+    >
       Log in with 42
     </button>
- </div>
+  </div>
   <div v-else-if="loggedIn">
     <p>Succesfully Logged in!</p>
   </div>
 </template>
-
 
 <script lang="ts">
 // import CurrentGameState from 'game.service'
@@ -28,18 +28,18 @@ export default {
       responseType : 'code',
       state : 'RubenRubenEnDeRest',
      
-    }
+    };
   },
   methods: {
     loginWith42() {
       console.log('Redirecting to 42...');
-      let  authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${this.clientId}&redirect_uri=${this.redirectUri}&response_type=${this.responseType}&state=${this.state}`;
+      const authUrl = `https://api.intra.42.fr/oauth/authorize?client_id=${this.clientId}&redirect_uri=${this.redirectUri}&response_type=${this.responseType}&state=${this.state}`;
       window.location.href = authUrl;
       this.loggedIn = true;
       
     },
   },
-}
+};
 </script>
 
 <style scoped>

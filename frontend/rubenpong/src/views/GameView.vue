@@ -4,44 +4,80 @@
 <template>
   <div class="item">
     <div style="text-align: center">
-      <div v-if="!matched" >
-        <h1 class="text-4xl p-16"> Wanna Match? ;)</h1>
+      <div v-if="!matched">
+        <h1 class="text-4xl p-16">
+          Wanna Match? ;)
+        </h1>
         <div>
-       
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-if="!selectGameMode" @click="selectGameMode = true"> <font-awesome-icon icon="play"/> Play game </button>
-        <div class="p-2"><button class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-if="selectGameMode" @click="createGame('ModeNormal')">NORMAL</button></div>
-        <div class="p-2"><button class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-if="selectGameMode" @click="createGame('ModeFreeMove')">FREEMOVE</button></div>
-        <div class="p-2"><button class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-if="selectGameMode" @click="createGame('ModePowerUp')">POWERUP</button></div>
-        <div class="p-2"><button class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full" v-if="selectGameMode" @click="createGame('ModeFiesta')">FIESTA</button></div>
+          <button
+            v-if="!selectGameMode"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+            @click="selectGameMode = true"
+          >
+            <font-awesome-icon icon="play" /> Play game
+          </button>
+          <div class="p-2">
+            <button
+              v-if="selectGameMode"
+              class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+              @click="createGame('ModeNormal')"
+            >
+              NORMAL
+            </button>
+          </div>
+          <div class="p-2">
+            <button
+              v-if="selectGameMode"
+              class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+              @click="createGame('ModeFreeMove')"
+            >
+              FREEMOVE
+            </button>
+          </div>
+          <div class="p-2">
+            <button
+              v-if="selectGameMode"
+              class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+              @click="createGame('ModePowerUp')"
+            >
+              POWERUP
+            </button>
+          </div>
+          <div class="p-2">
+            <button
+              v-if="selectGameMode"
+              class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+              @click="createGame('ModeFiesta')"
+            >
+              FIESTA
+            </button>
+          </div>
         </div>
       </div>
       <div class="p-16">
-          <canvas class="canvas"
-            id="pixels"
-            width="1000"
-            height="600"
-            style="border:0px solid #CCCCCC;"
-          />
+        <canvas
+          id="pixels"
+          class="canvas"
+          width="1000"
+          height="600"
+          style="border:0px solid #CCCCCC;"
+        />
       </div>
-      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import io from 'socket.io-client';
-import { defineComponent } from 'vue';
-import HelloWorld from './../components/HelloWorld.vue';
-// import CurrentGameState from 'game.service'
-export default  defineComponent({
-  components:{
-    HelloWorld,
-  },
+export default {
+
   data()
   {
     return {
       selectGameMode: false,
-      matched: false
-    }
+      matched: false,
+      gameMode : ''
+    };
   },
   mounted() {
     var canvas: HTMLCanvasElement = document.getElementById('pixels') as HTMLCanvasElement;
@@ -91,7 +127,7 @@ socket.on('pos', (data: any) => {
       }
       if (datas.score[0] >= 5 )
       {
-        ctx.fillText('You won!', canvas.width /  2 - 100, canvas.height / 2);
+        ctx.fillText('You won!', canvas.width / 2 - 100, canvas.height / 2);
         return ;
       }
     }
@@ -220,10 +256,11 @@ document.addEventListener('keyup', stopMovePlat);
   methods: {
     createGame(gameMode:string)
     {
+      this.gameMode = gameMode;
       this.matched = true;
     }
   },
-});
+};
 </script>
 
 <style scoped>
@@ -233,65 +270,4 @@ document.addEventListener('keyup', stopMovePlat);
     display: block;
     width: 800px;
 }
-/* .item {
-	image-rendering: pixelated;
-	margin-top: 2rem;
-	display: flex;
-}
-.details {
-	flex: 1;
-	margin-left: 1rem;
-}
-i {
-	display: flex;
-	place-items: center;
-	place-content: center;
-	width: 32px;
-	height: 32px;
-	color: var(--color-text);
-}
-h3 {
-	font-size: 1.2rem;
-	font-weight: 500;
-	margin-bottom: 0.4rem;
-	color: var(--color-heading);
-}
-@media (min-width: 1024px) {
-	.item {
-		margin-top: 0;
-		padding: 0.4rem 0 1rem calc(var(--section-gap) / 2);
-	}
-	i {
-		top: calc(50% - 25px);
-		left: -26px;
-		position: absolute;
-		border: 1px solid var(--color-border);
-		background: var(--color-background);
-		border-radius: 8px;
-		width: 50px;
-		height: 50px;
-	}
-	.item:before {
-		content: " ";
-		border-left: 1px solid var(--color-border);
-		position: absolute;
-		left: 0;
-		bottom: calc(50% + 25px);
-		height: calc(50% - 25px);
-	}
-	.item:after {
-		content: " ";
-		border-left: 1px solid var(--color-border);
-		position: absolute;
-		left: 0;
-		top: calc(50% + 25px);
-		height: calc(50% - 25px);
-	}
-	.item:first-of-type:before {
-		display: none;
-	}
-	.item:last-of-type:after {
-		display: none;
-	}
-} */
 </style>
