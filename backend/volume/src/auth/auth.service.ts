@@ -37,6 +37,11 @@ export class AuthService {
   }
 
   /*
+   * Request authorization from the 42 API
+   */
+
+
+  /*
    * Request user data from the 42 API
    */
   async requestUserData(token: string) {

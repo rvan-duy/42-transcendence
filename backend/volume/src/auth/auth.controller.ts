@@ -18,18 +18,53 @@
  * - Add tests
 */
 
-import { Controller, Get, Post, Req, Query, Res, } from '@nestjs/common';
-// import { Request, Response } from 'express'; // will be used later
+import { Controller, UseGuards, Get, Post, Req, Query, Res, } from '@nestjs/common';
 import { AuthService } from './auth.service';
+import { AuthGuard } from '@nestjs/passport';
 import { StatusCodes, ResponseMessages } from '../constants';
 import axios from 'axios';
 
+import { Session } from '@nestjs/common';
+import { Session as ExpressSession } from 'express-session';
+
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly AuthService: AuthService) {}
+  constructor(
+    private readonly AuthService: AuthService,
+    ) {}
 
+  @Get('test')
+  @UseGuards(AuthGuard('ft'))
+  async test(@Req() req, @Res() res) {
+    console.log('hello', req.body);
+    return res.status(StatusCodes.Ok).send('hello');
+  }
+
+  @Get('test2')
+  someMethod(@Session() session: ExpressSession) {
+    return session;
+  }
+
+  /*
+   * Sends a GET to 42 API
+   * Waits for response
+   * Parses response
+   * Checks if user is in database and does one of two things
+   * 1. Creates a new user and sends back success frontend (200)
+            Maybe different error code?
+   * 2. User already exists so just sends back success to frontend (200)
+   * Catch exceptions
+   */
   @Post('authorize')
+  @UseGuards(AuthGuard('ft'))
   async authorize(@Req() req, @Res() res) {
+    
+    // Check cookie, do we recognize the user?
+    // If yes, redirect to home page
+    // If no, continue with authorization
+
+
+    
     console.log('hello', req.body);
     return res.status(StatusCodes.Ok).send('hello');
   }
@@ -37,9 +72,12 @@ export class AuthController {
   @Get('callback')
   async callback(@Req() req, @Res() res, @Query('code') code: string, @Query('state') state: string) {
 
-    if (state !== process.env.STATE_VALUE) {
-      return res.status(StatusCodes.BadRequest).send(ResponseMessages.InvalidRequest);
-    }
+    // console.log('state: ', state);
+    // console.log('req.session.state: ', req.session.state);
+
+    // if (state !== session.secret) {
+    //   return res.status(StatusCodes.BadRequest).send(ResponseMessages.InvalidRequest);
+    // }
 
     try {
       const token = await this.AuthService.requestAccessToken(code);
