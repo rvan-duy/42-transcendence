@@ -14,15 +14,7 @@ const router = createRouter({
   routes: [
     {
       path: '/login',
-      name: 'login',
-      component: LoginView,
-      meta: {
-        public: true,
-        loginPage: true // probaly needed, or not idk we'll see
-      },
-    },
-    {
-      path: '/',
+      alias: '/',
       name: 'home',
       component: LoginView,
       meta: {
