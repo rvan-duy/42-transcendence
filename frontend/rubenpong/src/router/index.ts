@@ -1,8 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import { auth } from './auth';
 import privateRoutes from './private';
-import LoginView from '@/views/LogInView.vue';
-import HomeView from '@/views/HomeView.vue';
+import LoginView from '@/views/LoginView.vue';
 
 // usefull link: https://itnext.io/vue-router-99e334094362
 
@@ -15,20 +14,12 @@ const router = createRouter({
   routes: [
     {
       path: '/login',
-      name: 'login',
+      alias: '/',
+      name: 'home',
       component: LoginView,
       meta: {
         public: true,
-        loginPage: true // probaly needed, or not idk we'll see
-      },
-    },
-    {
-      path: '/',
-      name: 'home',
-      component: HomeView,
-      meta: {
-        public: true,
-        loginPage: false
+        loginPage: true
       }
     }
   ].concat(privateRoutes), // private routes are in a separate file for readability
