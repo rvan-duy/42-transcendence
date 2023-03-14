@@ -91,27 +91,33 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('destroyRoom')
   destroyRoom(client: any, payload: any) { // client verification? / extraction
-
+    const roomId: number = payload;
+    this.roomService.removeChat(roomId)
   }
 
   // check if this needs to be an invite according to pdf || think adding is enough
   @SubscribeMessage('addUserToRoom')
   addUserToRoom(client: any, payload: any) { // client verification? / extraction
-
+    const {roomId, userId} = payload;
+    this.roomService.addToChat(userId, roomId);
   }
 
   @SubscribeMessage('makeUserAdmin')
   makeUserAdmin(client: any, payload: any) { // client verification? / extraction
-
+    const {roomId, userId} = payload;
+    // check if the user sending this is admin or owner!
+    this.roomService.makeAdmin(roomId, userId);
   }
 
   @SubscribeMessage('banUserFromRoom')
   banUserFromRoom(client: any, payload: any) { // client verification? / extraction
-
+    const {roomId, userId} = payload;
+    // check if the user sending this is admin or owner!
+    this.roomService.banUser(roomId, userId);
   }
 
   @SubscribeMessage('muteUserInRoom')
   muteUserInRoom(client: any, payload: any) { // client verification? / extraction
-
+    // not implemented yet
   }
 }
