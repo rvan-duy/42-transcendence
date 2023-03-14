@@ -42,11 +42,8 @@ export class PrismaUserService {
     return this.prisma.user.upsert({
       where: { intraId },
       update: {},
-      create: {
-        intraId,
-        name,
-      },
-    })
+      create: { intraId, name },
+    });
   }
 
   async updateUser(params: {
