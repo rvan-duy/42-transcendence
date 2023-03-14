@@ -7,9 +7,8 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import * as moment from 'moment';
 import { MsgDto, MsgService } from '../msg/msg.service';
-import { RoomService } from 'src/room/room.service';
+import { roomDto, RoomService } from 'src/room/room.service';
 
 @WebSocketGateway({
   cors: {
@@ -84,7 +83,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
   
   @SubscribeMessage('createRoom')
-  createNewRoom(client: any, payload: any) { // client verification? / extraction
+  createNewRoom(client: any, payload: roomDto) { // client verification? / extraction
       // verify that it is either an admin or the client self?
       console.log('Received delete Request:', client);
       this.roomService.createChat(payload);
@@ -95,24 +94,24 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   }
 
-  // check if this needs to be an invite according to pdf
+  // check if this needs to be an invite according to pdf || think adding is enough
   @SubscribeMessage('addUserToRoom')
-  addUserToRoom(client: any, payload: MsgDto) { // client verification? / extraction
+  addUserToRoom(client: any, payload: any) { // client verification? / extraction
 
   }
 
   @SubscribeMessage('makeUserAdmin')
-  makeUserAdmin(client: any, payload: MsgDto) { // client verification? / extraction
+  makeUserAdmin(client: any, payload: any) { // client verification? / extraction
 
   }
 
   @SubscribeMessage('banUserFromRoom')
-  banUserFromRoom(client: any, payload: MsgDto) { // client verification? / extraction
+  banUserFromRoom(client: any, payload: any) { // client verification? / extraction
 
   }
 
   @SubscribeMessage('muteUserInRoom')
-  muteUserInRoom(client: any, payload: MsgDto) { // client verification? / extraction
+  muteUserInRoom(client: any, payload: any) { // client verification? / extraction
 
   }
 }
