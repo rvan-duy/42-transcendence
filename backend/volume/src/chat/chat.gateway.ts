@@ -10,6 +10,7 @@ import { Server, Socket } from 'socket.io';
 import * as moment from 'moment';
 import { MsgDto, MsgService } from '../msg/msg.service';
 import { RoomService } from 'src/room/room.service';
+// import { GateService } from 'src/gate/gate.service';
 
 @WebSocketGateway({
   cors: {
@@ -22,6 +23,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   private server: Server;
   private msgService: MsgService;
   private roomService: RoomService;
+  // private gateService: GateService;
 
   @WebSocketServer() all_clients: Server; //all clients
 
