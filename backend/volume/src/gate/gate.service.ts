@@ -1,52 +1,35 @@
 import { Injectable } from "@nestjs/common";
 import { Socket } from "dgram";
 
-interface socketContainer {
-  gameSocket: Socket,
-  chatSockets: Socket[],
+function getKeysByValue(map: Map<any, any>, searchValue: any): any[] {
+  let keys: any[] = [];
+  for (let [key, value] of map.entries()) {
+    if (value === searchValue) {
+      keys.push(key);
+    }
+  }
+  return keys;
 }
 
 @Injectable()
 export class GateService {
   constructor(){}
-  private usersOnline: Map<number, socketContainer>;
+  private userBySocket: Map<Socket, number>;
 
-  addChatSocket(userId: number, sock: Socket) {
-    let tmpSock: socketContainer;
-    if (this.usersOnline.has(userId)) {
-      tmpSock = this.usersOnline[userId]
-      tmpSock.chatSockets.push(sock);
-      this.usersOnline.set
-    } else {
-      tmpSock = {
-        gameSocket: undefined,
-        chatSockets: [sock],
-      }
-    }
-    this.usersOnline.set(userId, tmpSock);
+  addSocket(userId: number, sock: Socket) {
+    this.userBySocket.set(sock, userId);
   }
 
-  setGameSocket(userId: number, sock: Socket) {
-    let tmpSock: socketContainer;
-    tmpSock = this.usersOnline.get(userId);
-    tmpSock.gameSocket = sock;
-    this.usersOnline.set(userId, tmpSock);
+  removeSocket(sock: Socket) {
+    this.userBySocket.delete(sock)
   }
 
-  deleteChatSocket(userId: number, sock: Socket) {
-    let container = this.usersOnline.get(userId);
-    const index = container.chatSockets.indexOf(sock);
-    container.chatSockets.splice(index, 1);
-    this.usersOnline.set(userId, container);
+  async getSocketsByUser(userId: number): Promise<Socket[]> {
+    const allUserChatSockets = getKeysByValue(this.userBySocket, userId);
+    return allUserChatSockets;
   }
 
-  async getUserGameSocket(userId: number): Promise<Socket>  {
-    const container = this.usersOnline.get(userId);
-    return container.gameSocket;
-  }
-
-  async getUserChatSockets(userId: number): Promise<Socket[]> {
-    const container = this.usersOnline.get(userId);
-    return container.chatSockets;
+  async getUserBySocket(socket: Socket): Promise<number>  {
+    return this.userBySocket.get(socket);
   }
 }
