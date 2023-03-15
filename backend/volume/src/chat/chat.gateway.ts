@@ -26,12 +26,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
   @SubscribeMessage('sendMsg')
   handleMessage(client: Socket, packet: any) {
-      const user = packet.username;
-      const text = packet.msg;
-      console.log(`Server received msg: "${text}" from client: ${client.id} (${user})`);
-      this.all_clients.emit('receiveNewMsg', this.formatMessage(user, text));
-      // this.msgService.handleIncomingMsg(payload);  // handles db placement of the new msg based on sender id
-    }
+    const user = packet.username;
+    const text = packet.msg;
+    console.log(`Server received msg: "${text}" from client: ${client.id} (${user})`);
+    this.all_clients.emit('receiveNewMsg', this.formatMessage(user, text));
+    // this.msgService.handleIncomingMsg(payload);  // handles db placement of the new msg based on sender id
+  }
 
   afterInit(server: Server) {
     this.server = server;
@@ -73,7 +73,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     client.emit('loadChatHistory', data);
   }
 
-
   @SubscribeMessage('deleteMsg')
   handleDeleteMsg(client: any, payload: MsgDto) { // client verification?
 
@@ -84,15 +83,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
   @SubscribeMessage('createRoom')
   createNewRoom(client: any, payload: roomDto) { // client verification? / extraction
-      // verify that it is either an admin or the client self?
-      console.log('Received delete Request:', client);
-      this.roomService.createChat(payload);
+    // verify that it is either an admin or the client self?
+    console.log('Received delete Request:', client);
+    this.roomService.createChat(payload);
   }
 
   @SubscribeMessage('destroyRoom')
   destroyRoom(client: any, payload: any) { // client verification? / extraction
     const roomId: number = payload;
-    this.roomService.removeChat(roomId)
+    this.roomService.removeChat(roomId);
   }
 
   // check if this needs to be an invite according to pdf || think adding is enough
@@ -119,5 +118,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('muteUserInRoom')
   muteUserInRoom(client: any, payload: any) { // client verification? / extraction
     // not implemented yet
+    console.warn(`${client} is unused`);
+    console.warn(`${payload} is unused`);
   }
 }

@@ -44,7 +44,7 @@ async function main() {
 
     create: {
 
-      name: "gameRoom",
+      name: 'gameRoom',
 
       owner: {
         connect: {
@@ -64,7 +64,6 @@ async function main() {
     },
 
   });
-
 
   console.log({ alice, bob, chad });
 
