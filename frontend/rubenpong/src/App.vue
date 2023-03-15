@@ -35,9 +35,15 @@
         </RouterLink>
         
       </div>
-      <div class="columns-1">
-      <img src="./assets/dagmar.jpeg" width="50" height="50" class="pr-2" style="border-radius: 50%; float: right;"/>
-      <div><p class="text-white text-xs">dkramer</p></div>
+      <div class="columns-1" style="text-align: center; float: right;">
+         <RouterLink
+          to="/user" 
+        >
+          <img src="./assets/dagmar.jpeg" width="50" height="50" style="border-radius: 50%"/>
+      <figcaption class="text-white text-xs p-1">{{name}}</figcaption>
+    
+        </RouterLink>
+      
       </div>
     </div>
   </nav>
@@ -59,16 +65,19 @@ export default {
       
     };
   },
-  mounted() {
-  fetch('http://localhost:3000/user/me')
+  async created () {
+  let name: string = '';
+
+    await fetch('http://localhost:3000/user/me')
     .then(function(res){
       return res.json();
     })
     .then(function(data){
-      this.name = data.name;
+      name = data.name;
       console.log(data);
     });
-  }
+    this.name = name;
+  },
 }
 </script>
 
