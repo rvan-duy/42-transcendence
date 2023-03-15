@@ -29,7 +29,7 @@ async function getUsername(){
 
 connection.setupSocketConnection('/chat');
 // connection.socket.on('connection', () => {console.log('Chat client connected');});
-connection.socket.on('msgToClient', (msg) => {
+connection.socket.on('receiveNewMsg', (msg) => {
   console.log(`client received message: ${msg}`);
   outputMessages(msg);
 });
@@ -42,7 +42,7 @@ async function chatFormSubmit(e){
   packet.username = await getUsername();
   console.log(packet.username);
   console.log(packet);
-  connection.socket.emit('msgToServer', packet);
+  connection.socket.emit('sendMsg', packet);
   msg.value = ''; //clears the message text you just entered
   msg.focus(); //focuses on the text input area again after sending
 }

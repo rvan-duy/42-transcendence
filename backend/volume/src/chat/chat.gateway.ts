@@ -29,7 +29,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const user = packet.username;
       const text = packet.msg;
       console.log(`Server received msg: "${text}" from client: ${client.id} (${user})`);
-      this.all_clients.emit('msgToClient', this.formatMessage(user, text));
+      this.all_clients.emit('receiveNewMsg', this.formatMessage(user, text));
       // this.msgService.handleIncomingMsg(payload);  // handles db placement of the new msg based on sender id
     }
 
