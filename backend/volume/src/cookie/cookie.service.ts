@@ -12,7 +12,7 @@ function getKeyByValue(map: Map<any, any>, searchValue: any): any {
 @Injectable()
 export class CookieService {
   constructor(){}
-  private userByCookie: Map<string, number>;
+  private userByCookie: Map<string, number> = new Map();
 
   addCookie(userId: number, sock: string) {
     this.userByCookie.set(sock, userId);

@@ -14,7 +14,7 @@ function getKeysByValue(map: Map<any, any>, searchValue: any): any[] {
 @Injectable()
 export class GateService {
   constructor(){}
-  private userBySocket: Map<Socket, number>;
+  private userBySocket: Map<Socket, number> = new Map();
 
   addSocket(userId: number, sock: Socket) {
     this.userBySocket.set(sock, userId);
@@ -29,7 +29,7 @@ export class GateService {
     return allUserChatSockets;
   }
 
-  async getUserBySocket(socket: Socket): Promise<number>  {
+  async getUserBySocket(socket: Socket): Promise<number> {
     return this.userBySocket.get(socket);
   }
 }
