@@ -6,7 +6,6 @@ import axios from 'axios';
 export class auth {
 
   static isLoggedIn(): boolean {
-    return true;
     const cookie = document.cookie;
     if (!cookie) {
       console.log('No cookie found');
