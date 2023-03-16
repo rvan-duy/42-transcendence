@@ -19,32 +19,28 @@ import { roomDto, RoomService } from 'src/room/room.service';
   namespace: '/chat',
 })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-	constructor(
-		private msgService: MsgService, //THESE ARENT INITIALISED ANYWHERE.
-		private roomService: RoomService, //THESE ARENT INITIALISED ANYWHERE.
-	){}
+  constructor(
+		private msgService: MsgService,
+		private roomService: RoomService,
+  ){}
   private server: Server;
 
   @WebSocketServer() all_clients: Server; //all clients
   
   @SubscribeMessage('sendMsg')
   handleMessage(client: Socket, packet: any) {
-	const id = packet.id;
+    const id = packet.id;
     const user = packet.username;
     const text = packet.msg;
     console.log(`Server received msg: "${text}" from client: ${client.id} (${user})`);
     this.all_clients.emit('receiveNewMsg', this.formatMessage(user, text));
 	
-	var dto: MsgDto = {id: -1, roomId: -1, body: packet.msg, authorId: packet.id, invite: false};
-	console.log(dto);
-	console.log(typeof this.msgService);
+    const dto: MsgDto = {id: -1, roomId: 1, body: text, authorId: id, invite: false};
     this.msgService.handleIncomingMsg(dto);  // handles db placement of the new msg based on sender id
   }
 
   afterInit(server: Server) {
     this.server = server;
-	// this.msgService = new MsgService();
-	// this.roomService = new RoomService(PrismaMsgService);
     console.log('Gateway initialised.');
   }
 

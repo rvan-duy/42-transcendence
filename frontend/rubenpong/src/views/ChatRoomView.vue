@@ -22,8 +22,8 @@ async function getUserInfo(){
       {
         var data = await res.json();
         username = data.name;
-		id = data.id;
-		intraId = data.intraId;
+        id = data.id;
+        intraId = data.intraId;
       })
       .catch(error => console.log('Failed to fetch user : ' + error.message));
   }

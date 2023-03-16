@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Room, Prisma } from '@prisma/client'; // Module '"@prisma/client"' has no exported member 'Room'.
+import { Room, Prisma } from '@prisma/client';
 
 @Injectable()
 export class PrismaRoomService {
