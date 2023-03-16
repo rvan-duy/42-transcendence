@@ -9,6 +9,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { MsgDto, MsgService } from '../msg/msg.service';
 import { roomDto, RoomService } from 'src/room/room.service';
+// import { PrismaMsgService } from 'src/msg/prisma/prismaMsg.service';
 
 @WebSocketGateway({
   cors: {
@@ -19,22 +20,29 @@ import { roomDto, RoomService } from 'src/room/room.service';
 })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private server: Server;
-  private msgService: MsgService;
-  private roomService: RoomService;
-  
+  private msgService: MsgService; //THESE ARENT INITIALISED ANYWHERE.
+  private roomService: RoomService; //THESE ARENT INITIALISED ANYWHERE.
+
   @WebSocketServer() all_clients: Server; //all clients
   
   @SubscribeMessage('sendMsg')
   handleMessage(client: Socket, packet: any) {
+	const id = packet.id;
     const user = packet.username;
     const text = packet.msg;
     console.log(`Server received msg: "${text}" from client: ${client.id} (${user})`);
     this.all_clients.emit('receiveNewMsg', this.formatMessage(user, text));
-    // this.msgService.handleIncomingMsg(payload);  // handles db placement of the new msg based on sender id
+	
+	var dto: MsgDto = {id: -1, roomId: -1, body: packet.msg, authorId: packet.id, invite: false};
+	console.log(dto);
+	console.log(typeof this.msgService);
+    this.msgService.handleIncomingMsg(dto);  // handles db placement of the new msg based on sender id
   }
 
   afterInit(server: Server) {
     this.server = server;
+	// this.msgService = new MsgService();
+	// this.roomService = new RoomService(PrismaMsgService);
     console.log('Gateway initialised.');
   }
 
