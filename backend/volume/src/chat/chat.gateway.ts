@@ -19,9 +19,11 @@ import { roomDto, RoomService } from 'src/room/room.service';
   namespace: '/chat',
 })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+	constructor(
+		private msgService: MsgService, //THESE ARENT INITIALISED ANYWHERE.
+		private roomService: RoomService, //THESE ARENT INITIALISED ANYWHERE.
+	){}
   private server: Server;
-  private msgService: MsgService; //THESE ARENT INITIALISED ANYWHERE.
-  private roomService: RoomService; //THESE ARENT INITIALISED ANYWHERE.
 
   @WebSocketServer() all_clients: Server; //all clients
   
