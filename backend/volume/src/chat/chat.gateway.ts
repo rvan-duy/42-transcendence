@@ -7,9 +7,9 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import * as moment from 'moment';
 import { MsgDto, MsgService } from '../msg/msg.service';
-import { RoomService } from 'src/room/room.service';
+import { roomDto, RoomService } from 'src/room/room.service';
+// import { PrismaMsgService } from 'src/msg/prisma/prismaMsg.service';
 
 @WebSocketGateway({
   cors: {
@@ -19,18 +19,24 @@ import { RoomService } from 'src/room/room.service';
   namespace: '/chat',
 })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+  constructor(
+		private msgService: MsgService,
+		private roomService: RoomService,
+  ){}
   private server: Server;
-  private msgService: MsgService;
-  private roomService: RoomService;
 
   @WebSocketServer() all_clients: Server; //all clients
-
-  @SubscribeMessage('msgToServer')
+  
+  @SubscribeMessage('sendMsg')
   handleMessage(client: Socket, packet: any) {
+    const id = packet.id;
     const user = packet.username;
     const text = packet.msg;
     console.log(`Server received msg: "${text}" from client: ${client.id} (${user})`);
-    this.all_clients.emit('msgToClient', this.formatMessage(user, text));
+    this.all_clients.emit('receiveNewMsg', this.formatMessage(user, text));
+	
+    const dto: MsgDto = {id: -1, roomId: 1, body: text, authorId: id, invite: false};
+    this.msgService.handleIncomingMsg(dto);  // handles db placement of the new msg based on sender id
   }
 
   afterInit(server: Server) {
@@ -43,7 +49,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // client.emit('msgToClient', this.formatMessage('Rubot','Welcome to the chat!')); //this client
     // console.log(`Client ${client.id} connected`);
 
-    client.emit('init'); // data, all chats roomDto[]
+    client.emit('loadAllChats'); // data, all chats roomDto[]
   }
 
   handleDisconnect(client: Socket) {
@@ -56,52 +62,69 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return {
       username: username,
       body: message_body,
-      time: moment().add(1, 'hours').format('HH:mm')
+      time: new Date()
     };
   }
 
-  addMessage(msg: MsgDto) {
-    this.server.emit('add', msg);
+  // send update to all ppl in chat who are online
+  spreadMessage(msg: MsgDto) {
+    this.server.emit('receiveNewMsg', msg);
   }
 
-  @SubscribeMessage('load')
-  handleLoad(client: any, roomId: number) { // client verification?
+  @SubscribeMessage('loadRequest')
+  async handleLoad(client: any, roomId: number) { // client verification?
     console.log('/chat/load received roomId:', roomId);
 
-    const data = this.msgService.getChatHistory(roomId);
-    client.emit('load', data);
+    const data = await this.msgService.getChatHistory(roomId);
+    client.emit('loadChatHistory', data);
   }
 
-  @SubscribeMessage('send')
-  handleNewMsg(client: any, payload: MsgDto) { // client verification?
-    console.log('Received payload:', payload);
-
-    this.msgService.handleIncomingMsg(payload);
-  }
-
-  @SubscribeMessage('delete')
+  @SubscribeMessage('deleteMsg')
   handleDeleteMsg(client: any, payload: MsgDto) { // client verification?
 
     // verify that it is either an admin or the client self?
     console.log('Received delete Request:', payload);
     this.msgService.handleDeleteMsg(payload);
   }
-
-  // room
-  // create
-  // remove?
-  // invite
-  // admin (make someone admin)
   
-  // (channel) ban  (ban from channel == cannot rejoin without invite) (with timeout)
-  // mute (player from channel) (with timeout)
+  @SubscribeMessage('createRoom')
+  createNewRoom(client: any, payload: roomDto) { // client verification? / extraction
+    // verify that it is either an admin or the client self?
+    console.log('Received delete Request:', client);
+    this.roomService.createChat(payload);
+  }
 
-  // creates a chat
-  // @SubscribeMessage('create')
-  // handleCreateChat(client: any, payload: RoomDto) { // client verification?
+  @SubscribeMessage('destroyRoom')
+  destroyRoom(client: any, payload: any) { // client verification? / extraction
+    const roomId: number = payload;
+    this.roomService.removeChat(roomId);
+  }
 
-  //   // verify that it is either an admin or the client self?
-  //   console.log('Received delete Request:', client);
-  //   this.roomService.createChat(payload);
-  // }
+  // check if this needs to be an invite according to pdf || think adding is enough
+  @SubscribeMessage('addUserToRoom')
+  addUserToRoom(client: any, payload: any) { // client verification? / extraction
+    const {roomId, userId} = payload;
+    this.roomService.addToChat(userId, roomId);
+  }
+
+  @SubscribeMessage('makeUserAdmin')
+  makeUserAdmin(client: any, payload: any) { // client verification? / extraction
+    const {roomId, userId} = payload;
+    // check if the user sending this is admin or owner!
+    this.roomService.makeAdmin(roomId, userId);
+  }
+
+  @SubscribeMessage('banUserFromRoom')
+  banUserFromRoom(client: any, payload: any) { // client verification? / extraction
+    const {roomId, userId} = payload;
+    // check if the user sending this is admin or owner!
+    this.roomService.banUser(roomId, userId);
+  }
+
+  @SubscribeMessage('muteUserInRoom')
+  muteUserInRoom(client: any, payload: any) { // client verification? / extraction
+    // not implemented yet
+    console.warn(`${client} is unused`);
+    console.warn(`${payload} is unused`);
+  }
 }
