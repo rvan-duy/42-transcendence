@@ -62,6 +62,7 @@ model Msg {
   author    User? @relation(fields: [authorId], references: [id])
   authorId  Int
   invite    Boolean // ? how ?
+  timestamp DateTime @default(now())
 }
 
 model Game  {

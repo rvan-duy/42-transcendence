@@ -7,29 +7,33 @@ import SocketioService from '../services/socketio.service.js';
 const connection = SocketioService;
 
 var username;
+var id;
+var intraId;
 
-async function getUsername(){
-  if (typeof username !== 'undefined'){
-    console.log('Username already fetched');
-    return username;
+async function getUserInfo(){
+  if (typeof username !== 'undefined' & typeof id !== 'undefined' & typeof intraId !== 'undefined'){
+    console.log('User info already fetched');
+    return {username, id, intraId};
   }
   else{
-    console.log('Fetching username');
+    console.log('Fetching user info');
     await fetch('http://localhost:3000/user/me', {mode: 'cors'})
       .then(async function(res)
       {
         var data = await res.json();
         username = data.name;
+        id = data.id;
+        intraId = data.intraId;
       })
       .catch(error => console.log('Failed to fetch user : ' + error.message));
   }
   //   console.log(`Username returned by getUsername: ${username}`);
-  return username;
+  return {username, id, intraId};
 }
 
 connection.setupSocketConnection('/chat');
 // connection.socket.on('connection', () => {console.log('Chat client connected');});
-connection.socket.on('msgToClient', (msg) => {
+connection.socket.on('receiveNewMsg', (msg) => {
   console.log(`client received message: ${msg}`);
   outputMessages(msg);
 });
@@ -38,11 +42,9 @@ connection.socket.on('msgToClient', (msg) => {
 
 async function chatFormSubmit(e){
   const msg = e.target.elements.msg;
-  const packet = {username: getUsername(), msg: (msg.value)};
-  packet.username = await getUsername();
-  console.log(packet.username);
-  console.log(packet);
-  connection.socket.emit('msgToServer', packet);
+  const info_bundle = await getUserInfo();
+  const packet = {id: info_bundle.id, username: info_bundle.username, msg: (msg.value)};
+  connection.socket.emit('sendMsg', packet);
   msg.value = ''; //clears the message text you just entered
   msg.focus(); //focuses on the text input area again after sending
 }
