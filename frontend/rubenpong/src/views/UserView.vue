@@ -15,19 +15,22 @@
         <main class="join-main">
         <!-- <form action="/chatroom"> -->
             <div class="form-control">
+              <form action="">
               <label for="username">Change Username</label>
-              <span class="p-2"> <input
-                
+              <span class="text-black pr-4"><input
+                VALYE
+                v-model="newUsername"
                 id="username"
                 type="text"
                 name="username"
                 placeholder="Enter username..."
                 required
-                style="border-radius: 20px; width:300px"
+                style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
               > </span><span><button
-            class="bg-blue-500 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-full"
+            class="bg-blue-500 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-full" @click="changeAvatar()"
           >Submit
           </button></span>
+          </form>
             </div>
             <div class="form-control">
               
@@ -54,9 +57,18 @@
             </div>
             <label for="status">Ranking</label>
             <p class="text-black">330</p>
-            <!-- Stats (ladder level, achievements, and so forth) have to be displayed on the user profile.
-
-Each user should have a Match History including 1v1 games, ladder, and anything else useful. Anyone who is logged in should be able to consult it. -->
+            <label for="status">Match History</label>
+            <p v-if="matches_played === 0" class="text-black">No matches played yet!</p>
+            <div v-else-if="matches_played > 0">
+              <div v-for="(match, index) in matches" :key="match.player1">
+                 <span v-if="match.won === name" class="text-black font-bold">WON</span>
+                 <span v-else-if="match.won !== name" class="text-black font-bold">LOST</span>
+                 <span class="text-black"> against </span>
+                 <span v-if="match.player1 === name" class="text-black font-bold">{{match.player2}}</span>
+                <span v-else class="text-black font-bold">{{match.player1}}</span>
+                 
+              </div>
+            </div>
         </main>
       </div>
     </body>
@@ -69,11 +81,11 @@ export default {
   data()
   {
     return {
-      selectGameMode: false,
-      matched: false,
-      gameMode : '',
       name: '',
-      status: ''
+      status: '',
+      matches_played: 1,
+      newUsername: '',
+      matches: [{player1: 'Oswin', player2: 'Alice', won: 'Alice'}, {player1: 'Alice', player2: 'Ruben', won: 'Ruben'}]
     };
   },
   async created () {
@@ -92,6 +104,44 @@ export default {
     this.status = status;
     this.status = 'Online';
 
+  },
+  methods: {
+    async changeAvatar(newname) {
+
+      try {
+        // 👇️ const response: Response
+        const response = await fetch('http://localhost:3000/user/1/chname/test', {
+          method: 'POST',
+          body: JSON.stringify({
+            name: newname,
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error! status: ${response.status}`);
+        }
+
+        // // 👇️ const result: CreateUserResponse
+        // const result = (await response.json()) as CreateUserResponse;
+
+        // console.log('result is: ', JSON.stringify(result, null, 4));
+
+        // return result;
+      } catch (error) {
+        if (error instanceof Error) {
+          console.log('error message: ', error.message);
+          // return error.message;
+        } else {
+          console.log('unexpected error: ', error);
+          // return 'An unexpected error occurred';
+        }
+      }
+
+    }
   },
 }
 </script>

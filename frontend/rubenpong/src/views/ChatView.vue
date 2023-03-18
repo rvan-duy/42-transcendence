@@ -14,7 +14,7 @@
           <form action="/chatroom">
             <div class="form-control">
               <label for="username">Username</label>
-              <input
+              <input class="text-black"
                 id="username"
                 type="text"
                 name="username"
@@ -25,7 +25,7 @@
             </div>
             <div class="form-control">
               <label for="room">Room</label>
-              <select
+              <select class="text-black"
                 id="room"
                 name="room"
                 style="border-radius: 20px"
