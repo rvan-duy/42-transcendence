@@ -7,9 +7,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
 
-    // cookieParser middleware must be enabled to use this method
-    
-
     if (request.cookies.jwt) {
       request.headers.authorization = `Bearer ${request.cookies.jwt}`;
     }
