@@ -3,6 +3,7 @@ import ChatView from '@/views/ChatView.vue';
 import ChatRoomView from '@/views/ChatRoomView.vue';
 import GameView from '@/views/GameView.vue';
 import LogoutView from '@/views/LogoutView.vue';
+import UserView from '@/views/UserView.vue';
 
 const routes = [
   {
@@ -29,6 +30,11 @@ const routes = [
     path: '/logout',
     name: 'logout',
     component: LogoutView,
+  },
+  {
+    path: '/user',
+    name: 'user',
+    component: UserView,
   },
 ];
 
