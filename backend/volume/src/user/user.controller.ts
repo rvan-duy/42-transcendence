@@ -3,8 +3,11 @@ import {
   Get,
   Param,
   Put,
+  Request,
+  UseGuards,
 } from '@nestjs/common';
 import { User as UserModel} from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
 
 @Controller('user')
@@ -18,10 +21,10 @@ export class UserController {
     return this.userService.user({ id: Number(id) });
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get('me')
-  async getMe(): Promise<UserModel> {
-    return this.userService.user({id: 1});  // magic
-    // return this.userService.user({ id: Number(id) }); // myself
+  getMe(@Request() req: any) {
+    return this.userService.user({ id: Number(req.user.id) });
   }
 
   @Get('all')
