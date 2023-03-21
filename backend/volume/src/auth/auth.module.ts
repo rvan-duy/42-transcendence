@@ -1,35 +1,24 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { Module } from '@nestjs/common';
+import { FortyTwoStrategy } from './forty-two.strategy';
+import { JwtStrategy } from './jwt.strategy';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { PrismaUserService } from '../user/prisma/prismaUser.service';
-import { PrismaModule } from '../prisma/prisma.module';
-import { FortyTwoStrategy } from './auth.strategy';
 import { PassportModule } from '@nestjs/passport';
-import * as expressSession from 'express-session';
-import * as passport from 'passport';
+import { PrismaModule } from '../prisma/prisma.module';
+import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
     PrismaModule,
-    PassportModule.register({ session: true, })
+    PassportModule,
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: '60s' },
+    }),
   ],
-  providers: [AuthService, PrismaUserService, FortyTwoStrategy],
   controllers: [AuthController],
+  providers: [AuthService, PrismaUserService, JwtStrategy, FortyTwoStrategy],
+  exports: [AuthService],
 })
-
-export class AuthModule implements NestModule {
-	configure(consumer: MiddlewareConsumer) {
-	    consumer
-	      .apply(
-	        expressSession({
-	          secret: 'SOME SESSION SECRET',
-	          resave: false,
-	          saveUninitialized: false,
-	        }),
-	        passport.session(),
-	      )
-	      .forRoutes('*');
-	  }
-}
-
-// export class AuthModule {}
+export class AuthModule {}
