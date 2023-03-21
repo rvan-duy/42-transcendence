@@ -3,12 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { Access } from '@prisma/client';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
 
-// enum EAccess {
-//   PRIVATE     = 'private',
-//   PROTECTED   = 'protected',
-//   PUBLIC      = 'public',
-// }
-
 export interface roomDto {
   name: string;
   ownerId: number;
