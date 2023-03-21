@@ -13,7 +13,7 @@ export class AuthService {
     return await this.prismaUserService.findOrCreateUser({intraId, name});
   }
 
-  async login(user: any) {
+  login(user: any) {
     const payload = { username: user.name, sub: user.intraId };
     return {
       access_token: this.jwtService.sign(payload),

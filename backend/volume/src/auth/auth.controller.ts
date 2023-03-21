@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Request, Get } from '@nestjs/common';
+import { Controller, UseGuards, Request, Response, Get } from '@nestjs/common';
 import { FortyTwoGuard } from './forty-two-auth.guard';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -9,12 +9,18 @@ export class AuthController {
 
   @UseGuards(FortyTwoGuard)
   @Get('auth')
-  async login(@Request() req: any) {}
+  async login() {}
 
   @UseGuards(FortyTwoGuard)
   @Get('auth/callback')
-  async callback(@Request() req: any) {
-    return this.authService.login(req.user);
+  async callback(@Request() req: any, @Response() res: any) {
+    const loggedUser = this.authService.login(req.user);
+
+    res.cookie('jwt', loggedUser.access_token, {
+      httpOnly: false,
+      secure: false,
+    });
+    res.redirect(`http://${process.env.CODAM_PC}:8000`);
   }
 
   @UseGuards(JwtAuthGuard)
