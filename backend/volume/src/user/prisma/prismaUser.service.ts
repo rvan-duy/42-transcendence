@@ -38,13 +38,12 @@ export class PrismaUserService {
   }
 
   async findOrCreateUser(data: Prisma.UserCreateInput): Promise<User> {
+    const { intraId, name } = data;
     return this.prisma.user.upsert({
-      where: { intraId: data.intraId },
+      where: { intraId },
       update: {},
-      create: {
-        data,
-      },
-    })
+      create: { intraId, name },
+    });
   }
 
   async updateUser(params: {
