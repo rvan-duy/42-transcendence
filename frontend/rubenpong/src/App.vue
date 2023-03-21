@@ -33,17 +33,24 @@
         >
           Log Out
         </RouterLink>
-        
       </div>
-      <div class="columns-1" style="text-align: center; float: right;">
-         <RouterLink
-          to="/user" 
+      <div
+        class="columns-1"
+        style="text-align: center; float: right;"
+      >
+        <RouterLink
+          to="/user"
         >
-          <img src="./assets/dagmar.jpeg" width="50" height="50" style="border-radius: 50%"/>
-      <figcaption class="text-white text-xs p-1">{{name}}</figcaption>
-    
+          <img
+            src="./assets/dagmar.jpeg"
+            width="50"
+            height="50"
+            style="border-radius: 50%"
+          >
+          <figcaption class="text-white text-xs p-1">
+            {{ name }}
+          </figcaption>
         </RouterLink>
-      
       </div>
     </div>
   </nav>
@@ -66,19 +73,19 @@ export default {
     };
   },
   async created () {
-  let name: string = '';
+    let name: string = '';
 
     await fetch('http://localhost:3000/user/me')
-    .then(function(res){
-      return res.json();
-    })
-    .then(function(data){
-      name = data.name;
-      console.log(data);
-    });
+      .then(function(res){
+        return res.json();
+      })
+      .then(function(data){
+        name = data.name;
+        console.log(data);
+      });
     this.name = name;
   },
-}
+};
 </script>
 
 <style src="./assets/main.css"></style>

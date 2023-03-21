@@ -48,7 +48,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('changeGameMode')
   handleMessage(client: Socket, packet: any) {
-    console.log("yes");
+    console.log('yes');
     console.log(packet.gameMode);
     this.gameMode = packet.gameMode;
   }
