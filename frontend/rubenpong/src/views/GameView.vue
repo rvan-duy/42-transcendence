@@ -107,74 +107,89 @@ class CurrentGameState {
   ballCoords: number[] = [MapSize.WIDTH / 2, MapSize.HEIGHT / 2];
   ballRadius: number = DefaultElementSize.BALLRADIUS;
 }
-socket.on('pos', (data: any) => {
-  const datas: CurrentGameState = data;
-  //draw background
-  if (this.matched)
-  {
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    if (datas.score[1] >= 5 || datas.score[0] >= 5 )
-    {
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'white';
-      ctx.font = '50px arial';
-      if (datas.score[1] >= 5 )
+let gameMode: string = '';
+const waitForElement = () =>{
+  // let newGameMode = this.gameMode;
+  if(this.gameMode !== ''){
+    gameMode = this.gameMode;
+    const packet = {gameMode: gameMode};
+    console.log(gameMode);
+    socket.emit('changeGameMode', packet);
+    socket.on('pos', (data: any) => {
+      const datas: CurrentGameState = data;
+      //draw background
+      if (this.matched)
       {
-        ctx.fillText('You lost!', canvas.width / 2 - 100, canvas.height / 2);
-        return ;
-      }
-      if (datas.score[0] >= 5 )
-      {
-        ctx.fillText('You won!', canvas.width / 2 - 100, canvas.height / 2);
-        return ;
-      }
-    }
-    else {
-      //draw plateau player 1
-      ctx.fillStyle = 'white';
-      ctx.fillRect(datas.leftPaddleCoords[0], datas.leftPaddleCoords[1], datas.leftPaddleWidth, datas.leftPaddleHeight);
+        ctx.fillStyle = 'black';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        if (datas.score[1] >= 5 || datas.score[0] >= 5 )
+        {
+          ctx.fillStyle = 'black';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = 'white';
+          ctx.font = '50px arial';
+          if (datas.score[1] >= 5 )
+          {
+            ctx.fillText('You lost!', canvas.width / 2 - 100, canvas.height / 2);
+            return ;
+          }
+          if (datas.score[0] >= 5 )
+          {
+            ctx.fillText('You won!', canvas.width / 2 - 100, canvas.height / 2);
+            return ;
+          }
+        }
+        else {
+          //draw plateau player 1
+          ctx.fillStyle = 'white';
+          ctx.fillRect(datas.leftPaddleCoords[0], datas.leftPaddleCoords[1], datas.leftPaddleWidth, datas.leftPaddleHeight);
       
-      //draw plateau player 2
-      ctx.fillStyle = 'white';
-      ctx.fillRect(datas.rightPaddleCoords[0], datas.rightPaddleCoords[1], datas.rightPaddleWidth, datas.rightPaddleHeight);
+          //draw plateau player 2
+          ctx.fillStyle = 'white';
+          ctx.fillRect(datas.rightPaddleCoords[0], datas.rightPaddleCoords[1], datas.rightPaddleWidth, datas.rightPaddleHeight);
       
-      //draw ball
-      ctx.fillStyle = 'red';
-      ctx.beginPath();
-      ctx.arc(datas.ballCoords[0], datas.ballCoords[1], datas.ballRadius, 0, Math.PI * 2, false);
-      ctx.closePath();
-      ctx.fill();
+          //draw ball
+          ctx.fillStyle = 'red';
+          ctx.beginPath();
+          ctx.arc(datas.ballCoords[0], datas.ballCoords[1], datas.ballRadius, 0, Math.PI * 2, false);
+          ctx.closePath();
+          ctx.fill();
       
-      //draw text player 1
-      ctx.fillStyle = 'white';
-      ctx.font = '50px arial';
-      ctx.fillText('Player 1', canvas.width / 4, canvas.height / 8);
+          //draw text player 1
+          ctx.fillStyle = 'white';
+          ctx.font = '50px arial';
+          ctx.fillText('Player 1', canvas.width / 4, canvas.height / 8);
     
-      //draw text score player 1
-      ctx.fillStyle = 'white';
-      ctx.font = '50px arial';
-      ctx.fillText(datas.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
+          //draw text score player 1
+          ctx.fillStyle = 'white';
+          ctx.font = '50px arial';
+          ctx.fillText(datas.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
       
-      //draw text player 2
-      ctx.fillStyle = 'white';
-      ctx.font = '50px arial';
-      ctx.fillText('Player 2', canvas.width / 4 * 3 - 100, canvas.height / 8);
+          //draw text player 2
+          ctx.fillStyle = 'white';
+          ctx.font = '50px arial';
+          ctx.fillText('Player 2', canvas.width / 4 * 3 - 100, canvas.height / 8);
       
-      //draw text score player 2
-      ctx.fillStyle = 'white';
-      ctx.font = '50px arial';
-      ctx.fillText(datas.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
+          //draw text score player 2
+          ctx.fillStyle = 'white';
+          ctx.font = '50px arial';
+          ctx.fillText(datas.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
       
-      //draw net
-      for(let i = 0; i <= canvas.height; i+=15){
-        ctx.fillStyle = 'white';
-        ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
+          //draw net
+          for(let i = 0; i <= canvas.height; i+=15){
+            ctx.fillStyle = 'white';
+            ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
+          }
+        }
       }
-    }
+    });
   }
-});
+  else{
+    setTimeout(waitForElement, 250);
+  }
+};
+setTimeout(waitForElement, 250);
+
 var arrowUp: Boolean = false;
 var arrowDown: Boolean = false;
 var arrowLeft: Boolean = false;
