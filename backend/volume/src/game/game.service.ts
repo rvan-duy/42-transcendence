@@ -143,6 +143,8 @@ export class GameService {
   private updatePaddles(game: GameData) {
     for (let playerNbr = 0; playerNbr < 2; playerNbr++) {
       const player:Player = game.players[playerNbr];
+      if (game.mode === GameMode.POWERUP || game.mode === GameMode.FIESTA)
+        player.paddle.acceleration = 3;
       const paddleMovement:number = player.paddle.acceleration * MoveSpeedPerTick.PADDLE;
 
       // Get new y coordinate of paddle
@@ -199,6 +201,8 @@ export class GameService {
       ball.yDirection -= ball.yDirection * 2;
 
     if (this.ballPaddleCollision(ball, paddle)) {
+      if (game.mode === GameMode.POWERUP || game.mode === GameMode.FIESTA)
+        ball.acceleration = 3;
       let speed = ball.acceleration * MoveSpeedPerTick.BALL;
       const collisionPoint = ball.y - (paddle.y + paddle.height / 2); // gets a point on the paddle that has a value between the paddle's height / 2 and negative paddle's height / 2
       const normalizedCollisionPoint = collisionPoint / paddle.height / 2; // sets the entire length of the paddle's collision points to be between -1 and 1
@@ -213,6 +217,8 @@ export class GameService {
 
       // update the ball's acceleration after every paddle hit
       ball.acceleration += 0.1;
+      if (game.mode === GameMode.POWERUP || game.mode === GameMode.FIESTA)
+        ball.acceleration += 0.5;
     }
 
     // Check if the ball has hit the score line
@@ -278,6 +284,11 @@ export class GameService {
     ball.xDirection = (getRandomInt(100) % 2) ? (1.0 * MoveSpeedPerTick.BALL) : (-1.0 * MoveSpeedPerTick.BALL);
     ball.yDirection = 0.0;
     ball.acceleration = 1;
+    if (game.mode === GameMode.POWERUP || game.mode === GameMode.FIESTA)
+    {
+      ball.acceleration = 3;
+      ball.xDirection = (getRandomInt(100) % 2) ? (3.0 * MoveSpeedPerTick.BALL) : (-3.0 * MoveSpeedPerTick.BALL);
+    }
   }
 
   createGame(player1: number, player2: number, mode: GameMode) {

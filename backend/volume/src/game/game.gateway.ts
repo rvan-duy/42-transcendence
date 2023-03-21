@@ -27,12 +27,13 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   private server: Server;
   private gameService: GameService;
   private currGameState: CurrentGameState;
+  private gameMode: GameMode = GameMode.NORMAL;
 
   afterInit(server: Server) {
     this.server = server;
     this.gameService = new GameService(this.server);
     const fps: number = 60;
-    this.gameService.createGame(1, 2, GameMode.NORMAL);
+    this.gameService.createGame(1, 2, this.gameMode);
     setInterval(function() {this.gameService.updateGames();}.bind(this), 1000/fps);
   }
 
@@ -49,6 +50,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   handleMessage(client: Socket, packet: any) {
     console.log("yes");
     console.log(packet.gameMode);
+    this.gameMode = packet.gameMode;
   }
 
   @SubscribeMessage('pos')
