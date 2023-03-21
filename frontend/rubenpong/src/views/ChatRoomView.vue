@@ -32,7 +32,24 @@ async function getUserInfo(){
 }
 
 connection.setupSocketConnection('/chat');
-// connection.socket.on('connection', () => {console.log('Chat client connected');});
+connection.socket.emit('loadRequest', 1);
+connection.socket.on('loadChatHistory', async (data) =>{
+  console.log('client received chat history for this room');
+  for (const msg of data)
+  {
+    console.log(msg);
+    var username = await fetch(`http://localhost:3000/user/id/${msg.authorId}`, {mode: 'cors'})
+      .then(async function(res)
+      {
+        var data = await res.json();
+        return data.name;
+      })
+      .catch(error => console.log(`Couldn\'t fetch username for userId ${msg.authorId}: ` + error.message));
+    var packet = {username: username, time: msg.timestamp, body: msg.body};
+    console.log(packet);
+    outputMessages(packet);
+  }
+});
 connection.socket.on('receiveNewMsg', (msg) => {
   console.log(`client received message: ${msg}`);
   outputMessages(msg);
