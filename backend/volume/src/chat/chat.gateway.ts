@@ -54,8 +54,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   handleDisconnect(client: Socket) {
-    this.all_clients.emit('msgToClient', this.formatMessage('Rubot','A user left the chat.')); //all clients
-    console.log(`Client ${client.id} disconnected`);
+    // this.all_clients.emit('msgToClient', this.formatMessage('Rubot','A user left the chat.')); //all clients
+    // console.log(`Client ${client.id} disconnected`);
   }
 
   formatMessage(username, message_body)
