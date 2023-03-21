@@ -107,7 +107,15 @@ class CurrentGameState {
   ballCoords: number[] = [MapSize.WIDTH / 2, MapSize.HEIGHT / 2];
   ballRadius: number = DefaultElementSize.BALLRADIUS;
 }
-socket.on('pos', (data: any) => {
+let gameMode: string = '';
+const waitForElement = () =>{
+  // let newGameMode = this.gameMode;
+    if(this.gameMode !== ''){
+      gameMode = this.gameMode;
+      const packet = {gameMode: gameMode};
+      console.log(gameMode);
+      socket.emit('changeGameMode', packet);
+      socket.on('pos', (data: any) => {
   const datas: CurrentGameState = data;
   //draw background
   if (this.matched)
@@ -175,6 +183,13 @@ socket.on('pos', (data: any) => {
     }
   }
 });
+    }
+    else{
+        setTimeout(waitForElement, 250);
+    }
+}
+setTimeout(waitForElement, 250);
+
 var arrowUp: Boolean = false;
 var arrowDown: Boolean = false;
 var arrowLeft: Boolean = false;

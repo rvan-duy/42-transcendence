@@ -56,7 +56,7 @@
             <p class="text-black">0</p>
             </div>
             <label for="status">Ranking</label>
-            <p class="text-black">330</p>
+            <p class="text-black">{{rank}}</p>
             <label for="status">Match History</label>
             <p v-if="matches_played === 0" class="text-black">No matches played yet!</p>
             <div v-else-if="matches_played > 0">
@@ -82,15 +82,18 @@ export default {
   {
     return {
       name: '',
-      status: '',
+      status: 'Online',
       matches_played: 1,
       newUsername: '',
+      rank: 0,
       matches: [{player1: 'Oswin', player2: 'Alice', won: 'Alice'}, {player1: 'Alice', player2: 'Ruben', won: 'Ruben'}]
     };
   },
   async created () {
   let name: string = '';
   let status: string = '';
+  let rank: number = 500;
+
     await fetch('http://localhost:3000/user/me')
     .then(function(res){
       return res.json();
@@ -98,9 +101,11 @@ export default {
     .then(function(data){
       name = data.name;
       status = data.status;
+      rank = data.elo;
       console.log(data);
     });
     this.name = name;
+    this.rank = rank;
     this.status = status;
     this.status = 'Online';
 

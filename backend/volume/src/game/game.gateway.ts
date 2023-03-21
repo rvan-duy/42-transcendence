@@ -31,8 +31,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   afterInit(server: Server) {
     this.server = server;
     this.gameService = new GameService(this.server);
-    this.gameService.createGame(1, 2, GameMode.FREEMOVE);
     const fps: number = 60;
+    this.gameService.createGame(1, 2, GameMode.NORMAL);
     setInterval(function() {this.gameService.updateGames();}.bind(this), 1000/fps);
   }
 
@@ -45,8 +45,15 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log(`Client disconnected: ${client.id}`);
   }
 
+  @SubscribeMessage('changeGameMode')
+  handleMessage(client: Socket, packet: any) {
+    console.log("yes");
+    console.log(packet.gameMode);
+  }
+
   @SubscribeMessage('pos')
-  handlePos(client: any, payload: any) {
+  handlePos(client:any, payload: any) {
+    // console.log("yes");
     this.server.emit('pos', this.currGameState);  // magic
     console.warn(`client ${client} and payload ${payload} unused`);
   }
