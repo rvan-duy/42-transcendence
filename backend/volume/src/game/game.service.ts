@@ -143,8 +143,6 @@ export class GameService {
   private updatePaddles(game: GameData) {
     for (let playerNbr = 0; playerNbr < 2; playerNbr++) {
       const player:Player = game.players[playerNbr];
-      if (game.mode === GameMode.POWERUP || game.mode === GameMode.FIESTA)
-        player.paddle.acceleration = 3;
       const paddleMovement:number = player.paddle.acceleration * MoveSpeedPerTick.PADDLE;
 
       // Get new y coordinate of paddle
