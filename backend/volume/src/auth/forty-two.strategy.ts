@@ -9,7 +9,7 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
     super({
       clientID: process.env.APPLICATION_ID,
       clientSecret: process.env.APPLICATION_SECRET,
-      callbackURL: `http://${process.env.CODAM_PC}/auth/callback`,
+      callbackURL: `http://${process.env.CODAM_PC}:3000/auth/callback`,
       profileFields: {
         'id': function (obj: any) { return Number(obj.id); },
         'username': 'login',
