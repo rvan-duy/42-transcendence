@@ -3,7 +3,7 @@ import { AppModule } from './app.module';
 import { PrismaService } from './prisma/prisma.service';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as session from 'express-session';
-import * as passport from 'passport'
+import * as passport from 'passport';
 import * as dotenv from 'dotenv';
 import * as cookieParser from 'cookie-parser';
 

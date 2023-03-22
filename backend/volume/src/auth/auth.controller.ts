@@ -1,7 +1,6 @@
 import { Controller, UseGuards, Request, Response, Get } from '@nestjs/common';
 import { FortyTwoGuard } from './forty-two-auth.guard';
 import { AuthService } from './auth.service';
-import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller()
 export class AuthController {
@@ -17,15 +16,9 @@ export class AuthController {
     const loggedUser = this.authService.login(req.user);
 
     res.cookie('jwt', loggedUser.access_token, {
-      httpOnly: false,
-      secure: false,
+      httpOnly: true,
+      secure: false, // we are not using https, leave this off
     });
     res.redirect(`http://${process.env.CODAM_PC}:8000`);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  getProfile(@Request() req: any) {
-    return req.user;
   }
 }
