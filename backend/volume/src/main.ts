@@ -27,7 +27,7 @@ async function bootstrap() {
         secure: false,
 		  },
 		  name: 'transcendence',
-      secret: process.env.APPLICATION_SECRET, // i have no idea what this is, but it's required
+      secret: process.env.FORTYTWO_CLIENT_SECRET, // i have no idea what this is, but it's required
 		  resave: false,
 		  saveUninitialized: false,
 	  })
