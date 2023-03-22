@@ -6,13 +6,18 @@
 // about_text to be "dog" if the value is currently "cat".
 function onclickMeow(){
   const about_text_element = document.getElementById('about_text');
+  const token = document.cookie.split(';').find(cookie => cookie.includes('jwt')).split('=')[1]; // Extract JWT from cookie
 
   if (about_text_element.innerHTML !== 'dog')
     about_text_element.innerHTML = 'dog';
   else
   {
     console.log('Fetching...');
-    fetch('http://localhost:3000/user/me')
+    fetch('http://localhost:3000/user/me', {
+      headers: {
+        Authorization: `Bearer ${token}` // Set JWT in Authorization header
+      }
+    })
       .then(function(res){
         return res.json();
       })
