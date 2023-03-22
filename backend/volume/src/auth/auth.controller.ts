@@ -15,6 +15,7 @@ export class AuthController {
   async callback(@Request() req: any, @Response() res: any) {
     const loggedUser = this.authService.login(req.user);
 
+    res.clearCookie('jwt');
     res.cookie('jwt', loggedUser.access_token, {
       httpOnly: true,
       secure: false, // we are not using https, leave this off
