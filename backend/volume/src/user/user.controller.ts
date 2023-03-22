@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Put, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
 import { User as UserModel} from '@prisma/client';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
@@ -16,7 +16,11 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('id/:id')
   async getUserById(@Param('id') id: string): Promise<UserModel> {
-    return this.userService.user({ id: Number(id) });
+    const user = await this.userService.user({ id: Number(id) });
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    return user;
   }
 
   @UseGuards(JwtAuthGuard)
