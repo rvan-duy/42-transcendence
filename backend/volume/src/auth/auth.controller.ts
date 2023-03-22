@@ -17,7 +17,7 @@ export class AuthController {
 
     res.clearCookie('jwt');
     res.cookie('jwt', loggedUser.access_token, {
-      httpOnly: true,
+      httpOnly: false, // we will access the cookie from the frontend, so we need to set this to false
       secure: false, // we are not using https, leave this off
     });
     res.redirect(`http://${process.env.CODAM_PC}:8000`);
