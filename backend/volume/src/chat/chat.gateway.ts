@@ -9,6 +9,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { MsgDto, MsgService } from '../msg/msg.service';
 import { roomDto, RoomService } from 'src/room/room.service';
+// import dateFormat, { masks } from "dateformat";
 import * as moment from 'moment';
 // import { PrismaMsgService } from 'src/msg/prisma/prismaMsg.service';
 
@@ -63,6 +64,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     return {
       username: username,
       body: message_body,
+	//   time: new Date().toLocaleTimeString("nl-NL"),
       time: moment().add(1, 'hours').format('HH:mm')
     };
   }
