@@ -1,6 +1,7 @@
 import { Controller, UseGuards, Request, Response, Get } from '@nestjs/common';
 import { FortyTwoGuard } from './forty-two-auth.guard';
 import { AuthService } from './auth.service';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller()
 export class AuthController {
@@ -20,6 +21,12 @@ export class AuthController {
       httpOnly: false, // we will access the cookie from the frontend, so we need to set this to false
       secure: false, // we are not using https, leave this off
     });
-    res.redirect(`http://${process.env.CODAM_PC}:8000`);
+    res.redirect(`http://${process.env.CODAM_PC}:${process.env.FRONTEND_PORT}`);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('auth/validate')
+  async check(@Request() req: any, @Response() res: any) {
+    res.status(200).send();
   }
 }
