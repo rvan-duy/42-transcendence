@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Request, Response, Get } from '@nestjs/common';
+import { Controller, UseGuards, Request, Response, Get, Post } from '@nestjs/common';
 import { FortyTwoGuard } from './forty-two-auth.guard';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -28,5 +28,12 @@ export class AuthController {
   @Get('auth/validate')
   async check(@Request() req: any, @Response() res: any) {
     res.status(200).send();
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('auth/logout')
+  async logout(@Request() req: any, @Response() res: any) {
+    res.clearCookie('jwt');
+    res.redirect(`http://${process.env.CODAM_PC}:${process.env.FRONTEND_PORT}`);
   }
 }
