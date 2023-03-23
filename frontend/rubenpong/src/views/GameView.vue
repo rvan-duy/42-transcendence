@@ -20,7 +20,7 @@
             <button
               v-if="selectGameMode"
               class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-              @click="createGame('ModeNormal')"
+              @click="queueForGame('Normal')"
             >
               NORMAL
             </button>
@@ -29,7 +29,7 @@
             <button
               v-if="selectGameMode"
               class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-              @click="createGame('ModeFreeMove')"
+              @click="queueForGame('FreeMove')"
             >
               FREEMOVE
             </button>
@@ -38,7 +38,7 @@
             <button
               v-if="selectGameMode"
               class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-              @click="createGame('ModePowerUp')"
+              @click="queueForGame('PowerUp')"
             >
               POWERUP
             </button>
@@ -47,7 +47,7 @@
             <button
               v-if="selectGameMode"
               class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-              @click="createGame('ModeFiesta')"
+              @click="queueForGame('Fiesta')"
             >
               FIESTA
             </button>
@@ -76,26 +76,54 @@ export default {
     return {
       selectGameMode: false,
       matched: false,
-      gameMode : ''
+      gameMode : '',
+      userId : -1,
+      arrowUp: false,
+      arrowDown: false,
+      arrowLeft: false,
+      arrowRight: false,
+      socket: io('http://f0r5s14.codam.nl:3000/game'),
     };
+  },
+  async created () {
+    let userId: number = -1;
+    await fetch('http://f0r5s14.codam.nl:3000/user/me')
+      .then(function(res){
+        console.log(res);
+        return res.json();
+      })
+      .then(function(data){
+        userId = data.id;
+        console.log(data);
+      })
+      .catch(e => {
+        userId = -1;
+        console.log(e);
+      });
+    this.userId = userId;
+    console.log(`received userId: ${this.userId}`);
   },
   mounted() {
     var canvas: HTMLCanvasElement = document.getElementById('pixels') as HTMLCanvasElement;
     var ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
-    const socket: any = io('http://localhost:3000/game');
-    socket.on('connect_error', (err) => {
+    this.socket.on('connect_error', (err) => {
       console.log(`connect_error due to ${err.message}`);
     });
+    
+    document.addEventListener('keydown', this.keyDownEvent);
+    document.addEventListener('keyup', this.keyUpEvent);
 
 enum MapSize {
   WIDTH = 1000,
   HEIGHT = 600,
 }
+
 enum DefaultElementSize {
   PADDLEWIDTH = 20,
   PADDLEHEIGHT = 100,
   BALLRADIUS = 20,
 }
+
 class CurrentGameState {
   score:number[] = [0, 0];
   leftPaddleCoords: number[] = [0, MapSize.HEIGHT / 2];
@@ -107,15 +135,15 @@ class CurrentGameState {
   ballCoords: number[] = [MapSize.WIDTH / 2, MapSize.HEIGHT / 2];
   ballRadius: number = DefaultElementSize.BALLRADIUS;
 }
+
 let gameMode: string = '';
-const waitForElement = () =>{
-  // let newGameMode = this.gameMode;
-  if(this.gameMode !== ''){
+const waitForElement = () => {
+  if(this.gameMode !== '' && this.userId !== -1) {
     gameMode = this.gameMode;
-    const packet = {gameMode: gameMode};
+    const packet = {gameMode: gameMode, userId: this.userId};
     console.log(gameMode);
-    socket.emit('changeGameMode', packet);
-    socket.on('pos', (data: any) => {
+    this.socket.emit('QueueForGame', packet);
+    this.socket.on('pos', (data: any) => {
       const datas: CurrentGameState = data;
       //draw background
       if (this.matched)
@@ -124,6 +152,7 @@ const waitForElement = () =>{
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         if (datas.score[1] >= 5 || datas.score[0] >= 5 )
         {
+          return;
           ctx.fillStyle = 'black';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
           ctx.fillStyle = 'white';
@@ -140,41 +169,41 @@ const waitForElement = () =>{
           }
         }
         else {
-          //draw plateau player 1
+          //draw paddle player 1
           ctx.fillStyle = 'white';
           ctx.fillRect(datas.leftPaddleCoords[0], datas.leftPaddleCoords[1], datas.leftPaddleWidth, datas.leftPaddleHeight);
-      
-          //draw plateau player 2
+
+          //draw paddle player 2
           ctx.fillStyle = 'white';
           ctx.fillRect(datas.rightPaddleCoords[0], datas.rightPaddleCoords[1], datas.rightPaddleWidth, datas.rightPaddleHeight);
-      
+
           //draw ball
           ctx.fillStyle = 'red';
           ctx.beginPath();
           ctx.arc(datas.ballCoords[0], datas.ballCoords[1], datas.ballRadius, 0, Math.PI * 2, false);
           ctx.closePath();
           ctx.fill();
-      
+
           //draw text player 1
           ctx.fillStyle = 'white';
           ctx.font = '50px arial';
           ctx.fillText('Player 1', canvas.width / 4, canvas.height / 8);
-    
+
           //draw text score player 1
           ctx.fillStyle = 'white';
           ctx.font = '50px arial';
           ctx.fillText(datas.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
-      
+
           //draw text player 2
           ctx.fillStyle = 'white';
           ctx.font = '50px arial';
           ctx.fillText('Player 2', canvas.width / 4 * 3 - 100, canvas.height / 8);
-      
+
           //draw text score player 2
           ctx.fillStyle = 'white';
           ctx.font = '50px arial';
           ctx.fillText(datas.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
-      
+
           //draw net
           for(let i = 0; i <= canvas.height; i+=15){
             ctx.fillStyle = 'white';
@@ -189,93 +218,68 @@ const waitForElement = () =>{
   }
 };
 setTimeout(waitForElement, 250);
-
-var arrowUp: Boolean = false;
-var arrowDown: Boolean = false;
-var arrowLeft: Boolean = false;
-var arrowRight: Boolean = false;
-function movePlat(e: KeyboardEvent)
-{
-  if (!arrowDown)
-  {
-    if (e.key === 'ArrowDown')
-    {
-      console.log(e.key);
-      socket.emit('ArrowDown');
-      arrowDown = true;
-    }
-  }
-  if (!arrowUp)
-  {
-    if (e.key === 'ArrowUp')
-    {
-      console.log(e.key);
-      socket.emit('ArrowUp');
-      arrowUp = true;
-    }
-  }
-  if (!arrowRight)
-  {
-    if (e.key === 'ArrowRight')
-    {
-      console.log(e.key);
-      socket.emit('ArrowRight');
-      arrowRight = true;
-    }
-  }
-  if (!arrowLeft)
-  {
-    if (e.key === 'ArrowLeft')
-    {
-      console.log(e.key);
-      socket.emit('ArrowLeft');
-      arrowLeft = true;
-    }
-  }
-}
-
-function stopMovePlat(e: KeyboardEvent)
-{
-  console.log ('keyup');
-  console.log(e.key);
-  if (e.key === 'ArrowDown')
-  {
-    socket.emit('ArrowDown');
-    arrowDown = false;
-  }
-  if (e.key === 'ArrowUp')
-  {
-    socket.emit('ArrowUp');
-    arrowUp = false;
-  }
-  if (e.key === 'ArrowRight')
-  {
-    socket.emit('ArrowRight');
-    arrowRight = false;
-  }
-  if (e.key === 'ArrowLeft')
-  {
-    socket.emit('ArrowLeft');
-    arrowLeft = false;
-  }
-}
-
-document.addEventListener('keydown', movePlat);
-document.addEventListener('keyup', stopMovePlat);
-
-    //start of game define which plat - b / f?
-    //update() function in backend
-    //position plat, ball and player in backend?
-    //powerups
   },
   methods: {
-    createGame(gameMode:string)
-    {
-      this.gameMode = gameMode;
+    keyDownEvent(e: KeyboardEvent) {
+      if (this.userId === -1) {
+        return;
+      }
+
+      const payload = {userId: this.userId};
+      if (!this.arrowDown && e.key === 'ArrowDown')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowDown = true;
+      }
+      else if (!this.arrowUp && e.key === 'ArrowUp')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowUp = true;
+      }
+      else if (!this.arrowRight && e.key === 'ArrowRight')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowRight = true;
+      }
+      else if (!this.arrowLeft && e.key === 'ArrowLeft')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowLeft = true;
+      }
+    },
+    keyUpEvent(e: KeyboardEvent) {
+      if (this.userId === -1)
+        return;
+
+      const payload = {userId: this.userId};
+      if (e.key === 'ArrowDown')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowDown = false;
+      }
+      else if (e.key === 'ArrowUp')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowUp = false;
+      }
+      else if (e.key === 'ArrowRight')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowRight = false;
+      }
+      else if (e.key === 'ArrowLeft')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowLeft = false;
+      }
+    },
+    queueForGame(game: string) {
+      this.gameMode = game;
       this.matched = true;
     }
   },
 };
+//powerups
 </script>
 
 <style scoped>
