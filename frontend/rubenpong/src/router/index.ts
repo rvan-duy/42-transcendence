@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { auth } from './auth';
 import privateRoutes from './private';
 import LoginView from '@/views/LoginView.vue';
+import { isLoggedIn } from './auth';
 
 // usefull link: https://itnext.io/vue-router-99e334094362
 
@@ -28,8 +28,8 @@ const router = createRouter({
 /*
  * This hook is called before each route is navigated to.
  */
-router.beforeEach((to, from, next) => {
-  const userIsLoggedIn: boolean = auth.isLoggedIn();
+router.beforeEach(async (to, from, next) => {
+  const userIsLoggedIn: boolean = await isLoggedIn();
   const pageIsPublic: boolean = to.meta.public as boolean;
   const pageIsLoginPage: boolean = to.meta.loginPage as boolean;
   

@@ -85,9 +85,9 @@
               0
             </p>
           </div>
-          <label for="status">Ranking</label>
+          <label for="status">Elo</label>
           <p class="text-black">
-            {{ rank }}
+            {{ elo }}
           </p>
           <label for="status">Match History</label>
           <p
@@ -126,8 +126,8 @@
   </div>
 </template>
 <script lang="ts">
+import { getBackend } from '@/utils/backend-requests';
 export default {
-
   data()
   {
     return {
@@ -135,30 +135,18 @@ export default {
       status: 'Online',
       matches_played: 1,
       newUsername: '',
-      rank: 0,
+      elo: 500,
       matches: [{player1: 'Oswin', player2: 'Alice', won: 'Alice'}, {player1: 'Alice', player2: 'Ruben', won: 'Ruben'}]
     };
   },
   async created () {
-    let name: string = '';
-    let status: string = '';
-    let rank: number = 500;
-
-    await fetch('http://localhost:3000/user/me')
-      .then(function(res){
-        return res.json();
-      })
-      .then(function(data){
-        name = data.name;
-        status = data.status;
-        rank = data.elo;
-        console.log(data);
+    await getBackend('user/me')
+      .then((response => response.json()))
+      .then((data) => {
+        this.name = data.name;
+        this.elo = data.elo;
+        this.status = 'Online';
       });
-    this.name = name;
-    this.rank = rank;
-    this.status = status;
-    this.status = 'Online';
-
   },
   methods: {
     async changeAvatar(newname) {
