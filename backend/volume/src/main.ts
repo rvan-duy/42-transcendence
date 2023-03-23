@@ -15,7 +15,7 @@ async function bootstrap() {
   const prismaService = app.get(PrismaService);
   await prismaService.enableShutdownHooks(app);
   app.enableCors( {
-    origin: ['*', 'http://localhost:8000'],
+    origin: ['*', 'http://f0r5s15.codam.nl:8000', 'http://f0r5s15.codam.nl:3000', 'https://api.intra.42.fr'],
     methods: ['GET', 'POST', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
