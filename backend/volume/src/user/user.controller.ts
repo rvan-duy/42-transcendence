@@ -1,34 +1,35 @@
-import {
-  Controller,
-  Get,
-  Param,
-  Put,
-} from '@nestjs/common';
+import { Controller, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
 import { User as UserModel} from '@prisma/client';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
 
 @Controller('user')
 export class UserController {
-  constructor(
-    private readonly userService: PrismaUserService
-  ) {}
+  constructor(private readonly userService: PrismaUserService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @Get('me')
+  async getMe(@Request() req: any): Promise<UserModel> {
+    return this.userService.user({ id: Number(req.user.id) });
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('id/:id')
   async getUserById(@Param('id') id: string): Promise<UserModel> {
-    return this.userService.user({ id: Number(id) });
+    const user = await this.userService.user({ id: Number(id) });
+    if (!user) {
+      throw new NotFoundException(`User with id ${id} not found`);
+    }
+    return user;
   }
 
-  @Get('me')
-  async getMe(): Promise<UserModel> {
-    return this.userService.user({id: 1});  // magic
-    // return this.userService.user({ id: Number(id) }); // myself
-  }
-
+  @UseGuards(JwtAuthGuard)
   @Get('all')
   async getUsers(): Promise<UserModel[]> {
     return this.userService.users({});
   }
 
+  // TODO: add a way to change the name of the user
   @Put('chname/:new')
   async changeName(@Param('new') updatedName: string): Promise<UserModel> {
     return this.userService.updateUser({
