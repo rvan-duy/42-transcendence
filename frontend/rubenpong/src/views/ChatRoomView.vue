@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SocketioService from '../services/socketio.service.js';
+import { getBackend } from '@/utils/backend-requests';
 
 </script>
 
@@ -17,15 +18,23 @@ async function getUserInfo(){
   }
   else{
     console.log('Fetching user info');
-    await fetch('http://localhost:3000/user/me', {mode: 'cors'})
-      .then(async function(res)
-      {
-        var data = await res.json();
-        username = data.name;
+	await getBackend('user/me')
+      .then((response => response.json()))
+      .then((data) => {
+		username = data.name;
         id = data.id;
         intraId = data.intraId;
-      })
-      .catch(error => console.log('Failed to fetch user : ' + error.message));
+      }).catch(error => console.log('Failed to fetch user : ' + error.message));
+
+    // await fetch('http://localhost:3000/user/me', {mode: 'cors'})
+    //   .then(async function(res)
+    //   {
+    //     var data = await res.json();
+    //     username = data.name;
+    //     id = data.id;
+    //     intraId = data.intraId;
+    //   })
+    //   .catch(error => console.log('Failed to fetch user : ' + error.message));
   }
   //   console.log(`Username returned by getUsername: ${username}`);
   return {username, id, intraId};
