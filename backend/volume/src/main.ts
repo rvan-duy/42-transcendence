@@ -15,22 +15,22 @@ async function bootstrap() {
   const prismaService = app.get(PrismaService);
   await prismaService.enableShutdownHooks(app);
   app.enableCors( {
-    origin: ['*', 'http://f0r5s15.codam.nl:8000', 'http://f0r5s15.codam.nl:3000', 'https://api.intra.42.fr'],
+    origin: ['*', 'http://f0r5s15.codam.nl:8000', 'http://f0r5s15.codam.nl:3000', 'https://api.intra.42.fr', 'http://localhost:8000'],
     methods: ['GET', 'POST', 'PUT'],
     allowedHeaders: ['Content-Type', 'Authorization'],
   });
   app.use(
-	  session({
-		  cookie: {
-			  maxAge: 3600 * 24 * 1000,
+    session({
+      cookie: {
+        maxAge: 3600 * 24 * 1000,
         httpOnly: false,
         secure: false,
-		  },
-		  name: 'transcendence',
+      },
+      name: 'transcendence',
       secret: process.env.FORTYTWO_CLIENT_SECRET, // i have no idea what this is, but it's required
-		  resave: false,
-		  saveUninitialized: false,
-	  })
+      resave: false,
+      saveUninitialized: false,
+    })
   );
   app.use(passport.initialize());
   app.use(passport.session());
