@@ -13,8 +13,11 @@ async function onclickMeow(){
   }
   else
   {
-    const response = await getBackend('user/me');
-    about_text_element.innerHTML = response['name'];
+    await getBackend('user/me')
+      .then((response => response.json()))
+      .then((data) => {
+        about_text_element.innerHTML = data.name;
+      });
   }
 }
 
