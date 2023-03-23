@@ -1,11 +1,12 @@
+import { Injectable } from '@nestjs/common';
 import { PrismaGameService } from './prisma/prismaGame.service';
 import { Server } from 'socket.io';
 
 export enum GameMode {
-  NORMAL = 'ModeNormal',
-  FREEMOVE = 'ModeFreeMove',
-  POWERUP = 'ModePowerUp',
-  FIESTA = 'ModeFiesta',
+  NORMAL = 'Normal',
+  FREEMOVE = 'FreeMove',
+  POWERUP = 'PowerUp',
+  FIESTA = 'Fiesta',
 }
 
 enum PaddleInput {
@@ -116,17 +117,19 @@ export class CurrentGameState {
   ballRadius: number = DefaultElementSize.BALLRADIUS;
 }
 
+@Injectable()
 export class GameService {
-  private games: GameData[] = [];
-  private gamesPlayed: number = 0;
-  private prismaGameService: PrismaGameService;
-  private server: Server;
-
-  constructor(server: Server) {
-    this.server = server;
+  constructor(private prismaGameService: PrismaGameService) {
   }
 
-  private i: number = 0;
+  private games: GameData[] = [];
+  private gamesPlayed: number = 0;
+  private server: Server;
+
+  setSocket(socket: Server) {
+    this.server = socket;
+  }
+
   updateGames() {
     if (this.games === undefined || this.games.length === 0) {
       return;
