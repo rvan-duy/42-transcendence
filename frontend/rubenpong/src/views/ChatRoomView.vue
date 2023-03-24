@@ -13,50 +13,44 @@ var intraId;
 
 async function getUserInfo(){
   if (typeof username !== 'undefined' & typeof id !== 'undefined' & typeof intraId !== 'undefined'){
-    console.log('User info already fetched');
+    console.log('getUserInfo: User info already fetched');
     return {username, id, intraId};
   }
   else{
-    console.log('Fetching user info');
+    console.log('getUserInfo: Fetching user info');
     await getBackend('user/me')
       .then((response => response.json()))
       .then((data) => {
         username = data.name;
         id = data.id;
         intraId = data.intraId;
-      }).catch(error => console.log('Failed to fetch user : ' + error.message));
+      }).catch(error => console.log('getUserInfo: Failed to fetch user : ' + error.message));
   }
-  //   console.log(`Username returned by getUsername: ${username}`);
   return {username, id, intraId};
 }
 
 connection.setupSocketConnection('/chat');
 connection.socket.emit('loadRequest', 1);
 connection.socket.on('loadChatHistory', async (data) =>{
-  console.log('client received chat history for this room');
+  console.log('loadChatHistory: client received chat history for this room');
   for (const msg of data)
   {
-    console.log(msg);
     var username = await getBackend(`user/id/${msg.authorId}`)
       .then(async function(res)
       {
         var data = await res.json();
         return data.name;
       })
-      .catch(error => console.log(`Couldn\'t fetch username for userId ${msg.authorId}: ` + error.message));
+      .catch(error => console.log(`loadChatHistory: Couldn\'t fetch username for userId ${msg.authorId}: ` + error.message));
     // const format_time = `${new Date(msg.timestamp).getHours()}:`+ `00${new Date(msg.timestamp).getMinutes()}`.slice(-2);
     const format_time = new Date(msg.timestamp).toLocaleTimeString("nl-NL");
     var packet = {username: username, time: format_time, body: msg.body};
-    console.log(packet);
     outputMessages(packet);
   }
 });
 connection.socket.on('receiveNewMsg', (msg) => {
-  console.log(`client received message: ${msg}`);
   outputMessages(formatMessage(msg));
 });
-
-// const chatForm = document.getElementById('chat-form');
 
 async function chatFormSubmit(e){
   const msg = e.target.elements.msg;

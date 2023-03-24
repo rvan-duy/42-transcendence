@@ -15,7 +15,7 @@ class SocketioService {
       console.log(`connect_error due to ${err.message}`);
     });
     this.socket.on('connect', () => {
-      console.log(`Set up socket between ${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/chat and frontend`);
+      console.log(`Set up socket between ${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}${slash_namespace} and frontend`);
     });
   }
 

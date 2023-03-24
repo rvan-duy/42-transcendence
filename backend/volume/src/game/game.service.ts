@@ -293,8 +293,7 @@ export class GameService {
   }
 
   logGames() {
-    console.log('\n\nLogging games:');
-    console.log(this.games);
+    console.log('\n\nLogging games:', this.games);
   }
 
   private removeFinishedGames() {
@@ -359,7 +358,6 @@ export class GameService {
 
     // send current game state back through socket
     this.server.emit('pos', toSend);
-    // console.log(toSend);
   }
   
   UpdatePlayerInput(playerId: number, input: PaddleInput) {

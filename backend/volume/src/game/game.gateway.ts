@@ -38,24 +38,22 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   handleConnection(client: Socket) {
-    console.log(`Client connected: ${client.id}`);
+    console.log(`Client connected to game: ${client.id}`);
     client.emit('init'); // new connection
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Client disconnected: ${client.id}`);
+    console.log(`Client disconnected from game: ${client.id}`);
   }
 
   @SubscribeMessage('changeGameMode')
   handleMessage(client: Socket, packet: any) {
-    console.log('yes');
-    console.log(packet.gameMode);
+    console.log(`In changeGameMode, packet: ${packet.gameMode}`);
     this.gameMode = packet.gameMode;
   }
 
   @SubscribeMessage('pos')
   handlePos(client:any, payload: any) {
-    // console.log("yes");
     this.server.emit('pos', this.currGameState);  // magic
     console.warn(`client ${client} and payload ${payload} unused`);
   }
