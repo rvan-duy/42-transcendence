@@ -177,8 +177,8 @@ export class GameService {
             player.paddle.x = 0;
         }
         else if (playerNbr === PlayerDefinitions.PLAYER2) {
-          if (player.paddle.x + player.paddle.width < MapSize.WIDTH / 2 + DefaultElementSize.PADDLEWIDTH * 5)
-            player.paddle.x = MapSize.WIDTH / 2 + player.paddle.width + DefaultElementSize.PADDLEWIDTH * 5;
+          if (player.paddle.x < MapSize.WIDTH / 2 + DefaultElementSize.PADDLEWIDTH * 5)
+            player.paddle.x = MapSize.WIDTH / 2 + DefaultElementSize.PADDLEWIDTH * 5;
           if (player.paddle.x + player.paddle.width > MapSize.WIDTH )
             player.paddle.x = MapSize.WIDTH - player.paddle.width;
         }
