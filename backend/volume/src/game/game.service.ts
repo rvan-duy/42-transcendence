@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaGameService } from './prisma/prismaGame.service';
+import { PrismaUserService } from '../user/prisma/prismaUser.service';
 import { Server } from 'socket.io';
+import { User } from '@prisma/client';
 
 export enum GameMode {
   NORMAL = 'Normal',
@@ -119,7 +121,8 @@ export class CurrentGameState {
 
 @Injectable()
 export class GameService {
-  constructor(private prismaGameService: PrismaGameService) {
+  constructor(private readonly prismaGameService: PrismaGameService,
+              private readonly prismaUserService: PrismaUserService) {
   }
 
   private games: GameData[] = [];
@@ -130,14 +133,14 @@ export class GameService {
     this.server = socket;
   }
 
-  updateGames() {
+  async updateGames() {
     if (this.games === undefined || this.games.length === 0) {
       return;
     }
 
     for (let index = 0; index < this.games.length; index++) {
       this.updatePaddles(this.games[index]);
-      this.updateBall(this.games[index]);
+      await this.updateBall(this.games[index]);
       this.sendGameInfo(this.games[index]);
     }
     this.removeFinishedGames(); // Don't do this every game tick
@@ -183,7 +186,7 @@ export class GameService {
     }
   }
 
-  private updateBall(game: GameData) {
+  private async updateBall(game: GameData) {
     const ball = game.ball;
     let paddle: Paddle;
 
@@ -220,12 +223,12 @@ export class GameService {
 
     // Check if the ball has hit the score line
     if (ball.x - ball.radius < 0)
-      this.scored(game, PlayerDefinitions.PLAYER2);
+      await this.scored(game, PlayerDefinitions.PLAYER2);
     else if (ball.x + ball.radius > MapSize.WIDTH)
-      this.scored(game, PlayerDefinitions.PLAYER1);
+      await this.scored(game, PlayerDefinitions.PLAYER1);
   
-    if (game.isFinished) // use this for temporary debugging
-      this.resetGame(game);
+    // if (game.isFinished) // use this for temporary debugging
+    //   this.resetGame(game);
   }
 
   private resetGame(game: GameData) {
@@ -265,7 +268,7 @@ export class GameService {
     return false;
   }
 
-  private scored(game: GameData, player: PlayerDefinitions) {
+  private async scored(game: GameData, player: PlayerDefinitions) {
     const ball = game.ball;
 
     if (player === PlayerDefinitions.PLAYER1)
@@ -274,8 +277,16 @@ export class GameService {
       game.score[PlayerDefinitions.PLAYER2]++;
 
     if (game.score[PlayerDefinitions.PLAYER1] === game.pointsToWin ||
-        game.score[PlayerDefinitions.PLAYER2] === game.pointsToWin)
+        game.score[PlayerDefinitions.PLAYER2] === game.pointsToWin) {
+      let winner: Player;
+      if (game.score[PlayerDefinitions.PLAYER1] === game.pointsToWin)
+        winner = game.players[0];
+      else
+        winner = game.players[1];
+      const winningUser: User = await this.prismaUserService.user({ id: Number(winner.userId) });
       game.isFinished = true;
+      this.server.emit('winner', winningUser.name);
+  }
     ball.x = MapSize.WIDTH / 2;
     ball.y = MapSize.HEIGHT / 2;
     ball.xDirection = (getRandomInt(100) % 2) ? (1.0 * MoveSpeedPerTick.BALL) : (-1.0 * MoveSpeedPerTick.BALL);
@@ -361,7 +372,8 @@ export class GameService {
       [game.ball.x, game.ball.y], game.ball.radius);
 
     // send current game state back through socket
-    this.server.emit('pos', toSend);
+    if (!game.isFinished)
+      this.server.emit('pos', toSend);
     // console.log(toSend);
   }
   
