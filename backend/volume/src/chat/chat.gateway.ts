@@ -9,6 +9,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { MsgDto, MsgService } from '../msg/msg.service';
 import { roomDto, RoomService } from 'src/room/room.service';
+// import dateFormat, { masks } from "dateformat";
 // import { PrismaMsgService } from 'src/msg/prisma/prismaMsg.service';
 
 @WebSocketGateway({
@@ -30,10 +31,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('sendMsg')
   handleMessage(client: Socket, packet: any) {
     const id = packet.id;
-    const user = packet.username;
+    // const user = packet.username;
     const text = packet.msg;
-    console.log(`Server received msg: "${text}" from client: ${client.id} (${user})`);
-    this.all_clients.emit('receiveNewMsg', this.formatMessage(user, text));
+    this.all_clients.emit('receiveNewMsg', packet);
 	
     const dto: MsgDto = {id: -1, roomId: 1, body: text, authorId: id, invite: false};
     this.msgService.handleIncomingMsg(dto);  // handles db placement of the new msg based on sender id
@@ -53,17 +53,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   handleDisconnect(client: Socket) {
-    this.all_clients.emit('msgToClient', this.formatMessage('Rubot','A user left the chat.')); //all clients
-    console.log(`Client ${client.id} disconnected`);
-  }
-
-  formatMessage(username, message_body)
-  {
-    return {
-      username: username,
-      body: message_body,
-      time: new Date()
-    };
+    // this.all_clients.emit('msgToClient', this.formatMessage('Rubot','A user left the chat.')); //all clients
+    console.log(`Client ${client.id} disconnected from chat`);
   }
 
   // send update to all ppl in chat who are online

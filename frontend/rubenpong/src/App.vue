@@ -10,24 +10,28 @@
     <div class="w-1/2 block flex-grow lg:flex lg:items-center lg:w-auto">
       <div class="text-sm lg:flex-grow">
         <RouterLink
+          v-if="userIsLoggedIn"
           class="text-blue-100 p-2 text-lg hover:text-white"
-          to="/about"
+          to="/"
         >
-          About
+          Home
         </RouterLink>
         <RouterLink
+          v-if="userIsLoggedIn"
           class="text-blue-100 p-2 text-lg hover:text-white"
           to="/game"
         >
           Game
         </RouterLink>
         <RouterLink
+          v-if="userIsLoggedIn"
           class="text-blue-100 p-2 text-lg hover:text-white"
           to="/chat"
         >
           Chat
         </RouterLink>
         <RouterLink
+          v-if="userIsLoggedIn"
           class="text-blue-100 p-2 text-lg hover:text-white"
           to="/logout"
         >
@@ -39,6 +43,7 @@
         style="text-align: center; float: right;"
       >
         <RouterLink
+          v-if="userIsLoggedIn"
           to="/user"
         >
           <img
@@ -55,13 +60,16 @@
     </div>
   </nav>
   <br>
-
   <RouterView />
 </template>
-<script lang="ts">
-import { RouterLink, RouterView } from 'vue-router';
-export default {
 
+<script lang="ts">
+
+import { RouterLink, RouterView } from 'vue-router';
+import { isLoggedIn } from '@/router/auth';
+import { getBackend } from './utils/backend-requests';
+
+export default {
   data()
   {
     return {
@@ -69,23 +77,22 @@ export default {
       matched: false,
       gameMode : '',
       name: '',
-      
+      userIsLoggedIn: false,
     };
   },
   async created () {
-    let name: string = '';
-
-    await fetch('http://localhost:3000/user/me')
-      .then(function(res){
-        return res.json();
-      })
-      .then(function(data){
-        name = data.name;
-        console.log(data);
-      });
-    this.name = name;
-  },
+    this.userIsLoggedIn = await isLoggedIn();
+    if (this.userIsLoggedIn) {
+      getBackend('user/me')
+        .then((res) => { res.json()
+          .then((data) => {
+            this.name = data.name;
+          });
+        });
+    }
+  }
 };
+
 </script>
 
 <style src="./assets/main.css"></style>

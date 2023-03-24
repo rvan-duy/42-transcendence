@@ -307,8 +307,7 @@ export class GameService {
   }
 
   logGames() {
-    console.log('\n\nLogging games:');
-    console.log(this.games);
+    console.log('\n\nLogging games:', this.games);
   }
 
   private removeFinishedGames() {

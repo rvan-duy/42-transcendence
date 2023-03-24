@@ -8,7 +8,7 @@ import * as dotenv from 'dotenv';
 import * as cookieParser from 'cookie-parser';
 
 dotenv.config();
-console.log(process.env);
+console.log(process.env); // debug
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });

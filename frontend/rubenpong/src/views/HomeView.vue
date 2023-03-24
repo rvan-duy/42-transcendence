@@ -29,7 +29,7 @@ async function onclickMeow(){
     style="text-align: center"
   >
     <h1 id="about_text">
-      This is an about page
+      This is no longer an about page, it is now a home page.
     </h1>
     <button
       class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
