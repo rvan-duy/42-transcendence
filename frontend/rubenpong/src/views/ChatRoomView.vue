@@ -41,9 +41,9 @@ connection.socket.on('loadChatHistory', async (data) =>{
         var data = await res.json();
         return data.name;
       })
-      .catch(error => console.log(`loadChatHistory: Couldn\'t fetch username for userId ${msg.authorId}: ` + error.message));
+      .catch(error => console.log(`loadChatHistory: Couldn't fetch username for userId ${msg.authorId}: ` + error.message));
     // const format_time = `${new Date(msg.timestamp).getHours()}:`+ `00${new Date(msg.timestamp).getMinutes()}`.slice(-2);
-    const format_time = new Date(msg.timestamp).toLocaleTimeString("nl-NL");
+    const format_time = new Date(msg.timestamp).toLocaleTimeString('nl-NL');
     var packet = {username: username, time: format_time, body: msg.body};
     outputMessages(packet);
   }
@@ -81,7 +81,7 @@ function formatMessage(packet)
   return {
     username: packet.username,
     body: packet.msg,
-    time: new Date().toLocaleTimeString("nl-NL"),
+    time: new Date().toLocaleTimeString('nl-NL'),
   };
 }
 

@@ -31,7 +31,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('sendMsg')
   handleMessage(client: Socket, packet: any) {
     const id = packet.id;
-    const user = packet.username;
+    // const user = packet.username;
     const text = packet.msg;
     this.all_clients.emit('receiveNewMsg', packet);
 	
@@ -54,7 +54,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   handleDisconnect(client: Socket) {
     // this.all_clients.emit('msgToClient', this.formatMessage('Rubot','A user left the chat.')); //all clients
-    // console.log(`Client ${client.id} disconnected`);
+    console.log(`Client ${client.id} disconnected from chat`);
   }
 
   // send update to all ppl in chat who are online

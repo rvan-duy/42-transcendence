@@ -5,7 +5,6 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import * as session from 'express-session';
 import * as passport from 'passport';
 import * as dotenv from 'dotenv';
-import { PrismaUserService } from './user/prisma/prismaUser.service';
 import * as cookieParser from 'cookie-parser';
 
 dotenv.config();

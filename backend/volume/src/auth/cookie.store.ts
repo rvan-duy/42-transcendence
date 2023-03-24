@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class CookieStore {
@@ -10,10 +10,10 @@ export class CookieStore {
   }
 
   removeCookie(cookie: string) {
-    this.userByCookie.delete(cookie)
+    this.userByCookie.delete(cookie);
   }
 
-  getUserByCookie(Cookie: string): number  {
+  getUserByCookie(Cookie: string): number {
     console.log('cookie', Cookie);
     
     // log the map
