@@ -14,8 +14,7 @@ const router = createRouter({
   routes: [
     {
       path: '/login',
-      alias: '/',
-      name: 'home',
+      name: 'login',
       component: LoginView,
       meta: {
         public: true,
@@ -30,19 +29,22 @@ const router = createRouter({
  */
 router.beforeEach(async (to, from, next) => {
   const userIsLoggedIn: boolean = await isLoggedIn();
-  const pageIsPublic: boolean = to.meta.public as boolean;
-  const pageIsLoginPage: boolean = to.meta.loginPage as boolean;
-  
-  if (userIsLoggedIn) {
-    if (pageIsLoginPage)
-      next('/');
-    else
-      next();
-  } else {
-    if (pageIsPublic)
-      next();
-    else
-      next('/login');
+
+  if (userIsLoggedIn === false) {
+    if (to.meta.loginPage === true) {
+      return next();
+    }
+    else {
+      return next('/login');
+    }
+  }
+  else {
+    if (to.meta.loginPage === true) {
+      return next('/');
+    }
+    else {
+      return next();
+    }
   }
 });
 
