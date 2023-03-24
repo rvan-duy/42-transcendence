@@ -1,4 +1,4 @@
-import AboutView from '@/views/AboutView.vue';
+import HomeView from '@/views/HomeView.vue';
 import ChatView from '@/views/ChatView.vue';
 import ChatRoomView from '@/views/ChatRoomView.vue';
 import GameView from '@/views/GameView.vue';
@@ -7,9 +7,9 @@ import UserView from '@/views/UserView.vue';
 
 const routes = [
   {
-    path: '/about',
-    name: 'about',
-    component: AboutView,
+    path: '/',
+    name: 'home',
+    component: HomeView,
   },
   {
     path: '/chat',
