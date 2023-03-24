@@ -18,6 +18,7 @@ Dockerfile @Obult
 
 # Frontend
 /frontend/rubenpong/src/router @rvan-duy
+/frontend/rubenpong/src/utils/backend-requests.ts @rvan-duy
 
 # Backend
 /backend/volume/src/chat @LJmartin94 @Obult

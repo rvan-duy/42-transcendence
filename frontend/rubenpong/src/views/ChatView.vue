@@ -16,6 +16,7 @@
               <label for="username">Username</label>
               <input
                 id="username"
+                class="text-black"
                 type="text"
                 name="username"
                 placeholder="Enter username..."
@@ -27,6 +28,7 @@
               <label for="room">Room</label>
               <select
                 id="room"
+                class="text-black"
                 name="room"
                 style="border-radius: 20px"
               >

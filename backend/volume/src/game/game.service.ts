@@ -150,10 +150,6 @@ export class GameService {
         player.paddle.y -= paddleMovement;
       if (player.moveDown)
         player.paddle.y += paddleMovement;
-      if (player.moveLeft)
-        player.paddle.x -= paddleMovement;
-      if (player.moveRight)
-        player.paddle.x += paddleMovement;
 
       // Check if paddle goes out of bounds
       if (player.paddle.y < 0)
