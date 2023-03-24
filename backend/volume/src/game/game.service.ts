@@ -286,7 +286,7 @@ export class GameService {
       const winningUser: User = await this.prismaUserService.user({ id: Number(winner.userId) });
       game.isFinished = true;
       this.server.emit('winner', winningUser.name);
-  }
+    }
     ball.x = MapSize.WIDTH / 2;
     ball.y = MapSize.HEIGHT / 2;
     ball.xDirection = (getRandomInt(100) % 2) ? (1.0 * MoveSpeedPerTick.BALL) : (-1.0 * MoveSpeedPerTick.BALL);
