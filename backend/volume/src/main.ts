@@ -51,25 +51,3 @@ async function bootstrap() {
   await app.listen(3000);
 }
 bootstrap();
-
-const FortyTwoStrategy = require('passport-42').Strategy;
-
-passport.use(new FortyTwoStrategy({
-    clientID: process.env.APPLICATION_ID,
-    clientSecret: process.env.APPLICATION_SECRET,
-    callbackURL: process.env.REDIRECT_URI,
-    profileFields: {
-      'id': function (obj) { return obj.id; },
-      'username': 'login',
-      // 'photos.0.value': 'image_url' use this later
-    }
-  },
-  async function(accessToken, refreshToken, profile, cb) {
-    const userService: PrismaUserService = new PrismaUserService(new PrismaService());
-    await userService.findOrCreateUser({
-      intraId: profile.id,
-      name: profile.username,
-    })
-    return (cb(null, profile));
-  }
-));

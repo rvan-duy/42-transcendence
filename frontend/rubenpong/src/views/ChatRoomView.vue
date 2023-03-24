@@ -37,7 +37,7 @@ connection.socket.on('loadChatHistory', async (data) =>{
   for (const msg of data)
   {
     console.log(msg);
-    var username = await fetch(`http://localhost:3000/user/id/${msg.authorId}`, {mode: 'cors'})
+    var username = await getBackend(`user/id/${msg.authorId}`)
       .then(async function(res)
       {
         var data = await res.json();
