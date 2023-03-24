@@ -53,7 +53,7 @@ connection.socket.on('loadChatHistory', async (data) =>{
 });
 connection.socket.on('receiveNewMsg', (msg) => {
   console.log(`client received message: ${msg}`);
-  outputMessages(msg);
+  outputMessages(formatMessage(msg));
 });
 
 // const chatForm = document.getElementById('chat-form');
@@ -80,6 +80,15 @@ function outputMessages(message)
   const chatMessages = document.querySelector('.chat-messages');
   chatMessages.appendChild(div);
   chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function formatMessage(packet)
+{
+  return {
+    username: packet.username,
+    body: packet.msg,
+    time: new Date().toLocaleTimeString("nl-NL"),
+  };
 }
 
 </script>
