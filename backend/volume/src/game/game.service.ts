@@ -1,84 +1,15 @@
+import { GameMode, PaddleInput, PlayerDefinitions, MapSize, MoveSpeedPerTick, DefaultElementSize, PowerUpEffects, BallStatus } from './game.definitions';
+import { Paddle } from './game.paddle';
 import { Injectable } from '@nestjs/common';
 import { PrismaGameService } from './prisma/prismaGame.service';
 import { PrismaUserService } from '../user/prisma/prismaUser.service';
 import { Server } from 'socket.io';
 import { User } from '@prisma/client';
+import { Player } from './game.player';
+import { Ball } from './game.ball';
+import { PowerUp } from './game.powerup';
 
-export enum GameMode {
-  NORMAL = 'Normal',
-  FREEMOVE = 'FreeMove',
-  POWERUP = 'PowerUp',
-  FIESTA = 'Fiesta',
-}
-
-enum PaddleInput {
-  UP = 'KeyUp',
-  DOWN = 'KeyDown',
-  LEFT = 'KeyLeft',
-  RIGHT = 'KeyRight',
-}
-
-enum PlayerDefinitions {
-  PLAYER1,
-  PLAYER2,
-}
-
-enum MapSize {
-  WIDTH = 1000,
-  HEIGHT = 600,
-}
-
-enum MoveSpeedPerTick {
-  PADDLE = 2,
-  BALL = 3,
-}
-
-enum DefaultElementSize {
-  PADDLEWIDTH = 20,
-  PADDLEHEIGHT = 100,
-  BALLRADIUS = 20,
-}
-
-class Paddle {
-  x: number = 0;
-  y: number = 0;
-  width: number = DefaultElementSize.PADDLEWIDTH;
-  height: number = DefaultElementSize.PADDLEHEIGHT;
-  acceleration: number = 1;
-}
-
-class Player {
-  constructor(id: number, side: PlayerDefinitions) {
-    this.paddle = new Paddle;
-    this.userId = id;
-    if (side === PlayerDefinitions.PLAYER1) {
-      this.paddle.x = 0;
-      this.paddle.y = MapSize.HEIGHT / 2 - DefaultElementSize.PADDLEHEIGHT / 2;
-    }
-    else {
-      this.paddle.x = MapSize.WIDTH - DefaultElementSize.PADDLEWIDTH;
-      this.paddle.y = MapSize.HEIGHT / 2 - DefaultElementSize.PADDLEHEIGHT / 2;
-    }
-  }
-
-  userId: number;
-  paddle: Paddle;
-  moveUp: boolean = false;
-  moveDown: boolean = false;
-  moveLeft: boolean = false;
-  moveRight: boolean = false;
-}
-
-class Ball {
-  x: number = MapSize.WIDTH / 2;
-  y: number = MapSize.HEIGHT / 2;
-  xDirection: number = (getRandomInt(10) % 2) ? (1.0 * MoveSpeedPerTick.BALL) : (-1.0 * MoveSpeedPerTick.BALL);
-  yDirection: number = 0;
-  acceleration: number = 1;
-  radius: number = 20;
-}
-
-class GameData {
+export class GameData {
   gameID: number;
   players: Player[] = [];
   spectators: number[] = [];
@@ -88,6 +19,8 @@ class GameData {
   texturePath: string = null;
   pointsToWin: number = 5;
   isFinished: boolean = false;
+  powerUpOnField: Boolean = false;
+  powerUp: PowerUp;
   ball: Ball;
 }
 
@@ -139,8 +72,22 @@ export class GameService {
     }
 
     for (let index = 0; index < this.games.length; index++) {
+      const ball: Ball = this.games[index].ball;
+      const mode: GameMode = this.games[index].mode;
+      const powerUp: PowerUp = this.games[index].powerUp;
+
+      //update paddle positions
       this.updatePaddles(this.games[index]);
-      await this.updateBall(this.games[index]);
+
+      // update ball position and checks for score
+      if (ball.update(this.games[index]) === BallStatus.SCORED)
+        await this.scored(this.games[index]);
+
+      // updates the power-up if the right gamemode is selected
+      if (mode === GameMode.POWERUP || mode === GameMode.FIESTA)
+        powerUp.update(this.games[index]);
+
+      // send the game state back to the players
       this.sendGameInfo(this.games[index]);
     }
     this.removeFinishedGames(); // Don't do this every game tick
@@ -149,86 +96,8 @@ export class GameService {
   private updatePaddles(game: GameData) {
     for (let playerNbr = 0; playerNbr < 2; playerNbr++) {
       const player:Player = game.players[playerNbr];
-      const paddleMovement:number = player.paddle.acceleration * MoveSpeedPerTick.PADDLE;
-
-      // Get new y coordinate of paddle
-      if (player.moveUp)
-        player.paddle.y -= paddleMovement;
-      if (player.moveDown)
-        player.paddle.y += paddleMovement;
-
-      // Check if paddle goes out of bounds
-      if (player.paddle.y < 0)
-        player.paddle.y = 0;
-      else if (player.paddle.y + player.paddle.height > MapSize.HEIGHT)
-        player.paddle.y = MapSize.HEIGHT - player.paddle.height;
-
-      if (game.mode === GameMode.FREEMOVE || game.mode === GameMode.FIESTA) {
-        if (player.moveLeft)
-          player.paddle.x -= paddleMovement;
-        if (player.moveRight)
-          player.paddle.x += paddleMovement;
-
-        // Out of bounds check for both sides of the map depending on the player's side
-        if (playerNbr === PlayerDefinitions.PLAYER1) {
-          if (player.paddle.x + player.paddle.width > MapSize.WIDTH / 2 - DefaultElementSize.PADDLEWIDTH * 5)
-            player.paddle.x = MapSize.WIDTH / 2 - player.paddle.width - DefaultElementSize.PADDLEWIDTH * 5;
-          if (player.paddle.x < 0)
-            player.paddle.x = 0;
-        }
-        else if (playerNbr === PlayerDefinitions.PLAYER2) {
-          if (player.paddle.x < MapSize.WIDTH / 2 + DefaultElementSize.PADDLEWIDTH * 5)
-            player.paddle.x = MapSize.WIDTH / 2 + DefaultElementSize.PADDLEWIDTH * 5;
-          if (player.paddle.x + player.paddle.width > MapSize.WIDTH )
-            player.paddle.x = MapSize.WIDTH - player.paddle.width;
-        }
-      }
+      player.paddle.update(player, playerNbr, game.mode);
     }
-  }
-
-  private async updateBall(game: GameData) {
-    const ball = game.ball;
-    let paddle: Paddle;
-
-    // check what side of the map the ball is on and which paddle to check collision for
-    if (game.ball.x + ball.radius < MapSize.WIDTH / 2)
-      paddle = game.players[PlayerDefinitions.PLAYER1].paddle;
-    else
-      paddle = game.players[PlayerDefinitions.PLAYER2].paddle;
-
-    // Update ball position
-    ball.x += ball.xDirection;
-    ball.y += ball.yDirection;
-
-    // check if ball hits the top or bottom of the map then invert it's y direction
-    if (ball.y + ball.radius > MapSize.HEIGHT || ball.y - ball.radius < 0)
-      ball.yDirection -= ball.yDirection * 2;
-
-    if (this.ballPaddleCollision(ball, paddle)) {
-      let speed = ball.acceleration * MoveSpeedPerTick.BALL;
-      const collisionPoint = ball.y - (paddle.y + paddle.height / 2); // gets a point on the paddle that has a value between the paddle's height / 2 and negative paddle's height / 2
-      const normalizedCollisionPoint = collisionPoint / paddle.height / 2; // sets the entire length of the paddle's collision points to be between -1 and 1
-      const returnAngle = Math.PI / 4 * normalizedCollisionPoint; // 45 degrees (Pi / 4) times the normalized paddle collision point which is between 1 and -1
-      const returnDirection = (ball.x + ball.radius < MapSize.WIDTH / 2) ? 1 : -1;
-
-      // prevent ball from moving through paddle
-      if (speed > DefaultElementSize.PADDLEWIDTH)
-        speed = DefaultElementSize.PADDLEWIDTH - 1;
-      ball.xDirection = returnDirection * speed * Math.cos(returnAngle); // cos gets the value between the ball and the x angle
-      ball.yDirection = speed * Math.sin(returnAngle); // sin gets the value between the ball and the y angle
-
-      // update the ball's acceleration after every paddle hit
-      ball.acceleration += 0.1;
-    }
-
-    // Check if the ball has hit the score line
-    if (ball.x - ball.radius < 0)
-      await this.scored(game, PlayerDefinitions.PLAYER2);
-    else if (ball.x + ball.radius > MapSize.WIDTH)
-      await this.scored(game, PlayerDefinitions.PLAYER1);
-  
-    // if (game.isFinished) // use this for temporary debugging
-    //   this.resetGame(game);
   }
 
   private resetGame(game: GameData) {
@@ -239,51 +108,23 @@ export class GameService {
     game.isFinished = false;
   }
 
-  private ballPaddleCollision(ball: Ball, paddle: Paddle) {
-    // temporary variables to set edges for testing
-    let tempX: number = ball.x;
-    let tempY: number = ball.y;
-    
-    // sets the closest edges into the temp variables
-    // compare to left or right edges
-    if (ball.x <= paddle.x)
-      tempX = paddle.x;
-    else if (ball.x > paddle.x + paddle.width)
-      tempX = paddle.x + paddle.width;
-
-    // compare to top or bottom edge
-    if (ball.y <= paddle.y)
-      tempY = paddle.y;
-    else if (ball.y > paddle.y + paddle.height)
-      tempY = paddle.y + paddle.height;
-
-    // get distance from closest edges
-    const distX: number = ball.x - tempX;
-    const distY: number = ball.y - tempY;
-    const distance: number = Math.sqrt((distX * distX) + (distY * distY));
-  
-    // if the distance is less than or equal to the radius there is a collision
-    if (distance <= ball.radius)
-      return true;
-    return false;
-  }
-
-  private async scored(game: GameData, player: PlayerDefinitions) {
+  private async scored(game: GameData) {
     const ball = game.ball;
+    let   scoringPlayer: PlayerDefinitions;
 
-    if (player === PlayerDefinitions.PLAYER1)
-      game.score[PlayerDefinitions.PLAYER1]++;
-    else
-      game.score[PlayerDefinitions.PLAYER2]++;
+    if (game.ball.x - game.ball.radius <= 0) {
+      scoringPlayer = PlayerDefinitions.PLAYER2;
+      game.score[scoringPlayer]++;
+    }
+    else {
+      scoringPlayer = PlayerDefinitions.PLAYER1;
+      game.score[scoringPlayer]++;
+    }
 
-    if (game.score[PlayerDefinitions.PLAYER1] === game.pointsToWin ||
-        game.score[PlayerDefinitions.PLAYER2] === game.pointsToWin) {
-      let winner: Player;
-      if (game.score[PlayerDefinitions.PLAYER1] === game.pointsToWin)
-        winner = game.players[0];
-      else
-        winner = game.players[1];
-      const winningUser: User = await this.prismaUserService.user({ id: Number(winner.userId) });
+    if (game.score[scoringPlayer] === game.pointsToWin ) {
+      const winningPlayer: Player = game.players[scoringPlayer];
+      const winningUser: User = await this.prismaUserService.user({ id: Number(winningPlayer.userId) });
+
       game.isFinished = true;
       this.server.emit('winner', winningUser.name);
     }
@@ -296,7 +137,7 @@ export class GameService {
 
   createGame(player1: number, player2: number, mode: GameMode) {
     const newGame = new GameData;
-
+                                                                                     
     newGame.gameID = this.gamesPlayed;
     newGame.players.push(new Player(player1, PlayerDefinitions.PLAYER1));
     newGame.players.push(new Player(player2, PlayerDefinitions.PLAYER2));

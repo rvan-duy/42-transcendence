@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { GameService } from './game.service';
-import { GameMode } from './game.service';
+import { GameMode } from './game.definitions';
 
 @Injectable()
 export class MatchmakingService {
@@ -46,11 +46,11 @@ export class MatchmakingService {
   }
 
   private checkAndMatchPlayers(arr: number[], mode: GameMode) {
-    if (arr.length < 2)
+    if (arr.length < 1) // CHANGE THIS IF YOU WANT TO MAKE MATCHMAKING WORK, CURRENTLY IN DEBUG MODE
       return;
 
+	const player2 = arr.pop();
     const player1 = arr.pop();
-    const player2 = arr.pop();
     console.log(`Created a game of ${mode} with players ${player1} and ${player2}`);
     this.gameService.createGame(player1, player2, mode);
 
