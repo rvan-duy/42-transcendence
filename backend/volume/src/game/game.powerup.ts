@@ -1,5 +1,5 @@
-import { DefaultElementSize, MapSize, MoveSpeedPerTick, PlayerDefinitions, PowerUpEffects } from "./game.definitions";
-import { GameData } from "./game.service";
+import { DefaultElementSize, MapSize, MoveSpeedPerTick, PlayerDefinitions, PowerUpEffects } from './game.definitions';
+import { GameData } from './game.service';
 
 export class PowerUp {
   x: number = MapSize.WIDTH / 2;
@@ -8,17 +8,18 @@ export class PowerUp {
   effect: PowerUpEffects;
   powerUpOnField: boolean = false;
   powerUpEnabled: boolean = false;
-  playerEnabledOn: PlayerDefinitions;
+  targetPlayer: PlayerDefinitions;
   timeEnabled: number;
 
   update(game: GameData) {
     if (this.hitsSinceLastPowerUp >= 5 && this.powerUpEnabled === false &&
       this.powerUpOnField === false) {
       this.spawnPowerUp(game);
+      return ;
     }
 
-    if (this.powerUpOnField && this.powerUpBallCollision(game))
-      this.spawnPowerUp(game);
+    if (this.powerUpOnField)
+      this.checkCollision(game);
 
     if (this.powerUpEnabled) {
       if (this.effect === PowerUpEffects.FREEZE_ENEMY) // stops the opponent from moving for x amount of game-ticks/seconds
@@ -31,37 +32,65 @@ export class PowerUp {
         this.ballEffect(game);
       else if (this.effect === PowerUpEffects.BALL_RADIUS) // decreases the ball's radius till the next paddle hit
         this.ballEffect(game);
-      else if (this.effect === PowerUpEffects.REMOVE_POINT) // removes a point from the target player
-        this.removeEffect(game);
+      else if (this.effect === PowerUpEffects.ADD_POINT) // removes a point from the target player
+        this.addEffect(game);
     }
   }
 
-  private powerUpBallCollision(game: GameData) {
+  private checkCollision(game: GameData) {
     return (false);
-
-    // if ball collision
+    
     this.powerUpEnabled = true;
     this.powerUpOnField = false;
     game.powerUpOnField = false;
+    
+    // Sets all debuffs and buffs to target the right player
 
+    // if ball collision
+    if (game.ball.xDirection < 0 && (this.effect === PowerUpEffects.FREEZE_ENEMY ||
+        this.effect === PowerUpEffects.PADDLE_SPEED_DEBUFF_ENEMY ||
+        this.effect === PowerUpEffects.ADD_POINT))
+      this.targetPlayer = PlayerDefinitions.PLAYER1;
+    else
+      this.targetPlayer = PlayerDefinitions.PLAYER2;
+    
+    // if paddle collision
+    if (game.ball.x < MapSize.WIDTH / 2 && (this.effect === PowerUpEffects.FREEZE_ENEMY ||
+      this.effect === PowerUpEffects.PADDLE_SPEED_DEBUFF_ENEMY ||
+      this.effect === PowerUpEffects.ADD_POINT))
+      this.targetPlayer = PlayerDefinitions.PLAYER1;
+    else
+      this.targetPlayer = PlayerDefinitions.PLAYER2;
   }
 
   private spawnPowerUp(game: GameData) {
     game.powerUpOnField = true;
     this.powerUpOnField = true;
-    this.effect = getRandomInt(5);
-    if (game.ball.xDirection < 0)
-      this.playerEnabledOn = PlayerDefinitions.PLAYER1;
-    else
-      this.playerEnabledOn = PlayerDefinitions.PLAYER2;
+    this.effect = getRandomInt(5); // only allow for add_point to spawn if a player is far behind
+
+    // spawn somewhere away from the ball, paddles and sides.
+    // Sometimes it can move and if a player is far behind it is stationary on his side of the field.
   }
 
-  private removeEffect(game: GameData) {
-
+  private addEffect(game: GameData) {
+    game.score[this.targetPlayer] += 1;
+    this.resetPowerUpState(game);
   }
 
   private paddleEffect(game: GameData) {
-
+    if (this.powerUpEnabled) {
+      // wait for a set timer to run out
+      this.resetPowerUpState(game);
+    }
+    else {
+      this.powerUpEnabled = true;
+      if (this.effect === PowerUpEffects.PADDLE_SPEED_BUFF)
+        game.players[this.targetPlayer].paddle.acceleration += 0.5;
+      else if (this.effect === PowerUpEffects.PADDLE_SPEED_DEBUFF_ENEMY)
+        game.players[this.targetPlayer].paddle.acceleration -= 0.3;
+      else if (this.effect === PowerUpEffects.FREEZE_ENEMY)
+        game.players[this.targetPlayer].paddle.acceleration = 0;
+    }
   }
 
   private ballEffect(game: GameData) {
@@ -83,7 +112,6 @@ export class PowerUp {
     game.players[1].paddle.acceleration = MoveSpeedPerTick.PADDLE;
   }
 }
-
 
 function getRandomInt(max) {
   return Math.floor(Math.random() * max);

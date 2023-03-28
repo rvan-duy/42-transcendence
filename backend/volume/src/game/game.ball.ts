@@ -1,6 +1,6 @@
-import { BallStatus, DefaultElementSize, GameMode, MapSize, MoveSpeedPerTick, PlayerDefinitions } from "./game.definitions";
-import { Paddle } from "./game.paddle";
-import { GameData } from "./game.service";
+import { BallStatus, DefaultElementSize, GameMode, MapSize, MoveSpeedPerTick, PlayerDefinitions } from './game.definitions';
+import { Paddle } from './game.paddle';
+import { GameData } from './game.service';
 
 export class Ball {
   x: number = MapSize.WIDTH / 2;
@@ -9,7 +9,6 @@ export class Ball {
   yDirection: number = 0;
   acceleration: number = 1;
   radius: number = 20;
-  
   
   ballPaddleCollision(paddle: Paddle) {
     // temporary variables to set edges for testing

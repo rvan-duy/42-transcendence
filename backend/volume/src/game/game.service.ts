@@ -1,5 +1,4 @@
-import { GameMode, PaddleInput, PlayerDefinitions, MapSize, MoveSpeedPerTick, DefaultElementSize, PowerUpEffects, BallStatus } from './game.definitions';
-import { Paddle } from './game.paddle';
+import { GameMode, PaddleInput, PlayerDefinitions, MapSize, MoveSpeedPerTick, DefaultElementSize, BallStatus } from './game.definitions';
 import { Injectable } from '@nestjs/common';
 import { PrismaGameService } from './prisma/prismaGame.service';
 import { PrismaUserService } from '../user/prisma/prismaUser.service';
@@ -110,7 +109,7 @@ export class GameService {
 
   private async scored(game: GameData) {
     const ball = game.ball;
-    let   scoringPlayer: PlayerDefinitions;
+    let scoringPlayer: PlayerDefinitions;
 
     if (game.ball.x - game.ball.radius <= 0) {
       scoringPlayer = PlayerDefinitions.PLAYER2;
@@ -133,6 +132,8 @@ export class GameService {
     ball.xDirection = (getRandomInt(100) % 2) ? (1.0 * MoveSpeedPerTick.BALL) : (-1.0 * MoveSpeedPerTick.BALL);
     ball.yDirection = 0.0;
     ball.acceleration = 1;
+    if (game.mode === GameMode.POWERUP || game.mode === GameMode.FIESTA)
+      game.powerUp.resetPowerUpState(game);
   }
 
   createGame(player1: number, player2: number, mode: GameMode) {
@@ -226,14 +227,7 @@ export class GameService {
 
         // enables / disables the current move input
         if (player.userId === playerId) {
-          if (input === PaddleInput.DOWN)
-            player.moveDown = player.moveDown ? false : true;
-          else if (input === PaddleInput.UP)
-            player.moveUp = player.moveUp ? false : true;
-          else if (input === PaddleInput.LEFT)
-            player.moveLeft = player.moveLeft ? false : true;
-          else if (input === PaddleInput.RIGHT)
-            player.moveRight = player.moveRight ? false : true;
+          player.updateInput(input);
           return;
         }
       }

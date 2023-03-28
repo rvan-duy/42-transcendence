@@ -49,7 +49,7 @@ export class MatchmakingService {
     if (arr.length < 1) // CHANGE THIS IF YOU WANT TO MAKE MATCHMAKING WORK, CURRENTLY IN DEBUG MODE
       return;
 
-	const player2 = arr.pop();
+    const player2 = arr.pop();
     const player1 = arr.pop();
     console.log(`Created a game of ${mode} with players ${player1} and ${player2}`);
     this.gameService.createGame(player1, player2, mode);
