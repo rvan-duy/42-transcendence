@@ -4,6 +4,7 @@ import ChatRoomView from '@/views/ChatRoomView.vue';
 import GameView from '@/views/GameView.vue';
 import LogoutView from '@/views/LogoutView.vue';
 import UserView from '@/views/UserView.vue';
+import OtherUserView from '@/views/OtherUserView.vue';
 
 const routes = [
   {
@@ -35,6 +36,11 @@ const routes = [
     path: '/user',
     name: 'user',
     component: UserView,
+  },
+  {
+    path: '/otheruser',
+    name: 'otheruser',
+    component: OtherUserView,
   },
 ];
 
