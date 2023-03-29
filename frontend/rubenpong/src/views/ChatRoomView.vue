@@ -43,11 +43,11 @@ interface.
       <li v-for="user in users"><div
         @click="goTo('otheruser')"
       >
-      <img
+      <!-- <img
             src="../assets/dagmar.jpeg"
             width="30"
             height="30"
-            style="border-radius: 50%; vertical-align: center; float: left;">
+            style="border-radius: 50%; vertical-align: center; float: left;"> -->
           <span class="text-white text-xs p-1">
             {{ user.name }}
           </span>

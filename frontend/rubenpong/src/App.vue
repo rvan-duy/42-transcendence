@@ -61,16 +61,17 @@
     </div>
   </nav>
   <br>
-  <RouterView />
-</template>
+  <main><RouterView /></main>
+  </template>
 
 <script lang="ts">
 
-import { RouterLink, RouterView } from 'vue-router';
 import { isLoggedIn } from '@/router/auth';
 import { getBackend } from './utils/backend-requests';
+import { RouterLink, RouterView } from 'vue-router';
+ export default {
 
-export default {
+   components: {RouterView, RouterLink},
   data()
   {
     return {
