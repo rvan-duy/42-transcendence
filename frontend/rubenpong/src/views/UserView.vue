@@ -13,7 +13,7 @@
           >
             <p style="text-align: center">
               <img
-                src="../assets/dagmar.jpeg"
+                :src="backendPictureUrl"
                 width="50"
                 height="50"
                 style="border-radius: 50%; display:block; margin-left: auto; margin-right: auto;"
@@ -132,6 +132,7 @@ export default {
   {
     return {
       name: '',
+      backendPictureUrl: '',
       status: 'Online',
       matches_played: 1,
       newUsername: '',
@@ -144,6 +145,7 @@ export default {
       .then((response => response.json()))
       .then((data) => {
         this.name = data.name;
+        this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/${this.name}.jpg`;
         this.elo = data.elo;
         this.status = 'Online';
       });
