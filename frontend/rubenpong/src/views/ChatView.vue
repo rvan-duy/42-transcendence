@@ -158,6 +158,7 @@ export default {
       //   this.$router.push('/dashboard')
       // } else {
       //   this.$router.push('/login')
+      console.log('/' + route);
       this.$router.push('/' + route)
       },
     // createChat()

@@ -8,7 +8,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { MsgDto, MsgService } from '../msg/msg.service';
-import { roomDto, RoomService } from 'src/room/room.service';
+import { roomDto, RoomService } from '../room/room.service';
 // import dateFormat, { masks } from "dateformat";
 // import { PrismaMsgService } from 'src/msg/prisma/prismaMsg.service';
 
