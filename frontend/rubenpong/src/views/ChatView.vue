@@ -10,7 +10,7 @@
           <h1><i class="fas fa-smile" /> ChatCord</h1>
         </header>
         <main class="join-main">
-          <form v-if="chatCreate === false">
+          <div v-if="chatCreate === false">
             <div  class="form-control">
               <label for="room">Room</label>
               <select
@@ -42,13 +42,12 @@
             >
               Join Chat
             </button>
-          </form>
+          </div>
           <button v-if="chatCreate === false"
               class="btn bg-blue-500 text-white" @click="chatCreate = true"
             >
               Create Chat
           </button>
-          <form >
             <div  v-if="chatCreate === true" class="form-control">
               <label for="room">Room</label>
               <select
@@ -68,7 +67,6 @@
                   With Password
                 </option>
               </select>
-              <form action="">
               <label for="name" class="pt-2">Chat name</label>
               <span class="text-black pr-4"><input
                 id="username"
@@ -92,7 +90,6 @@
                 required
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
               > </span></div>
-            </form>
             {{ newChat }}
               <button @click="goTo('chatroom')" 
               class="btn bg-blue-100"
@@ -100,7 +97,6 @@
               Create Chat
             </button>
             </div>
-          </form>
         </main>
       </div>
     </body>
