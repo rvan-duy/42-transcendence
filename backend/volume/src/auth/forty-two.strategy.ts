@@ -33,7 +33,6 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
       .catch((err) => {
         console.log('ERROR downloading profile picture', err);
       });
-    
 
     return user;
   }
