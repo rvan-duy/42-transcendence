@@ -13,11 +13,14 @@
           >
             <p style="text-align: center">
               <img
-                src="../assets/dagmar.jpeg"
+                :src="backendPictureUrl"
                 width="50"
                 height="50"
                 style="border-radius: 50%; display:block; margin-left: auto; margin-right: auto;"
-              >
+            class="w-11 h-11 shrink-0 grow-0 rounded-full"
+              
+                >
+             
             </p>
             <figcaption class="text-white text-m">
               {{ name }}
@@ -85,9 +88,9 @@
               0
             </p>
           </div>
-          <label for="status">Ranking</label>
+          <label for="status">Elo</label>
           <p class="text-black">
-            {{ rank }}
+            {{ elo }}
           </p>
           <label for="status">Match History</label>
           <p
@@ -126,39 +129,29 @@
   </div>
 </template>
 <script lang="ts">
+import { getBackend } from '@/utils/backend-requests';
 export default {
-
   data()
   {
     return {
       name: '',
+      backendPictureUrl: '',
       status: 'Online',
       matches_played: 1,
       newUsername: '',
-      rank: 0,
+      elo: 500,
       matches: [{player1: 'Oswin', player2: 'Alice', won: 'Alice'}, {player1: 'Alice', player2: 'Ruben', won: 'Ruben'}]
     };
   },
   async created () {
-    let name: string = '';
-    let status: string = '';
-    let rank: number = 500;
-
-    await fetch('http://localhost:3000/user/me')
-      .then(function(res){
-        return res.json();
-      })
-      .then(function(data){
-        name = data.name;
-        status = data.status;
-        rank = data.elo;
-        console.log(data);
+    await getBackend('user/me')
+      .then((response => response.json()))
+      .then((data) => {
+        this.name = data.name;
+        this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/${this.name}.jpg`;
+        this.elo = data.elo;
+        this.status = 'Online';
       });
-    this.name = name;
-    this.rank = rank;
-    this.status = status;
-    this.status = 'Online';
-
   },
   methods: {
     async changeAvatar(newname) {

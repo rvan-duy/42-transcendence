@@ -200,7 +200,6 @@ function movePlat(e: KeyboardEvent)
   {
     if (e.key === 'ArrowDown')
     {
-      console.log(e.key);
       socket.emit('ArrowDown');
       arrowDown = true;
     }
@@ -209,7 +208,6 @@ function movePlat(e: KeyboardEvent)
   {
     if (e.key === 'ArrowUp')
     {
-      console.log(e.key);
       socket.emit('ArrowUp');
       arrowUp = true;
     }
@@ -218,7 +216,6 @@ function movePlat(e: KeyboardEvent)
   {
     if (e.key === 'ArrowRight')
     {
-      console.log(e.key);
       socket.emit('ArrowRight');
       arrowRight = true;
     }
@@ -227,7 +224,6 @@ function movePlat(e: KeyboardEvent)
   {
     if (e.key === 'ArrowLeft')
     {
-      console.log(e.key);
       socket.emit('ArrowLeft');
       arrowLeft = true;
     }
@@ -236,8 +232,6 @@ function movePlat(e: KeyboardEvent)
 
 function stopMovePlat(e: KeyboardEvent)
 {
-  console.log ('keyup');
-  console.log(e.key);
   if (e.key === 'ArrowDown')
   {
     socket.emit('ArrowDown');
