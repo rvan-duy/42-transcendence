@@ -1,0 +1,28 @@
+#!/bin/sh
+ip_var=$(ifconfig | grep "inet " | grep -Fv 127.0.0.1 | awk '{print $2}')
+f_var=$(echo $ip_var | awk -F '.' '{print $2}')
+f_var=$(($f_var-10))
+r_var=$(echo $ip_var | awk -F '.' '{print $3}')
+s_var=$(echo $ip_var | awk -F '.' '{print $4}')
+addr=(f$(echo $f_var)r$(echo $r_var)s$(echo $s_var).codam.nl)
+
+cd backend
+cd volume
+command_var=$(echo s/^.*CODAM_PC=.*$/CODAM_PC=$addr/)
+sed -ie $command_var .env
+rm -rf .enve
+cd ..
+cd ..
+
+cd frontend
+cd rubenpong
+command_var=$(echo s/^.*CODAM_PC=.*$/VITE_CODAM_PC=$addr/)
+sed -ie $command_var .env
+rm -rf .enve
+cd ..
+cd ..
+
+echo $(echo Website hosted at: $addr)
+
+# export IP=$ip_var
+# echo "Call as '. ./whatIsMyIP.sh' to export this IP address as environment variable 'IP'"

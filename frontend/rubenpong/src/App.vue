@@ -47,7 +47,7 @@
           to="/user"
         >
           <img
-            src="./assets/dagmar.jpeg"
+            :src="backendPictureUrl"
             width="50"
             height="50"
             style="border-radius: 50%"
@@ -77,6 +77,8 @@ export default {
       matched: false,
       gameMode : '',
       name: '',
+      id: 0,
+      backendPictureUrl: '',
       userIsLoggedIn: false,
     };
   },
@@ -87,6 +89,8 @@ export default {
         .then((res) => { res.json()
           .then((data) => {
             this.name = data.name;
+            this.id = data.id;
+            this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.jpg`;
           });
         });
     }

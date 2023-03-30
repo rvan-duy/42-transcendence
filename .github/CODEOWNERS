@@ -24,7 +24,7 @@ Dockerfile @Obult
 /backend/volume/src/chat @LJmartin94 @Obult
 /backend/volume/src/auth @rvan-duy
 /backend/volume/src/room @Obult
-/backend/volume/src/user @Obult
+/backend/volume/src/user @Obult @rvan-duy
 /backend/volume/src/msg @Obult
 /backend/volume/src/prisma @Obult
 /backend/volume/src/game @rvan-mee
