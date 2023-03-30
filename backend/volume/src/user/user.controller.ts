@@ -1,7 +1,6 @@
 import { Controller, Get, Param, Put, Request, Response, UseGuards, HttpStatus } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
-
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -35,13 +34,13 @@ export class UserController {
       res.status(HttpStatus.BAD_REQUEST).send('Name already taken');
     }
 
-    this.userService.updateUser({ 
-      where: { 
+    this.userService.updateUser({
+      where: {
         id: Number(req.user.id),
         name: req.user.name
-      }, 
-      data: { 
-        name: req.body.name 
+      },
+      data: {
+        name: req.body.name
       }
     });
 

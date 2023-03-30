@@ -25,7 +25,7 @@ export class AuthService {
         response.pipe(file);
         file.on('finish', () => {
           file.close();
-          console.log(`INFO profile picture downloaded to ${filePath}`)
+          console.log(`INFO profile picture downloaded to ${filePath}`);
           resolve();
         });
       }).on('error', (err) => {
