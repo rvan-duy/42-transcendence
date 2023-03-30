@@ -16,23 +16,18 @@ export function getBackend(endpoint: string): Promise<Response> {
   return res;
 }
 
-/* Untested */
-export async function putBackend(endpoint: string, body: any): Promise<any> {
+export async function putBackend(endpoint: string, body: any): Promise<Response> {
   const endpointUrl = `${BACKEND_URL}/${endpoint}`;
   const token = getJwtFromCookies();
   const res = await fetch(endpointUrl, {
     method: 'PUT',
     headers: {
-      'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
   });
-  if (res.status === 200) {
-    return await res.json();
-  }
-  console.log('Error requesting from backend:', res.status, res.statusText);
-  return null;
+  return res;
 }
 
 export function getJwtFromCookies(): string {

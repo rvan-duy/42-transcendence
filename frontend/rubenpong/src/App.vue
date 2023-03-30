@@ -77,6 +77,7 @@ export default {
       matched: false,
       gameMode : '',
       name: '',
+      id: 0,
       backendPictureUrl: '',
       userIsLoggedIn: false,
     };
@@ -88,7 +89,8 @@ export default {
         .then((res) => { res.json()
           .then((data) => {
             this.name = data.name;
-            this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/${this.name}.jpg`;
+            this.id = data.id;
+            this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.jpg`;
           });
         });
     }
