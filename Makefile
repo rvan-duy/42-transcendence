@@ -5,7 +5,11 @@ restart: 	stop start
 
 # build the broject
 build:
+		@bash IP
 		@docker-compose build || echo "\033[1;31mDid you start docker?"
+
+address:
+		@bash IP
 
 start:
 		docker-compose up -d
