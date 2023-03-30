@@ -13,27 +13,19 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
       profileFields: {
         'id': function (obj: any) { return Number(obj.id); },
         'username': 'login',
-        'picture': function(obj: any) { return obj.image.link; }
+        'pictureUrl': function(obj: any) { return obj.image.link; }
       }
     });
   }
 
   async validate(accessToken: string, refreshToken: string, profile: any) {
     console.log('INFO validating user', profile.username);
-        
+    
     const user = await this.authService.validateUser(profile.id, profile.username);
     if (!user) {
       throw new UnauthorizedException();
     }
-    
-    this.authService.downloadFile(profile.picture, '/usr/src/app/public')
-      .then(() => {
-        console.log('INFO profile picture downloaded');
-      })
-      .catch((err) => {
-        console.log('ERROR downloading profile picture', err);
-      });
-
+    this.authService.downloadFile(user.id, profile.pictureUrl, '/usr/src/app/public');
     return user;
   }
 }

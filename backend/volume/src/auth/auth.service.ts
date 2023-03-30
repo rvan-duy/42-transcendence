@@ -15,9 +15,9 @@ export class AuthService {
     return await this.prismaUserService.findOrCreateUser({intraId, name});
   }
 
-  async downloadFile(url: string, folderPath: string): Promise<void> {
+  async downloadFile(userId: number, url: string, folderPath: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      const fileName = url.substring(url.lastIndexOf('/') + 1);
+      const fileName = 'user_' + userId + '.jpg';
       const filePath = `${folderPath}/${fileName}`;
       const file = fs.createWriteStream(filePath);
       
@@ -25,10 +25,12 @@ export class AuthService {
         response.pipe(file);
         file.on('finish', () => {
           file.close();
+          console.log(`INFO profile picture downloaded to ${filePath}`)
           resolve();
         });
       }).on('error', (err) => {
         fs.unlink(filePath, () => {
+          console.log('ERROR downloading profile picture', err);
           reject(err);
         });
       });
