@@ -19,4 +19,7 @@ export class CurrentGameState {
   rightPaddleWidth: number = DefaultElementSize.PADDLEWIDTH;
   ballCoords: number[] = [MapSize.WIDTH / 2, MapSize.HEIGHT / 2];
   ballRadius: number = DefaultElementSize.BALLRADIUS;
+  powerUpOnField: Boolean = false;
+  powerUpCoords: number[] = [0, 0];
+  powerUpRadius: number = 0;
 }

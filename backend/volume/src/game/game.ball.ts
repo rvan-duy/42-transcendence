@@ -53,9 +53,11 @@ export class Ball {
     this.y += this.yDirection;
   
     // check if ball hits the top or bottom of the map then invert it's y direction
-    if (this.y + this.radius > MapSize.HEIGHT || this.y - this.radius < 0)
-      this.yDirection -= this.yDirection * 2;
-  
+    if (this.y + this.radius > MapSize.HEIGHT)
+      this.yDirection = Math.abs(this.yDirection) * -1;
+    else if (this.y - this.radius < 0)
+      this.yDirection = Math.abs(this.yDirection);
+
     if (this.ballPaddleCollision(paddle)) {
       let speed = this.acceleration * MoveSpeedPerTick.BALL;
       const collisionPoint = this.y - (paddle.y + paddle.height / 2); // gets a point on the paddle that has a value between the paddle's height / 2 and negative paddle's height / 2
@@ -74,11 +76,14 @@ export class Ball {
       this.acceleration += 0.1;
 
       // resets the applied buff/debuff once a paddle hits the ball
-      if ((game.mode === GameMode.POWERUP || game.mode === GameMode.FIESTA) && game.powerUp.powerUpEnabled) {
-        game.powerUp.hitsSinceLastPowerUp++;
+      if (game.mode === GameMode.POWERUP || game.mode === GameMode.FIESTA) {
+        if (game.powerUp.powerUpEnabled === false)
+          game.powerUp.hitsSinceLastPowerUp++;
+        else
+          game.powerUp.resetOnPaddleHit(game);
       }
     }
-  
+
     // Check if the ball has hit the score line
     if (this.x - this.radius <= 0 || this.x + this.radius >= MapSize.WIDTH)
       return (BallStatus.SCORED);

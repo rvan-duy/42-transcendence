@@ -25,6 +25,7 @@ export enum MapSize {
 export enum MoveSpeedPerTick {
   PADDLE = 2,
   BALL = 3,
+  POWERUP = 5,
   }
 
 export enum DefaultElementSize {
@@ -34,8 +35,9 @@ export enum DefaultElementSize {
   POWERUPRADIUS = 15,
   }
 
-export enum PowerUpEffects {
-  PADDLE_SPEED_DEBUFF_ENEMY, // slow effect for x amount of seconds
+// make paddle invisible?
+export enum PowerUpEffects { // UPDATE IN FRONTEND IF CHANGED
+  PADDLE_SLOW_ENEMY, // slow effect for x amount of seconds
   PADDLE_SPEED_BUFF, // speed effect for x amount of seconds
   BALL_RADIUS, // ball radius decrease till next paddle hit
   BALL_SPEED, // ball increase effect till next hit

@@ -17,7 +17,7 @@ export class GameData {
   score: number[] = [0, 0];
   texturePath: string = null;
   pointsToWin: number = 5;
-  isFinished: boolean = false;
+  isFinished: Boolean = false;
   powerUpOnField: Boolean = false;
   powerUp: PowerUp;
   ball: Ball;
@@ -27,8 +27,8 @@ export class CurrentGameState {
   constructor (score: number[],
     leftPaddleCoords: number[], leftPaddleHeight: number, leftPaddleWidth: number,
     rightPaddleCoords: number[], rightPaddleHeight:number, rightPaddleWidth: number,
-    ballCoords: number[],
-    ballRadius: number) {
+    ballCoords: number[], ballRadius: number,
+    powerUpOnField: Boolean, powerUpcoords: number[], powerUpRadius: number) {
     this.score = score;
     this.leftPaddleCoords = leftPaddleCoords;
     this.leftPaddleHeight = leftPaddleHeight;
@@ -38,6 +38,9 @@ export class CurrentGameState {
     this.rightPaddleWidth = rightPaddleWidth;
     this.ballCoords = ballCoords;
     this.ballRadius = ballRadius;
+    this.powerUpOnField = powerUpOnField;
+    this.powerUpCoords = powerUpcoords;
+    this.powerUpRadius = powerUpRadius;
   }
 
   score:number[] = [0, 0];
@@ -49,6 +52,9 @@ export class CurrentGameState {
   rightPaddleWidth: number = DefaultElementSize.PADDLEWIDTH;
   ballCoords: number[] = [MapSize.WIDTH / 2, MapSize.HEIGHT / 2];
   ballRadius: number = DefaultElementSize.BALLRADIUS;
+  powerUpOnField: Boolean = false;
+  powerUpCoords: number[] = [0, 0];
+  powerUpRadius: number = 0;
 }
 
 @Injectable()
@@ -143,6 +149,7 @@ export class GameService {
     newGame.players.push(new Player(player1, PlayerDefinitions.PLAYER1));
     newGame.players.push(new Player(player2, PlayerDefinitions.PLAYER2));
     newGame.ball = new Ball();
+    newGame.powerUp = new PowerUp();
     newGame.mode = mode;
     this.games.push(newGame);
     this.gamesPlayed++;
@@ -210,7 +217,8 @@ export class GameService {
     const toSend = new CurrentGameState(game.score,
       [player1.paddle.x, player1.paddle.y], player1.paddle.height, player1.paddle.width,
       [player2.paddle.x, player2.paddle.y], player2.paddle.height, player2.paddle.width,
-      [game.ball.x, game.ball.y], game.ball.radius);
+      [game.ball.x, game.ball.y], game.ball.radius,
+      game.powerUpOnField, [game.powerUp.x, game.powerUp.y], game.powerUp.radius);
 
     // send current game state back through socket
     if (!game.isFinished)

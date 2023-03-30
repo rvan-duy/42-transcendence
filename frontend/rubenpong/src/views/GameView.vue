@@ -213,9 +213,9 @@ export default {
       ctx.fillStyle = 'red';
       ctx.beginPath();
       ctx.arc(state.ballCoords[0], state.ballCoords[1], state.ballRadius, 0, Math.PI * 2, false);
-
       ctx.closePath();
       ctx.fill();
+
       //draw text player 1
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
@@ -240,6 +240,16 @@ export default {
       for(let i = 0; i <= canvas.height; i+=15){
         ctx.fillStyle = 'white';
         ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
+      }
+
+      //draw PowerUp is it is on the field
+      if (state.powerUpOnField) {
+        console.log('drawing powerup');
+        ctx.fillStyle = 'blue';
+        ctx.beginPath();
+        ctx.arc(state.powerUpCoords[0], state.powerUpCoords[1], state.powerUpRadius, 0, Math.PI * 2, false);
+        ctx.closePath();
+        ctx.fill();
       }
     },
     drawEndScreen(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, winningUser: string) {
