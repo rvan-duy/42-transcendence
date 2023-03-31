@@ -21,6 +21,9 @@ import { join } from 'path';
     ServeStaticModule.forRoot({
       rootPath: join('/usr/src/app/public/'), // this path has to change depending on the environment
       serveRoot: '/public',
+      serveStaticOptions: {
+        index: false
+      }
     }),
   ],
 })
