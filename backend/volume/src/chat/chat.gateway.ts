@@ -66,6 +66,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleLoad(client: any, roomId: number) { // client verification?
     console.log('/chat/load received roomId:', roomId);
 
+	const usrs = await this.roomService.getRoomUsers(roomId);
+	client.emit('loadRoomUsers', usrs);
     const data = await this.msgService.getChatHistory(roomId);
     client.emit('loadChatHistory', data);
   }

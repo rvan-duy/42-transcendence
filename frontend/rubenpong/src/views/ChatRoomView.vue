@@ -31,6 +31,22 @@ async function getUserInfo(){
 
 connection.setupSocketConnection('/chat');
 connection.socket.emit('loadRequest', 1);
+
+connection.socket.on('loadRoomUsers', async (usrs) => {
+  console.log('loadRoomUsers: client received users for this room');
+  for (const usr of usrs)
+  {
+    var username = await getBackend(`user/id/${usr}`)
+      .then(async function(res)
+      {
+        var data = await res.json();
+        return data.name;
+      })
+      .catch(error => console.log(`loadRoomUsers: Couldn't fetch username for userId ${usr}: ` + error.message));
+    displayUsers(username);
+  }
+});
+
 connection.socket.on('loadChatHistory', async (data) =>{
   console.log('loadChatHistory: client received chat history for this room');
   for (const msg of data)
@@ -48,6 +64,7 @@ connection.socket.on('loadChatHistory', async (data) =>{
     outputMessages(packet);
   }
 });
+
 connection.socket.on('receiveNewMsg', (msg) => {
   outputMessages(formatMessage(msg));
 });
@@ -72,8 +89,19 @@ function outputMessages(message)
 		${message.body}
 	</p>`;
   const chatMessages = document.querySelector('.chat-messages');
-  chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  if (chatMessages != null){
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+}
+
+function displayUsers(username)
+{
+  const list_item = document.createElement('li');
+  list_item.innerHTML = `${username}`;
+  const usersList = document.querySelector('.users');
+  if (usersList != null)
+    usersList.appendChild(list_item);
 }
 
 function formatMessage(packet)
@@ -106,12 +134,8 @@ function formatMessage(packet)
               Room 1
             </h2>
             <h3><i class="fas fa-users" /> Users</h3>
-            <ul id="users">
-              <li>Ruben 1</li>
-              <li>Ruben 2</li>
-              <li>Lindsay</li>
-              <li>Oswin</li>
-              <li>Dagmar</li>
+            <ul class="users">
+              <!-- USERS APPEAR HERE -->
             </ul>
           </div>
           <div class="chat-messages">
