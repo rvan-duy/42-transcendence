@@ -33,7 +33,7 @@ connection.setupSocketConnection('/chat');
 connection.socket.emit('loadRequest', 1);
 
 connection.socket.on('loadRoomUsers', async (usrs) => {
-  console.log('loadRoomUsers: client received users for this room');
+  console.log('loadRoomUsers: client received users for this room', usrs);
   usrs.forEach(usr => {
     displayUsers(usr.name);
   });
