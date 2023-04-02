@@ -11,7 +11,7 @@ import { MsgDto, MsgService } from '../msg/msg.service';
 import { GateService } from 'src/gate/gate.service';
 import { roomDto, RoomService } from 'src/room/room.service';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+import { User, Room } from '@prisma/client';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
 
 @WebSocketGateway({
@@ -59,12 +59,14 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     // get all chats from the user here and add them to loadAllChats
     const userWithChats = await this.userService.UserChats({id: user.id});
-    const chatsFromUser = userWithChats.rooms;
+    const chatsFromUser = userWithChats.rooms as Room[];
 
     // get public chats and add them to the list
+    const publicChats = await this.roomService.getPublicRooms();
+    const combinedChats = chatsFromUser.concat(publicChats);
 
     // send the loadAllChats socket-msg with the chats you are activel in!
-    client.emit('loadAllChats', chatsFromUser);
+    client.emit('loadAllChats', combinedChats);
   }
 
   handleDisconnect(client: Socket) {
@@ -73,6 +75,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   // send update to all ppl in chat who are online
+  // do we need to find out who is all online through gate service?
   spreadMessage(msg: MsgDto) {
     this.server.emit('receiveNewMsg', msg);
   }

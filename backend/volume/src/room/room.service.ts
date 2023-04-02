@@ -56,6 +56,14 @@ export class RoomService {
     });
   }
 
+  async getPublicRooms() {
+    return (this.prismaRoom.Rooms({
+      where: {
+        access: Access.PUBLIC,
+      }
+    }))
+  }
+
   async removeAdmin(roomId: number, userId: number) {
     this.prismaRoom.updateRoom({
       where: {
