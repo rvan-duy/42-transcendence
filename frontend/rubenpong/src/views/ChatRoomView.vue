@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SocketioService from '../services/socketio.service.js';
+import { getBackend } from '@/utils/backend-requests';
 
 </script>
 
@@ -7,42 +8,55 @@ import SocketioService from '../services/socketio.service.js';
 const connection = SocketioService;
 
 var username;
+var id;
+var intraId;
 
-async function getUsername(){
-  if (typeof username !== 'undefined'){
-    console.log('Username already fetched');
-    return username;
+async function getUserInfo(){
+  if (typeof username !== 'undefined' & typeof id !== 'undefined' & typeof intraId !== 'undefined'){
+    console.log('getUserInfo: User info already fetched');
+    return {username, id, intraId};
   }
   else{
-    console.log('Fetching username');
-    await fetch('http://localhost:3000/user/me', {mode: 'cors'})
-      .then(async function(res)
-      {
-        var data = await res.json();
+    console.log('getUserInfo: Fetching user info');
+    await getBackend('user/me')
+      .then((response => response.json()))
+      .then((data) => {
         username = data.name;
-      })
-      .catch(error => console.log('Failed to fetch user : ' + error.message));
+        id = data.id;
+        intraId = data.intraId;
+      }).catch(error => console.log('getUserInfo: Failed to fetch user : ' + error.message));
   }
-  //   console.log(`Username returned by getUsername: ${username}`);
-  return username;
+  return {username, id, intraId};
 }
 
 connection.setupSocketConnection('/chat');
-// connection.socket.on('connection', () => {console.log('Chat client connected');});
-connection.socket.on('msgToClient', (msg) => {
-  console.log(`client received message: ${msg}`);
-  outputMessages(msg);
+connection.socket.emit('loadRequest', 1);
+connection.socket.on('loadChatHistory', async (data) =>{
+  console.log('loadChatHistory: client received chat history for this room');
+  for (const msg of data)
+  {
+    var username = await getBackend(`user/id/${msg.authorId}`)
+      .then(async function(res)
+      {
+        var data = await res.json();
+        return data.name;
+      })
+      .catch(error => console.log(`loadChatHistory: Couldn't fetch username for userId ${msg.authorId}: ` + error.message));
+    // const format_time = `${new Date(msg.timestamp).getHours()}:`+ `00${new Date(msg.timestamp).getMinutes()}`.slice(-2);
+    const format_time = new Date(msg.timestamp).toLocaleTimeString('nl-NL');
+    var packet = {username: username, time: format_time, body: msg.body};
+    outputMessages(packet);
+  }
 });
-
-// const chatForm = document.getElementById('chat-form');
+connection.socket.on('receiveNewMsg', (msg) => {
+  outputMessages(formatMessage(msg));
+});
 
 async function chatFormSubmit(e){
   const msg = e.target.elements.msg;
-  const packet = {username: getUsername(), msg: (msg.value)};
-  packet.username = await getUsername();
-  console.log(packet.username);
-  console.log(packet);
-  connection.socket.emit('msgToServer', packet);
+  const info_bundle = await getUserInfo();
+  const packet = {id: info_bundle.id, username: info_bundle.username, msg: (msg.value)};
+  connection.socket.emit('sendMsg', packet);
   msg.value = ''; //clears the message text you just entered
   msg.focus(); //focuses on the text input area again after sending
 }
@@ -60,6 +74,15 @@ function outputMessages(message)
   const chatMessages = document.querySelector('.chat-messages');
   chatMessages.appendChild(div);
   chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function formatMessage(packet)
+{
+  return {
+    username: packet.username,
+    body: packet.msg,
+    time: new Date().toLocaleTimeString('nl-NL'),
+  };
 }
 
 </script>

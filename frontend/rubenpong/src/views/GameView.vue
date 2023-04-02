@@ -20,7 +20,7 @@
             <button
               v-if="selectGameMode"
               class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-              @click="createGame('ModeNormal')"
+              @click="queueForGame('Normal')"
             >
               NORMAL
             </button>
@@ -29,7 +29,7 @@
             <button
               v-if="selectGameMode"
               class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-              @click="createGame('ModeFreeMove')"
+              @click="queueForGame('FreeMove')"
             >
               FREEMOVE
             </button>
@@ -38,7 +38,7 @@
             <button
               v-if="selectGameMode"
               class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-              @click="createGame('ModePowerUp')"
+              @click="queueForGame('PowerUp')"
             >
               POWERUP
             </button>
@@ -47,7 +47,7 @@
             <button
               v-if="selectGameMode"
               class="bg-blue-300 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-              @click="createGame('ModeFiesta')"
+              @click="queueForGame('Fiesta')"
             >
               FIESTA
             </button>
@@ -69,6 +69,8 @@
 
 <script lang="ts">
 import io from 'socket.io-client';
+import { getBackend } from '@/utils/backend-requests';
+import type { CurrentGameState } from '../utils/game-definitions';
 export default {
 
   data()
@@ -76,191 +78,190 @@ export default {
     return {
       selectGameMode: false,
       matched: false,
-      gameMode : ''
+      gameMode : '',
+      userId : -1,
+      arrowUp: false,
+      arrowDown: false,
+      arrowLeft: false,
+      arrowRight: false,
+      socket: io(`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/game`),
     };
+  },
+  async created () {
+    let userId: number = -1;
+    await getBackend('user/me')
+      .then(function(res){
+        console.log(res);
+        return res.json();
+      })
+      .then(function(data){
+        userId = data.id;
+        console.log(data);
+      })
+      .catch(e => {
+        userId = -1;
+        console.log(e);
+      });
+    this.userId = userId;
+    console.log(`received userId: ${this.userId}`);
   },
   mounted() {
     var canvas: HTMLCanvasElement = document.getElementById('pixels') as HTMLCanvasElement;
     var ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
-    const socket: any = io('http://localhost:3000/game');
-    socket.on('connect_error', (err) => {
+    this.socket.on('connect_error', (err) => {
       console.log(`connect_error due to ${err.message}`);
     });
+    
+    document.addEventListener('keydown', this.keyDownEvent);
+    document.addEventListener('keyup', this.keyUpEvent);
 
-enum MapSize {
-  WIDTH = 1000,
-  HEIGHT = 600,
-}
-enum DefaultElementSize {
-  PADDLEWIDTH = 20,
-  PADDLEHEIGHT = 100,
-  BALLRADIUS = 20,
-}
-class CurrentGameState {
-  score:number[] = [0, 0];
-  leftPaddleCoords: number[] = [0, MapSize.HEIGHT / 2];
-  leftPaddleHeight: number = DefaultElementSize.PADDLEHEIGHT;
-  leftPaddleWidth: number = DefaultElementSize.PADDLEWIDTH;
-  rightPaddleCoords: number[] = [MapSize.WIDTH, MapSize.HEIGHT / 2];
-  rightPaddleHeight: number = DefaultElementSize.PADDLEHEIGHT;
-  rightPaddleWidth: number = DefaultElementSize.PADDLEWIDTH;
-  ballCoords: number[] = [MapSize.WIDTH / 2, MapSize.HEIGHT / 2];
-  ballRadius: number = DefaultElementSize.BALLRADIUS;
-}
-socket.on('pos', (data: any) => {
-  const datas: CurrentGameState = data;
-  //draw background
-  if (this.matched)
-  {
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    if (datas.score[1] >= 5 || datas.score[0] >= 5 )
-    {
+    this.socket.on('winner', (winningUser: string) => {
+      this.drawEndScreen(ctx, canvas, winningUser);
+    });
+
+    let gameMode: string = '';
+    const waitForElement = () => {
+      if(this.gameMode !== '' && this.userId !== -1) {
+        gameMode = this.gameMode;
+        const packet = {gameMode: gameMode, userId: this.userId};
+        console.log(gameMode);
+        this.socket.emit('QueueForGame', packet);
+        this.socket.on('pos', (data: any) => {
+          const state: CurrentGameState = data;
+          this.drawGame(ctx, canvas, state);
+        });
+      }
+      else{
+        setTimeout(waitForElement, 250);
+      }
+    };
+    setTimeout(waitForElement, 250);
+
+  },
+  methods: {
+    keyDownEvent(e: KeyboardEvent) {
+      if (this.userId === -1) {
+        return;
+      }
+
+      const payload = {userId: this.userId};
+      if (!this.arrowDown && e.key === 'ArrowDown')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowDown = true;
+      }
+      else if (!this.arrowUp && e.key === 'ArrowUp')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowUp = true;
+      }
+      else if (!this.arrowRight && e.key === 'ArrowRight')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowRight = true;
+      }
+      else if (!this.arrowLeft && e.key === 'ArrowLeft')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowLeft = true;
+      }
+    },
+    keyUpEvent(e: KeyboardEvent) {
+      if (this.userId === -1)
+        return;
+
+      const payload = {userId: this.userId};
+      if (e.key === 'ArrowDown')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowDown = false;
+      }
+      else if (e.key === 'ArrowUp')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowUp = false;
+      }
+      else if (e.key === 'ArrowRight')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowRight = false;
+      }
+      else if (e.key === 'ArrowLeft')
+      {
+        this.socket.emit(e.key, payload);
+        this.arrowLeft = false;
+      }
+    },
+    queueForGame(game: string) {
+      this.gameMode = game;
+      this.matched = true;
+    },
+    drawGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: CurrentGameState) {
+      //draw background
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = 'white';
-      ctx.font = '50px arial';
-      if (datas.score[1] >= 5 )
-      {
-        ctx.fillText('You lost!', canvas.width / 2 - 100, canvas.height / 2);
-        return ;
-      }
-      if (datas.score[0] >= 5 )
-      {
-        ctx.fillText('You won!', canvas.width / 2 - 100, canvas.height / 2);
-        return ;
-      }
-    }
-    else {
-      //draw plateau player 1
-      ctx.fillStyle = 'white';
-      ctx.fillRect(datas.leftPaddleCoords[0], datas.leftPaddleCoords[1], datas.leftPaddleWidth, datas.leftPaddleHeight);
       
-      //draw plateau player 2
+      //draw paddle player 1
       ctx.fillStyle = 'white';
-      ctx.fillRect(datas.rightPaddleCoords[0], datas.rightPaddleCoords[1], datas.rightPaddleWidth, datas.rightPaddleHeight);
-      
+      ctx.fillRect(state.leftPaddleCoords[0], state.leftPaddleCoords[1], state.leftPaddleWidth, state.leftPaddleHeight);
+
+      //draw paddle player 2
+      ctx.fillStyle = 'white';
+      ctx.fillRect(state.rightPaddleCoords[0], state.rightPaddleCoords[1], state.rightPaddleWidth, state.rightPaddleHeight);
+
       //draw ball
       ctx.fillStyle = 'red';
       ctx.beginPath();
-      ctx.arc(datas.ballCoords[0], datas.ballCoords[1], datas.ballRadius, 0, Math.PI * 2, false);
+      ctx.arc(state.ballCoords[0], state.ballCoords[1], state.ballRadius, 0, Math.PI * 2, false);
       ctx.closePath();
       ctx.fill();
-      
+
       //draw text player 1
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
       ctx.fillText('Player 1', canvas.width / 4, canvas.height / 8);
-    
+
       //draw text score player 1
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
-      ctx.fillText(datas.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
-      
+      ctx.fillText(state.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
+
       //draw text player 2
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
       ctx.fillText('Player 2', canvas.width / 4 * 3 - 100, canvas.height / 8);
-      
+
       //draw text score player 2
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
-      ctx.fillText(datas.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
-      
+      ctx.fillText(state.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
+
       //draw net
       for(let i = 0; i <= canvas.height; i+=15){
         ctx.fillStyle = 'white';
         ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
       }
-    }
-  }
-});
-var arrowUp: Boolean = false;
-var arrowDown: Boolean = false;
-var arrowLeft: Boolean = false;
-var arrowRight: Boolean = false;
-function movePlat(e: KeyboardEvent)
-{
-  if (!arrowDown)
-  {
-    if (e.key === 'ArrowDown')
-    {
-      console.log(e.key);
-      socket.emit('ArrowDown');
-      arrowDown = true;
-    }
-  }
-  if (!arrowUp)
-  {
-    if (e.key === 'ArrowUp')
-    {
-      console.log(e.key);
-      socket.emit('ArrowUp');
-      arrowUp = true;
-    }
-  }
-  if (!arrowRight)
-  {
-    if (e.key === 'ArrowRight')
-    {
-      console.log(e.key);
-      socket.emit('ArrowRight');
-      arrowRight = true;
-    }
-  }
-  if (!arrowLeft)
-  {
-    if (e.key === 'ArrowLeft')
-    {
-      console.log(e.key);
-      socket.emit('ArrowLeft');
-      arrowLeft = true;
-    }
-  }
-}
 
-function stopMovePlat(e: KeyboardEvent)
-{
-  console.log ('keyup');
-  console.log(e.key);
-  if (e.key === 'ArrowDown')
-  {
-    socket.emit('ArrowDown');
-    arrowDown = false;
-  }
-  if (e.key === 'ArrowUp')
-  {
-    socket.emit('ArrowUp');
-    arrowUp = false;
-  }
-  if (e.key === 'ArrowRight')
-  {
-    socket.emit('ArrowRight');
-    arrowRight = false;
-  }
-  if (e.key === 'ArrowLeft')
-  {
-    socket.emit('ArrowLeft');
-    arrowLeft = false;
-  }
-}
-
-document.addEventListener('keydown', movePlat);
-document.addEventListener('keyup', stopMovePlat);
-
-    //start of game define which plat - b / f?
-    //update() function in backend
-    //position plat, ball and player in backend?
-    //powerups
-  },
-  methods: {
-    createGame(gameMode:string)
-    {
-      this.gameMode = gameMode;
-      this.matched = true;
-    }
+      //draw PowerUp is it is on the field
+      if (state.powerUpOnField) {
+        console.log('drawing powerup');
+        ctx.fillStyle = 'blue';
+        ctx.beginPath();
+        ctx.arc(state.powerUpCoords[0], state.powerUpCoords[1], state.powerUpRadius, 0, Math.PI * 2, false);
+        ctx.closePath();
+        ctx.fill();
+      }
+    },
+    drawEndScreen(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, winningUser: string) {
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = 'white';
+      ctx.font = '50px arial';
+      ctx.fillText(`${winningUser} won!`, canvas.width / 2 - 100, canvas.height / 2);
+    },
   },
 };
+//powerups
 </script>
 
 <style scoped>

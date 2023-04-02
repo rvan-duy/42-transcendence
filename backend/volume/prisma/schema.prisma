@@ -27,7 +27,7 @@ model UserTimestamp {
 model User {
   id        Int     @default(autoincrement()) @id
   intraId   Int     @unique
-  name      String
+  name      String  @unique
   status    String?
   friends   Int[] // ids
   blocked   Int[] // ids
@@ -62,6 +62,7 @@ model Msg {
   author    User? @relation(fields: [authorId], references: [id])
   authorId  Int
   invite    Boolean // ? how ?
+  timestamp DateTime @default(now())
 }
 
 model Game  {

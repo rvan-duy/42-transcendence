@@ -1,24 +1,22 @@
 <script setup lang="ts">
-
 // This function describes what the Meow-button does onclick.
 // It either runs a GET request to "/cat" of the back-end, and sets the
 // about_text to the text received as a response. Or it changes the
+import { getBackend } from '@/utils/backend-requests';
+
 // about_text to be "dog" if the value is currently "cat".
-function onclickMeow(){
+async function onclickMeow(){
   const about_text_element = document.getElementById('about_text');
 
-  if (about_text_element.innerHTML !== 'dog')
+  if (about_text_element.innerHTML !== 'dog') {
     about_text_element.innerHTML = 'dog';
+  }
   else
   {
-    console.log('Fetching...');
-    fetch('http://localhost:3000/user/me')
-      .then(function(res){
-        return res.json();
-      })
-      .then(function(data){
+    await getBackend('user/me')
+      .then((response => response.json()))
+      .then((data) => {
         about_text_element.innerHTML = data.name;
-        console.log(data);
       });
   }
 }
@@ -31,9 +29,12 @@ function onclickMeow(){
     style="text-align: center"
   >
     <h1 id="about_text">
-      This is an about page
+      This is no longer an about page, it is now a home page.
     </h1>
-    <button @click="onclickMeow">
+    <button
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+      @click="onclickMeow"
+    >
       Meow
     </button>
   </div>

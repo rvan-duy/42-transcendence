@@ -36,7 +36,36 @@ async function main() {
 
   });
 
-  console.log({ alice, bob });
+  const chad = await prisma.room.upsert({
+
+    where: { id: 1 },
+
+    update: {},
+
+    create: {
+
+      name: 'gameRoom',
+
+      owner: {
+        connect: {
+          id: 1,
+        }
+      },
+      admin: {
+        connect: {
+          id: 1,
+        }
+      },
+      users: {
+        connect: {
+          id: 1,
+        }
+      },
+    },
+
+  });
+
+  console.log({ alice, bob, chad });
 
 }
 
