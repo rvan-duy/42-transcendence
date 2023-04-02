@@ -46,6 +46,17 @@ export class PrismaUserService {
     });
   }
 
+  async UserChats(
+    userWhereUniqueInput: Prisma.UserWhereUniqueInput,
+  ): Promise<any | null> {
+    return this.prisma.user.findUnique({
+      where: userWhereUniqueInput,
+      include: {
+        rooms: true,
+      }
+    });
+  }
+
   async updateUser(params: {
     where: Prisma.UserWhereUniqueInput;
     data: Prisma.UserUpdateInput;

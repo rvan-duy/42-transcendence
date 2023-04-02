@@ -10,6 +10,9 @@ import { Server, Socket } from 'socket.io';
 import { MsgDto, MsgService } from '../msg/msg.service';
 import { GateService } from 'src/gate/gate.service';
 import { roomDto, RoomService } from 'src/room/room.service';
+import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
+import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
 
 @WebSocketGateway({
   cors: {
@@ -22,6 +25,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   constructor(
 		private msgService: MsgService,
 		private roomService: RoomService,
+    private userService: PrismaUserService,
+    private jwtService: JwtService,
+    private gate: GateService,
   ){}
   private server: Server;
   // private gateService: GateService;
@@ -44,17 +50,26 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log('Gateway initialised.');
   }
 
-  handleConnection(client: Socket) {
-    // client.broadcast.emit('msgToClient', this.formatMessage('Rubot','A new user joined the chat.')); //all OTHER clients
-    // client.emit('msgToClient', this.formatMessage('Rubot','Welcome to the chat!')); //this client
-    // console.log(`Client ${client.id} connected`);
+  async handleConnection(client: Socket) {
+    // experimental funcitionality below!!!
+    const user: User = await this.jwtService.verify(
+      client.handshake.query.token as string,
+    );
+    this.gate.addSocket(user.id, client);
 
-    client.emit('loadAllChats'); // data, all chats roomDto[]
+    // get all chats from the user here and add them to loadAllChats
+    const userWithChats = await this.userService.UserChats({id: user.id});
+    const chatsFromUser = userWithChats.rooms;
+
+    // get public chats and add them to the list
+
+    // send the loadAllChats socket-msg with the chats you are activel in!
+    client.emit('loadAllChats', chatsFromUser);
   }
 
   handleDisconnect(client: Socket) {
-    // this.all_clients.emit('msgToClient', this.formatMessage('Rubot','A user left the chat.')); //all clients
     console.log(`Client ${client.id} disconnected from chat`);
+    this.gate.removeSocket(client);
   }
 
   // send update to all ppl in chat who are online

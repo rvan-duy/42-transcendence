@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Socket } from "dgram";
+import { Socket } from "socket.io";
 
 function getKeysByValue(map: Map<any, any>, searchValue: any): any[] {
   let keys: any[] = [];
