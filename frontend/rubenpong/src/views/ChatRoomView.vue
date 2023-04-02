@@ -27,7 +27,9 @@ interface.
       <div id="app">
       <div class="chat-container p-8">
         <header class="chat-header">
-          <h1><i class="fas fa-smile" /> ChatCord</h1>
+          <!-- <p>This is the page that opens on <strong>/blog/{{ $route.params.id }}</strong> route</p> -->
+          <h1><i class="fas fa-smile" /> {{ $route.params.id }}</h1>
+          {{ $route.query.id}}
           <div @click="goTo('chat')"
             class="btn"
           >Leave Room</div>

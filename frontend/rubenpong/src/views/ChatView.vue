@@ -37,7 +37,7 @@
                 required
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
               > </span></div>
-            <button v-if="enteredPW === selectedChat.password || selectedChat.type === 'public' || selectedChat.type === 'private'" @click="goTo('chatroom')"
+            <button v-if="enteredPW === selectedChat.password || selectedChat.type === 'public' || selectedChat.type === 'private'" @click="goTo('chatroom/' + selectedChat.name)"
               class="btn bg-blue-100"
             >
               Join Chat
@@ -91,7 +91,7 @@
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
               > </span></div>
             {{ newChat }}
-              <button @click="goTo('chatroom')" 
+              <button @click="goTo('chatroom/' + newChat.name)" 
               class="btn bg-blue-100"
             >
               Create Chat
@@ -154,8 +154,9 @@ export default {
       //   this.$router.push('/dashboard')
       // } else {
       //   this.$router.push('/login')
-      console.log('/' + route);
-      this.$router.push('/' + route)
+      console.log('/' + route + '?id=3');
+      
+      this.$router.push('/' + route + '?id=3')
       },
     // createChat()
     // {

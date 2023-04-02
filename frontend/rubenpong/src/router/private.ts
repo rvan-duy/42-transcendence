@@ -17,11 +17,11 @@ const routes = [
     name: 'chat',
     component: ChatView,
   },
-  {
-    path: '/chatroom',
-    name: 'chatroom',
-    component: ChatRoomView,
-  },
+  // {
+  //   path: '/chatroom',
+  //   name: 'chatroom',
+  //   component: ChatRoomView,
+  // },
   {
     path: '/game',
     name: 'game',
@@ -42,6 +42,12 @@ const routes = [
     name: 'otheruser',
     component: OtherUserView,
   },
+  {
+    path: '/chatroom/:id',
+    name: 'chatroom',
+    component: ChatRoomView,
+    props: { id: null }
+  }
 ];
 
 export default routes.map(route => {
