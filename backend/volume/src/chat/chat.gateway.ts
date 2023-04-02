@@ -13,6 +13,8 @@ import { roomDto, RoomService } from 'src/room/room.service';
 import { JwtService } from '@nestjs/jwt';
 import { User, Room } from '@prisma/client';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
+import { ChatService } from './chat.service';
+import { use } from 'passport';
 
 @WebSocketGateway({
   cors: {
@@ -28,6 +30,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private userService: PrismaUserService,
     private jwtService: JwtService,
     private gate: GateService,
+    private chatService: ChatService,
   ){}
   private server: Server;
   // private gateService: GateService;
@@ -81,9 +84,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('loadRequest')
-  async handleLoad(client: any, roomId: number) { // client verification?
-    console.log('/chat/load received roomId:', roomId);
-
+  async handleLoad(client: any, roomId: number) {
+    // client verification
+    const user = await this.gate.getUserBySocket(client);
+    if (false === await this.chatService.isChatter(roomId, user))
+      return ;  // maybe add error msg for frontend
+    
     const data = await this.msgService.getChatHistory(roomId);
     client.emit('loadChatHistory', data);
   }
@@ -97,29 +103,62 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
   
   @SubscribeMessage('createRoom')
-  createNewRoom(client: any, payload: roomDto) { // client verification? / extraction
-    // verify that it is either an admin or the client self?
-    console.log('Received delete Request:', client);
-    this.roomService.createChat(payload);
+  async createNewRoom(client: any, payload: roomDto) {
+    // client verification? 
+    // verification not needed since anyone can create a room!
+    // extraction
+    const userId = await this.gate.getUserBySocket(client);
+
+    // force user to be owner
+    payload.ownerId = userId;
+
+    // use the roomService to create a new chatroom and return the room object
+    return (this.roomService.createChat(payload));
   }
 
   @SubscribeMessage('destroyRoom')
-  destroyRoom(client: any, payload: any) { // client verification? / extraction
+  async destroyRoom(client: any, payload: number) {
     const roomId: number = payload;
+
+    // client verification
+    const userId = await this.gate.getUserBySocket(client);
+
+    // is the sender is not the chat owner leave it intact adn return and error
+    if (await this.chatService.isOwner(roomId, userId) == false)
+      return ;  // add error return later
+
+    // destroy with fire
     this.roomService.removeChat(roomId);
   }
 
   // check if this needs to be an invite according to pdf || think adding is enough
   @SubscribeMessage('addUserToRoom')
-  addUserToRoom(client: any, payload: any) { // client verification? / extraction
+  async addUserToRoom(client: any, payload: any) {
     const {roomId, userId} = payload;
+
+    // client verification
+    const clientId = await this.gate.getUserBySocket(client);
+
+    // only alow the chat owner and admins to add members to the chat
+    if (await this.chatService.isOwner(roomId, clientId) == false && await this.chatService.isAdmin(roomId, clientId))
+      return ;  // add error return later
+
+    // add the user to the chat
     this.roomService.addToChat(userId, roomId);
   }
 
   @SubscribeMessage('makeUserAdmin')
-  makeUserAdmin(client: any, payload: any) { // client verification? / extraction
+  async makeUserAdmin(client: any, payload: any) { // client verification? / extraction
     const {roomId, userId} = payload;
-    // check if the user sending this is admin or owner!
+
+    // client verification
+    const clientId = await this.gate.getUserBySocket(client);
+
+    // is the sender is not the chat owner leave it intact and return and error
+    if (await this.chatService.isOwner(roomId, clientId) == false)
+      return ;  // add error return later
+
+    // make the user admin in this chat
     this.roomService.makeAdmin(roomId, userId);
   }
 

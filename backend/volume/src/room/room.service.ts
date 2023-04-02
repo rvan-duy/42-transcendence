@@ -22,6 +22,7 @@ export class RoomService {
   }
 
   // adds user to the chatroom
+  // need to add uban to this too? FUTURE feature
   async addToChat(userId: number, roomId: number) {
     this.prismaRoom.updateRoom({
       where: {
