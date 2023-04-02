@@ -34,17 +34,9 @@ connection.socket.emit('loadRequest', 1);
 
 connection.socket.on('loadRoomUsers', async (usrs) => {
   console.log('loadRoomUsers: client received users for this room');
-  for (const usr of usrs)
-  {
-    var username = await getBackend(`user/id/${usr}`)
-      .then(async function(res)
-      {
-        var data = await res.json();
-        return data.name;
-      })
-      .catch(error => console.log(`loadRoomUsers: Couldn't fetch username for userId ${usr}: ` + error.message));
-    displayUsers(username);
-  }
+  usrs.forEach(usr => {
+    displayUsers(usr.name);
+  });
 });
 
 connection.socket.on('loadChatHistory', async (data) =>{

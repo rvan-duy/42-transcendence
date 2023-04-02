@@ -39,17 +39,11 @@ export class RoomService {
 
   // fetches all users of this chatroom
   async getRoomUsers(roomId: number){
-	// this.prismaRoom.doSomething(
-	// 	where: {
-	// 		id: roomId,
-	// 	  },
-	// 	  data:{
-	// 		alvast een templateje voor je gemaakt Ossie <3 
-	// 	  }
-	// )
-	// return(['Ruben1', 'Ruben2', 'Dagmar', 'Oswin', 'Limartini']) 
-	return([1, 2, 3]); //This might be a tiny bit hardcoded atm. (Alice, Bob, and You <3)
-}
+    const roomAndUsers = await this.prismaRoom.RoomAndUsers({id: roomId});
+    console.log(roomAndUsers.users);
+    return(roomAndUsers.users);
+    // return([1, 2, 3]); //This might be a tiny bit hardcoded atm. (Alice, Bob, and You <3)
+  }
 
   async removeChat(roomId: number) {
     this.prismaRoom.deleteRoom({id: roomId});
