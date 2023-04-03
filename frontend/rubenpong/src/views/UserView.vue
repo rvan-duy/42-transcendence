@@ -43,7 +43,7 @@
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
               > </span><span><button
                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-full"
-                @click="changeAvatar()"
+                @click="changeName"
               >Submit
               </button></span>
             </form>
@@ -129,12 +129,13 @@
   </div>
 </template>
 <script lang="ts">
-import { getBackend } from '@/utils/backend-requests';
+import { getBackend, putBackend } from '@/utils/backend-requests';
 export default {
   data()
   {
     return {
       name: '',
+      id: 0,
       backendPictureUrl: '',
       status: 'Online',
       matches_played: 1,
@@ -148,47 +149,19 @@ export default {
       .then((response => response.json()))
       .then((data) => {
         this.name = data.name;
-        this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/${this.name}.jpg`;
+        this.id = data.id;
+        this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.jpg`;
         this.elo = data.elo;
         this.status = 'Online';
       });
   },
   methods: {
-    async changeAvatar(newname) {
-
-      try {
-        // 👇️ const response: Response
-        const response = await fetch('http://localhost:3000/user/1/chname/test', {
-          method: 'POST',
-          body: JSON.stringify({
-            name: newname,
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
+    async changeName() {
+      await putBackend('user/me', { name: this.newUsername })
+        .then((response => response.json()))
+        .then((data) => {
+          this.name = data.name;
         });
-
-        if (!response.ok) {
-          throw new Error(`Error! status: ${response.status}`);
-        }
-
-        // // 👇️ const result: CreateUserResponse
-        // const result = (await response.json()) as CreateUserResponse;
-
-        // console.log('result is: ', JSON.stringify(result, null, 4));
-
-        // return result;
-      } catch (error) {
-        if (error instanceof Error) {
-          console.log('error message: ', error.message);
-          // return error.message;
-        } else {
-          console.log('unexpected error: ', error);
-          // return 'An unexpected error occurred';
-        }
-      }
-
     }
   },
 };
@@ -207,3 +180,4 @@ export default {
     border-radius: 50%;
 }
 </style>
+

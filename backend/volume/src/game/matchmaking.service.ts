@@ -1,36 +1,38 @@
+import { Injectable } from '@nestjs/common';
 import { GameService } from './game.service';
-import { GameMode } from './game.service';
+import { GameMode } from './game.definitions';
 
+@Injectable()
 export class MatchmakingService {
-  constructor (gameService: GameService) {
-    this.gameService = gameService;
+  constructor (private gameService: GameService) {
   }
 
-  gameService: GameService;
-  playerQueueNormal: number[] = [];
-  playerQueueFreeMove: number[] = [];
-  playerQueuePowerUp: number[] = [];
-  playerQueueFiesta: number[] = [];
+  queueNormal: number[] = [];
+  queueFreeMove: number[] = [];
+  queuePowerUp: number[] = [];
+  queueFiesta: number[] = [];
 
   addPlayerToQueue(mode: GameMode, userId: number) {
+    this.removePlayerFromQueue(userId);
+
     if (mode === GameMode.NORMAL)
-      this.playerQueueNormal.push(userId);
+      this.queueNormal.push(userId);
     else if (mode === GameMode.FREEMOVE)
-      this.playerQueueFreeMove.push(userId);
+      this.queueFreeMove.push(userId);
     else if (mode === GameMode.POWERUP)
-      this.playerQueuePowerUp.push(userId);
+      this.queuePowerUp.push(userId);
     else if (mode === GameMode.FIESTA)
-      this.playerQueueFiesta.push(userId);
+      this.queueFiesta.push(userId);
   }
 
   removePlayerFromQueue(userId: number) {
-    if (this.checkAndRemoveFromArray(this.playerQueueNormal, userId))
+    if (this.checkAndRemoveFromArray(this.queueNormal, userId))
       return;
-    if (this.checkAndRemoveFromArray(this.playerQueueFreeMove, userId))
+    if (this.checkAndRemoveFromArray(this.queueFreeMove, userId))
       return;
-    if (this.checkAndRemoveFromArray(this.playerQueuePowerUp, userId))
+    if (this.checkAndRemoveFromArray(this.queuePowerUp, userId))
       return;
-    if (this.checkAndRemoveFromArray(this.playerQueueFiesta, userId))
+    if (this.checkAndRemoveFromArray(this.queueFiesta, userId))
       return;
   }
 
@@ -44,20 +46,22 @@ export class MatchmakingService {
   }
 
   private checkAndMatchPlayers(arr: number[], mode: GameMode) {
-    if (arr.length < 2)
+    if (arr.length < 1) // CHANGE THIS IF YOU WANT TO MAKE MATCHMAKING WORK, CURRENTLY IN DEBUG MODE
       return;
 
-    const player1 = arr.pop();
     const player2 = arr.pop();
+    const player1 = arr.pop();
+    console.log(`Created a game of ${mode} with players ${player1} and ${player2}`);
     this.gameService.createGame(player1, player2, mode);
 
     // send info to players that game is created
   }
 
   checkForMatches() {
-    this.checkAndMatchPlayers(this.playerQueueNormal, GameMode.NORMAL);
-    this.checkAndMatchPlayers(this.playerQueueFreeMove, GameMode.FREEMOVE);
-    this.checkAndMatchPlayers(this.playerQueuePowerUp, GameMode.POWERUP);
-    this.checkAndMatchPlayers(this.playerQueueFiesta, GameMode.FIESTA);
+    // console.log(`Checking for matches current players searching: normal ${this.queueNormal} freeMove ${this.queueFreeMove} powerUp ${this.queuePowerUp} fiesta: ${this.queueFiesta}`);
+    this.checkAndMatchPlayers(this.queueNormal, GameMode.NORMAL);
+    this.checkAndMatchPlayers(this.queueFreeMove, GameMode.FREEMOVE);
+    this.checkAndMatchPlayers(this.queuePowerUp, GameMode.POWERUP);
+    this.checkAndMatchPlayers(this.queueFiesta, GameMode.FIESTA);
   }
 }
