@@ -79,6 +79,8 @@ export default {
       selectGameMode: false,
       matched: false,
       gameMode : '',
+      powerUp: '',
+      frame: 0,
       userId : -1,
       arrowUp: false,
       arrowDown: false,
@@ -119,23 +121,36 @@ export default {
       this.drawEndScreen(ctx, canvas, winningUser);
     });
 
+    this.socket.on('pos', (data: any) => {
+      const state: CurrentGameState = data;
+      this.drawGame(ctx, canvas, state);
+    });
+
+    this.socket.on('EnablePowerUp', (data: any) => {
+      const powerUpType: string = data;
+      this.frame = 0;
+      this.powerUp = `${powerUpType} enabled!`;
+      console.log(`enabled power-up: ${powerUpType}`);
+    });
+
+    this.socket.on('DisablePowerUp', (data: any) => {
+      const reset: string = data;
+      this.powerUp = reset;
+    });
+
     let gameMode: string = '';
-    const waitForElement = () => {
-      if(this.gameMode !== '' && this.userId !== -1) {
+    const waitForGameMode = () => {
+      if (this.gameMode !== '' && this.userId !== -1) {
         gameMode = this.gameMode;
         const packet = {gameMode: gameMode, userId: this.userId};
         console.log(gameMode);
         this.socket.emit('QueueForGame', packet);
-        this.socket.on('pos', (data: any) => {
-          const state: CurrentGameState = data;
-          this.drawGame(ctx, canvas, state);
-        });
       }
-      else{
-        setTimeout(waitForElement, 250);
+      else {
+        setTimeout(waitForGameMode, 250);
       }
     };
-    setTimeout(waitForElement, 250);
+    setTimeout(waitForGameMode, 250);
 
   },
   methods: {
@@ -201,6 +216,12 @@ export default {
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
+      //draw net
+      for(let i = 0; i <= canvas.height; i+=15){
+        ctx.fillStyle = 'white';
+        ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
+      }
+
       //draw paddle player 1
       ctx.fillStyle = 'white';
       ctx.fillRect(state.leftPaddleCoords[0], state.leftPaddleCoords[1], state.leftPaddleWidth, state.leftPaddleHeight);
@@ -219,7 +240,7 @@ export default {
       //draw text player 1
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
-      ctx.fillText('Player 1', canvas.width / 4, canvas.height / 8);
+      ctx.fillText('Player 1', canvas.width / 4 - 100, canvas.height / 8);
 
       //draw text score player 1
       ctx.fillStyle = 'white';
@@ -236,20 +257,21 @@ export default {
       ctx.font = '50px arial';
       ctx.fillText(state.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
 
-      //draw net
-      for(let i = 0; i <= canvas.height; i+=15){
-        ctx.fillStyle = 'white';
-        ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
-      }
-
       //draw PowerUp is it is on the field
       if (state.powerUpOnField) {
-        console.log('drawing powerup');
         ctx.fillStyle = 'blue';
         ctx.beginPath();
         ctx.arc(state.powerUpCoords[0], state.powerUpCoords[1], state.powerUpRadius, 0, Math.PI * 2, false);
         ctx.closePath();
         ctx.fill();
+      }
+
+      //draw text power-up
+      if (this.powerUp !== '')
+      {
+        ctx.fillStyle = 'aqua';
+        ctx.font = '30px arial';
+        ctx.fillText(this.powerUp, canvas.width / 2 - 100, canvas.height - 100);
       }
     },
     drawEndScreen(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, winningUser: string) {

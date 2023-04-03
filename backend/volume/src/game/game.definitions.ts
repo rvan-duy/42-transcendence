@@ -40,12 +40,27 @@ export enum PowerUpEffects { // UPDATE IN FRONTEND IF CHANGED
   PADDLE_SLOW_ENEMY, // slow effect for x amount of seconds
   PADDLE_SPEED_BUFF, // speed effect for x amount of seconds
   BALL_RADIUS, // ball radius decrease till next paddle hit
-  BALL_SPEED, // ball increase effect till next hit
+  BALL_SMASH, // enables a smash on your next hit
   FREEZE_ENEMY, // freeze effect for x amount of seconds
-  ADD_POINT, // instantly remove one point from the enemy score
   }
 
 export enum BallStatus {
   MOVING,
   SCORED,
+  }
+
+// timings are in milliseconds
+export enum PowerUpTimings {
+	FREEZE_TIME = 0.4 * 1000,
+	SLOW_TIME = 0.7 * 1000,
+	SPEED_TIME = 7 * 1000,
+	NOT_TIME_BASED = -1,
+  }
+  
+export enum PowerUpModifier {
+	BallSpeedIncrease = 1.5,
+	BallRadiusDivision = 2,
+	PaddleSpeedIncrease = 1.5,
+	PaddleSpeedDecrease = 0.3,
+	Freeze = 0,
   }

@@ -21,6 +21,11 @@ export class GameData {
   powerUpOnField: Boolean = false;
   powerUp: PowerUp;
   ball: Ball;
+  server: Server;
+
+  emit(message: string, payload: any) {
+    this.server.emit(message, payload);
+  }
 }
 
 export class CurrentGameState {
@@ -131,7 +136,7 @@ export class GameService {
       const winningUser: User = await this.prismaUserService.user({ id: Number(winningPlayer.userId) });
 
       game.isFinished = true;
-      this.server.emit('winner', winningUser.name);
+      game.emit('winner', winningUser.name);
     }
     ball.x = MapSize.WIDTH / 2;
     ball.y = MapSize.HEIGHT / 2;
@@ -139,7 +144,7 @@ export class GameService {
     ball.yDirection = 0.0;
     ball.acceleration = 1;
     if (game.mode === GameMode.POWERUP || game.mode === GameMode.FIESTA)
-      game.powerUp.resetPowerUpState(game);
+      game.powerUp.resetPowerUpState(game, false);
   }
 
   createGame(player1: number, player2: number, mode: GameMode) {
@@ -151,6 +156,7 @@ export class GameService {
     newGame.ball = new Ball();
     newGame.powerUp = new PowerUp();
     newGame.mode = mode;
+    newGame.server = this.server;
     this.games.push(newGame);
     this.gamesPlayed++;
   }
@@ -222,7 +228,7 @@ export class GameService {
 
     // send current game state back through socket
     if (!game.isFinished)
-      this.server.emit('pos', toSend);
+      game.emit('pos', toSend);
     // console.log(toSend);
   }
   

@@ -48,7 +48,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   handleMessage(client: Socket, payload: any) {
     console.log(`player: ${payload.userId} is queuing for gamemode: ${payload.gameMode}`);
     this.matchmakingService.addPlayerToQueue(payload.gameMode, payload.userId);
-    client = null; // linter
+    // client = null; // linter
     // console.warn(`client ${client} unused`);
   }
 
@@ -62,20 +62,20 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('ArrowDown')
   handleKeyDown(client: any, payload: any) {
     this.gameService.UpdatePlayerInput(payload.userId, PaddleInput.DOWN); // input validation / auth
-    client = null; // linter
+    // client = null; // linter
     // console.warn(`client ${client} unused`);
   }
 
 @SubscribeMessage('ArrowUp')
   handleKeyUp(client: any, payload: any) {
     this.gameService.UpdatePlayerInput(payload.userId, PaddleInput.UP); // input validation / auth
-    client = null; // linter
+    // client = null; // linter
     // console.warn(`client ${client} unused`);
   }
 
 @SubscribeMessage('ArrowLeft')
 handleKeyLeft(client: any, payload: any) {
-  client = null; // linter
+//   client = null; // linter
   this.gameService.UpdatePlayerInput(payload.userId, PaddleInput.LEFT); // input validation / auth
   // console.warn(`client ${client} unused`);
 }
@@ -83,7 +83,7 @@ handleKeyLeft(client: any, payload: any) {
 @SubscribeMessage('ArrowRight')
 handleKeyRight(client: any, payload: any) {
   this.gameService.UpdatePlayerInput(payload.userId, PaddleInput.RIGHT); // input validation / auth
-  client = null; // linter
+//   client = null; // linter
   // console.warn(`client ${client} unused`);
 }
 }
