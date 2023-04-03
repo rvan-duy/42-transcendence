@@ -5,6 +5,8 @@ import GameView from '@/views/GameView.vue';
 import LogoutView from '@/views/LogoutView.vue';
 import UserView from '@/views/UserView.vue';
 import OtherUserView from '@/views/OtherUserView.vue';
+import SearchUserView from '@/views/SearchUserView.vue';
+
 
 const routes = [
   {
@@ -47,7 +49,12 @@ const routes = [
     name: 'chatroom',
     component: ChatRoomView,
     props: { id: null }
-  }
+  },
+  {
+    path: '/searchuser',
+    name: 'searchuser',
+    component: SearchUserView,
+  },
 ];
 
 export default routes.map(route => {

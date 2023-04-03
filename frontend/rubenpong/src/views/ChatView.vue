@@ -1,5 +1,7 @@
 
 <script setup lang="ts">
+import SearchBar from '@/components/SearchBarUsers.vue';
+
 </script>
 
 <template>
@@ -37,7 +39,7 @@
                 required
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
               > </span></div>
-            <button v-if="enteredPW === selectedChat.password || selectedChat.type === 'public' || selectedChat.type === 'private'" @click="goTo('chatroom/' + selectedChat.name)"
+            <button :disabled="selectedChat.name === ''" v-if="enteredPW === selectedChat.password || selectedChat.type === 'public' || selectedChat.type === 'private'" @click="goTo('chatroom/' + selectedChat.name)"
               class="btn bg-blue-100"
             >
               Join Chat
@@ -67,6 +69,10 @@
                   With Password
                 </option>
               </select>
+              <div v-if="newChat.type === 'private'">
+              <label for="name" class="pt-2">Add users</label>
+              <span class="text-black pr-4"><SearchBar /></span>
+              </div>
               <label for="name" class="pt-2">Chat name</label>
               <span class="text-black pr-4"><input
                 id="username"
@@ -91,7 +97,7 @@
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
               > </span></div>
             {{ newChat }}
-              <button @click="goTo('chatroom/' + newChat.name)" 
+              <button :disabled="newChat.name === ''" @click="goTo('chatroom/' + newChat.name)" 
               class="btn bg-blue-100"
             >
               Create Chat
@@ -173,4 +179,5 @@ export default {
     align-items: center;
   }
 }
+
 </style>
