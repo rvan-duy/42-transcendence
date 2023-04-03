@@ -97,7 +97,7 @@ import SearchBar from '@/components/SearchBarUsers.vue';
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
               > </span></div>
             {{ newChat }}
-              <button :disabled="newChat.name === ''" @click="goTo('chatroom/' + newChat.name)" 
+              <button :disabled="newChat.name === ''" @click="createChat() && goTo('chatroom/' + newChat.name)" 
               class="btn bg-blue-100"
             >
               Create Chat
@@ -110,6 +110,8 @@ import SearchBar from '@/components/SearchBarUsers.vue';
 </template>
 
 <script lang="ts">
+import { getBackend } from '../utils/backend-requests';
+
 export default {
   data() {
     return {
@@ -150,9 +152,21 @@ export default {
         users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}],
         type: '',
         password: '',
-        channelOwnerId: 3
-      }
+        channelOwnerId: -1
+      },
+      id: -1,
     }
+  },
+  async created() {
+    await getBackend('user/me')
+      .then((response => response.json()))
+      .then((data) => {
+        // this.name = data.name;
+        // this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/${this.name}.jpg`;
+        this.id = data.id;
+        console.log(this.id)
+        // this.status = 'Online';
+      });
   },
   methods: {
     goTo(route: string) {
@@ -164,10 +178,12 @@ export default {
       
       this.$router.push('/' + route + '?id=3')
       },
-    // createChat()
-    // {
+    createChat()
+    {
+     this.newChat.channelOwnerId = this.id;
+     console.log('create chat');
     //   this.chatCreate = true;
-    // }
+    }
   },
 }
 </script>

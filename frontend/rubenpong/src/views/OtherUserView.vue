@@ -118,6 +118,15 @@ export default {
     this.status = status;
     this.status = 'Online';
   },
+  methods: {
+    goTo(route: string) {
+      // if (isAuthenticated) {
+      //   this.$router.push('/dashboard')
+      // } else {
+      //   this.$router.push('/login')
+      this.$router.push('/' + route)
+      }
+  }
 };
 </script>
 <style src="../assets/chat.css">

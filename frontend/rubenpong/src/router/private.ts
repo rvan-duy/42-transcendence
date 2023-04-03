@@ -40,9 +40,10 @@ const routes = [
     component: UserView,
   },
   {
-    path: '/otheruser',
+    path: '/otheruser/:id',
     name: 'otheruser',
     component: OtherUserView,
+    props: { id: null }
   },
   {
     path: '/chatroom/:id',

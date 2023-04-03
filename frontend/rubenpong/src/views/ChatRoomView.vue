@@ -36,22 +36,21 @@ interface.
         </header>
         <main class="chat-main">
           <div class="chat-sidebar">
-            <h3><i class="fas fa-comments" /> Room Name:</h3>
-            <h2 id="room-name">
-              Room 1
-            </h2>
+         
             <h3><i class="fas fa-users" /> Users</h3>
             <ul id="users">
       <li v-for="user in users"><div
-        @click="goTo('otheruser')"
-      >
-      <!-- <img
+        @click="goTo('otheruser/' + user.name)">
+      <img
             src="../assets/dagmar.jpeg"
             width="30"
             height="30"
-            style="border-radius: 50%; vertical-align: center; float: left;"> -->
+            style="border-radius: 50%; vertical-align: center; float: left;">
           <span class="text-white text-xs p-1">
             {{ user.name }}
+          </span>
+          <span>
+          <button class="bg-blue-500 hover:bg-blue-300 text-white text-xs py-1 px-2 rounded-full m-1" @click="goTo('game')">Invite to game</button>
           </span>
         </div>
       </li>
@@ -122,6 +121,7 @@ async function getUserInfo(){
         username = data.name;
         id = data.id;
         intraId = data.intraId;
+        console.log(data);
       }).catch(error => console.log('getUserInfo: Failed to fetch user : ' + error.message));
   }
   return {username, id, intraId};

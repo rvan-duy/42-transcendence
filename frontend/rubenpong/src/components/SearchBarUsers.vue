@@ -18,7 +18,7 @@ function filteredList() {
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px; margin-left: auto; margin-right: auto;"
               > 
     <div class="item fruit" style="text-align: center;" v-for="user in filteredList()" :key="user">
-    <p>{{ user.name }}</p>
+    <button class="btn m-1 p-0" @click="goTo('otheruser/' + user.name)">{{ user.name }}</button>
   </div>
   <div class="item error" style="text-align: center;" v-if="input && !filteredList().length">
     <p>No results found!</p>
@@ -27,6 +27,24 @@ function filteredList() {
 
 
 <script lang="ts">
+export default {
+    methods: {
+        goTo(route: string) {
+      // if (isAuthenticated) {
+      //   this.$router.push('/dashboard')
+      // } else {
+      //   this.$router.push('/login')
+      console.log('/' + route + '?id=3');
+      
+      this.$router.push('/' + route + '?id=3')
+      },
+    // createChat()
+    // {
+    //   this.chatCreate = true;
+    // }
+    },
+    }
+
 </script>
 
 <style>
