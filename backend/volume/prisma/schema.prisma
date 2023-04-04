@@ -23,7 +23,6 @@ model UserTimestamp {
   timestamp DateTime @default(now())
 }
 
-
 model User {
   id        Int     @default(autoincrement()) @id
   intraId   Int     @unique
@@ -37,6 +36,8 @@ model User {
   owns      Room[]  @relation("owns")
   sendMsg   Msg[]
   games     Game[]
+  twoFactor Boolean @default(false)
+  secret    String?
 }
 
 model Room {
