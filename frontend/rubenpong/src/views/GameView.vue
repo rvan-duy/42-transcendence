@@ -138,7 +138,7 @@ export default {
     document.addEventListener('keydown', this.keyDownEvent);
     document.addEventListener('keyup', this.keyUpEvent);
 
-    this.waitForGameModeSelection();
+    // this.waitForGameModeSelection();
 
     // once a game is created with the user inside start listening to the game
     this.socket.on('GameCreated', (data: any) => {
@@ -159,30 +159,24 @@ export default {
         this.drawGame(ctx, canvas, state);
       });
       
+      // Listen to the power up being enabled
       this.socket.on(`EnablePowerUp_${this.gameId}`, (data: any) => {
         const powerUpType: string = data;
         this.frame = 0;
         this.powerUp = `${powerUpType} enabled!`;
       });
       
+      // Listen to the power up being disabled after being enabled
       this.socket.on(`DisablePowerUp_${this.gameId}`, (data: any) => {
         const reset: string = data;
         this.powerUp = reset;
       });
+
+      // Listen to the game ending and the winner of that match
       this.socket.on(`Winner_${this.gameId}`, (winningUser: string) => {
         this.matched = false;
         this.drawEndScreen(ctx, canvas, winningUser);
       });
-    },
-
-    waitForGameModeSelection() {
-      if (this.gameMode !== GameMode.UNMATCHED && this.userId !== -1) {
-        const packet = {gameMode: this.gameMode, userId: this.userId};
-        this.socket.emit('QueueForGame', packet);
-      }
-      else {
-        setTimeout(this.waitForGameModeSelection, 250);
-      }
     },
 
     keyDownEvent(e: KeyboardEvent) {
@@ -243,55 +237,59 @@ export default {
     queueForGame(gameMode: string) {
       this.gameMode = gameMode as GameMode;
       this.gameModeSelected = true;
+
+      // Send the server a request to be queued in the given game-mode's queue
+      const packet = {gameMode: this.gameMode, userId: this.userId};
+      this.socket.emit('QueueForGame', packet);
     },
 
     drawGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: CurrentGameState) {
-      //draw background
+      // draw background
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      //draw net
+      // draw net
       for(let i = 0; i <= canvas.height; i+=15){
         ctx.fillStyle = 'white';
         ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
       }
 
-      //draw paddle player 1
+      // draw paddle player 1
       ctx.fillStyle = 'white';
       ctx.fillRect(state.leftPaddleCoords[0], state.leftPaddleCoords[1], state.leftPaddleWidth, state.leftPaddleHeight);
 
-      //draw paddle player 2
+      // draw paddle player 2
       ctx.fillStyle = 'white';
       ctx.fillRect(state.rightPaddleCoords[0], state.rightPaddleCoords[1], state.rightPaddleWidth, state.rightPaddleHeight);
 
-      //draw ball
+      // draw ball
       ctx.fillStyle = 'red';
       ctx.beginPath();
       ctx.arc(state.ballCoords[0], state.ballCoords[1], state.ballRadius, 0, Math.PI * 2, false);
       ctx.closePath();
       ctx.fill();
 
-      //draw text player 1
+      // draw text player 1
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
       ctx.fillText('Player 1', canvas.width / 4 - 100, canvas.height / 8);
 
-      //draw text score player 1
+      // draw text score player 1
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
       ctx.fillText(state.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
 
-      //draw text player 2
+      // draw text player 2
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
       ctx.fillText('Player 2', canvas.width / 4 * 3 - 100, canvas.height / 8);
 
-      //draw text score player 2
+      // draw text score player 2
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
       ctx.fillText(state.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
 
-      //draw PowerUp is it is on the field
+      // draw PowerUp is it is on the field
       if (state.powerUpOnField) {
         ctx.fillStyle = 'blue';
         ctx.beginPath();
@@ -300,7 +298,7 @@ export default {
         ctx.fill();
       }
 
-      //draw text power-up
+      // draw text power-up being enabled
       if (this.powerUp !== '')
       {
         ctx.fillStyle = 'aqua';
@@ -319,7 +317,6 @@ export default {
 
   },
 };
-//powerups
 </script>
 
 <style scoped>
