@@ -1,16 +1,23 @@
 import { io } from 'socket.io-client';
+import { getJwtFromCookies } from '../utils/backend-requests';
+
 
 class SocketioService {
   // socket: Socket;
   socket: any;
-
+  
   constructor() {
     // this.socket = io(); // would this work as a standard constructor?
     // this.socket = io('http://localhost:3000'); //TODO: Replace with .env variable like 'process.env.VUE_APP_SOCKET_ENDPOINT'
   }
-
+  
   setupSocketConnection(slash_namespace: string) {
-    this.socket = io(`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}${slash_namespace}`);
+    const token = getJwtFromCookies();
+    this.socket = io(`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}${slash_namespace}`, {
+      auth: {
+        token: `${token}`
+      }
+    });
     this.socket.on('connect_error', (err: any) => {
       console.log(`connect_error due to ${err.message}`);
     });

@@ -1,4 +1,5 @@
 import {
+  ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -10,11 +11,13 @@ import { Server, Socket } from 'socket.io';
 import { MsgDto, MsgService } from '../msg/msg.service';
 import { GateService } from 'src/gate/gate.service';
 import { roomDto, RoomService } from 'src/room/room.service';
-import { JwtService } from '@nestjs/jwt';
 import { User, Room } from '@prisma/client';
+import { JwtService } from '@nestjs/jwt';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
 import { ChatService } from './chat.service';
-import { use } from 'passport';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { UseGuards, Request } from '@nestjs/common';
+import * as dotenv from 'dotenv';
 
 @WebSocketGateway({
   cors: {
@@ -28,9 +31,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 		private msgService: MsgService,
 		private roomService: RoomService,
     private userService: PrismaUserService,
-    private jwtService: JwtService,
     private gate: GateService,
     private chatService: ChatService,
+    private jwtService: JwtService,
   ){}
   private server: Server;
   // private gateService: GateService;
@@ -53,15 +56,19 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log('Gateway initialised.');
   }
 
-  async handleConnection(client: Socket) {
-    // experimental funcitionality below!!!
-    const user: User = await this.jwtService.verify(
-      client.handshake.query.token as string,
+  @UseGuards(JwtAuthGuard)
+  async handleConnection(client: Socket, @Request() req: any) {
+    if (client.handshake.auth.token === "")
+      return;
+    const user = await this.jwtService.verify(
+      client.handshake.auth.token, { secret: process.env.JWT_SECRET }
     );
-    this.gate.addSocket(user.id, client);
+    // waarom is id 'sub' ???
+    const userId = user.sub;
+    this.gate.addSocket(userId, client);
 
     // get all chats from the user here and add them to loadAllChats
-    const userWithChats = await this.userService.UserChats({id: user.id});
+    const userWithChats = await this.userService.UserChats({id: userId});
     const chatsFromUser = userWithChats.rooms as Room[];
 
     // get public chats and add them to the list
