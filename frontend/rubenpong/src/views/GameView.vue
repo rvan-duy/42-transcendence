@@ -4,7 +4,7 @@
 <template>
   <div class="item">
     <div style="text-align: center">
-      <div v-if="!matched">
+      <div v-if="!gameModeSelected">
         <h1 class="text-4xl p-16">
           Wanna Match? ;)
         </h1>
@@ -70,6 +70,7 @@
 <script lang="ts">
 import io from 'socket.io-client';
 import { getBackend } from '@/utils/backend-requests';
+import { GameMode } from '../utils/game-definitions';
 import type { CurrentGameState } from '../utils/game-definitions';
 export default {
 
@@ -77,11 +78,13 @@ export default {
   {
     return {
       selectGameMode: false,
+      gameMode : GameMode.UNMATCHED,
+      gameModeSelected: false,
       matched: false,
-      gameMode : '',
       powerUp: '',
       frame: 0,
       userId : -1,
+      gameId: -1,
       arrowUp: false,
       arrowDown: false,
       arrowLeft: false,
@@ -114,48 +117,76 @@ export default {
       console.log(`connect_error due to ${err.message}`);
     });
     
+    // ask the server to check if the user is already in a game or not
+    this.socket.emit('CheckPlayerStatus', this.userId);
+    
+    // retrieve if the user is already in a game or not
+    this.socket.on('GameStatus', (data) => {
+      if (data.alreadyInGame === true) {
+        this.gameModeSelected = true;
+        this.matched = true;
+        this.gameId = data.gameId;
+        this.gameMode = data.gameMode;
+        this.listenToGame(ctx, canvas);
+      }
+      else {
+        this.gameMode = GameMode.UNMATCHED;
+      }
+    });
+
+    // set the functions for the movement handling
     document.addEventListener('keydown', this.keyDownEvent);
     document.addEventListener('keyup', this.keyUpEvent);
 
-    this.socket.on('winner', (winningUser: string) => {
-      this.drawEndScreen(ctx, canvas, winningUser);
-    });
+    this.waitForGameModeSelection();
 
-    this.socket.on('pos', (data: any) => {
-      const state: CurrentGameState = data;
-      this.drawGame(ctx, canvas, state);
-    });
-
-    this.socket.on('EnablePowerUp', (data: any) => {
-      const powerUpType: string = data;
-      this.frame = 0;
-      this.powerUp = `${powerUpType} enabled!`;
-      console.log(`enabled power-up: ${powerUpType}`);
-    });
-
-    this.socket.on('DisablePowerUp', (data: any) => {
-      const reset: string = data;
-      this.powerUp = reset;
-    });
-
-    let gameMode: string = '';
-    const waitForGameMode = () => {
-      if (this.gameMode !== '' && this.userId !== -1) {
-        gameMode = this.gameMode;
-        const packet = {gameMode: gameMode, userId: this.userId};
-        console.log(gameMode);
-        this.socket.emit('QueueForGame', packet);
+    // once a game is created with the user inside start listening to the game
+    this.socket.on('GameCreated', (data: any) => {
+      if (data.player1 === this.userId || data.player2 === this.userId) {
+        console.log('Created a game! starting to listen to it now!');
+        this.gameId = data.gameId;
+        this.matched = true;
+        this.listenToGame(ctx, canvas);
       }
-      else {
-        setTimeout(waitForGameMode, 250);
-      }
-    };
-    setTimeout(waitForGameMode, 250);
+    });
 
   },
   methods: {
+    listenToGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+      // get the position and current gamestate back from the server
+      this.socket.on(`GameState_${this.gameId}`, (data: any) => {
+        const state: CurrentGameState = data;
+        this.drawGame(ctx, canvas, state);
+      });
+      
+      this.socket.on(`EnablePowerUp_${this.gameId}`, (data: any) => {
+        const powerUpType: string = data;
+        this.frame = 0;
+        this.powerUp = `${powerUpType} enabled!`;
+      });
+      
+      this.socket.on(`DisablePowerUp_${this.gameId}`, (data: any) => {
+        const reset: string = data;
+        this.powerUp = reset;
+      });
+      this.socket.on(`Winner_${this.gameId}`, (winningUser: string) => {
+        this.matched = false;
+        this.drawEndScreen(ctx, canvas, winningUser);
+      });
+    },
+
+    waitForGameModeSelection() {
+      if (this.gameMode !== GameMode.UNMATCHED && this.userId !== -1) {
+        const packet = {gameMode: this.gameMode, userId: this.userId};
+        this.socket.emit('QueueForGame', packet);
+      }
+      else {
+        setTimeout(this.waitForGameModeSelection, 250);
+      }
+    },
+
     keyDownEvent(e: KeyboardEvent) {
-      if (this.userId === -1) {
+      if (this.userId === -1 || this.matched === false) {
         return;
       }
 
@@ -181,8 +212,9 @@ export default {
         this.arrowLeft = true;
       }
     },
+
     keyUpEvent(e: KeyboardEvent) {
-      if (this.userId === -1)
+      if (this.userId === -1 || this.matched === false)
         return;
 
       const payload = {userId: this.userId};
@@ -207,10 +239,12 @@ export default {
         this.arrowLeft = false;
       }
     },
-    queueForGame(game: string) {
-      this.gameMode = game;
-      this.matched = true;
+
+    queueForGame(gameMode: string) {
+      this.gameMode = gameMode as GameMode;
+      this.gameModeSelected = true;
     },
+
     drawGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: CurrentGameState) {
       //draw background
       ctx.fillStyle = 'black';
@@ -274,6 +308,7 @@ export default {
         ctx.fillText(this.powerUp, canvas.width / 2 - 100, canvas.height - 100);
       }
     },
+
     drawEndScreen(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, winningUser: string) {
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -281,6 +316,7 @@ export default {
       ctx.font = '50px arial';
       ctx.fillText(`${winningUser} won!`, canvas.width / 2 - 100, canvas.height / 2);
     },
+
   },
 };
 //powerups

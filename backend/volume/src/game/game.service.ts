@@ -7,6 +7,7 @@ import { User } from '@prisma/client';
 import { Player } from './game.player';
 import { Ball } from './game.ball';
 import { PowerUp } from './game.powerup';
+import { Socket } from 'socket.io';
 
 export class GameData {
   gameID: number;
@@ -24,7 +25,7 @@ export class GameData {
   server: Server;
 
   emit(message: string, payload: any) {
-    this.server.emit(message, payload);
+    this.server.emit(`${message}_${this.gameID}`, payload);
   }
 }
 
@@ -136,7 +137,7 @@ export class GameService {
       const winningUser: User = await this.prismaUserService.user({ id: Number(winningPlayer.userId) });
 
       game.isFinished = true;
-      game.emit('winner', winningUser.name);
+      game.emit('Winner', winningUser.name);
     }
     ball.x = MapSize.WIDTH / 2;
     ball.y = MapSize.HEIGHT / 2;
@@ -159,6 +160,7 @@ export class GameService {
     newGame.server = this.server;
     this.games.push(newGame);
     this.gamesPlayed++;
+    this.server.emit('GameCreated', {gameId: newGame.gameID, player1: player1, player2: player2});
   }
 
   logGames() {
@@ -169,6 +171,7 @@ export class GameService {
     for (let index = 0; index < this.games.length; index++) {
       if (this.games[index].isFinished) {
         this.storeGameInfo(this.games[index]);
+        console.log(`removing game ${this.games[index].gameID}`);
         this.games.splice(index, 1);
         index--; // is this necessary ??
       }
@@ -228,16 +231,16 @@ export class GameService {
 
     // send current game state back through socket
     if (!game.isFinished)
-      game.emit('pos', toSend);
+      game.emit('GameState', toSend);
     // console.log(toSend);
   }
   
   UpdatePlayerInput(playerId: number, input: PaddleInput) {
     for (let index = 0; index < this.games.length; index++) { // make this faster, store all players inside an array?
-      const games = this.games[index];
+      const game = this.games[index];
 
-      for (let index = 0; index < games.players.length; index++) {
-        const player = games.players[index];
+      for (let index = 0; index < game.players.length; index++) {
+        const player = game.players[index];
 
         // enables / disables the current move input
         if (player.userId === playerId) {
@@ -246,6 +249,24 @@ export class GameService {
         }
       }
     }
+  }
+
+  checkIfPlaying(userId: number, client: Socket) {
+    for (let index = 0; index < this.games.length; index++) { // make this faster, store all players inside an array?
+      const game = this.games[index];
+
+      for (let index = 0; index < game.players.length; index++) {
+        const player = game.players[index];
+
+        // sends the user the gameId and game-mode back
+        if (player.userId === userId) {
+          client.emit('GameStatus', {alreadyInGame: true, gameId: game.gameID, gameMode: game.mode});
+          return ;
+        }
+      }
+    }
+    // user isn't found in a game so they can try to queue for one
+    client.emit('GameStatus', {alreadyInGame: false, gameId: -1, gameMode: GameMode.UNMATCHED});
   }
 }
 

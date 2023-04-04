@@ -44,6 +44,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log(`Client disconnected inside game gateway: ${client.id}`);
   }
 
+  @SubscribeMessage('CheckPlayerStatus')
+  checkPlayerStatus(client: Socket, userId: number) {
+    this.gameService.checkIfPlaying(userId, client);
+  }
+
   @SubscribeMessage('QueueForGame')
   handleMessage(client: Socket, payload: any) {
     console.log(`player: ${payload.userId} is queuing for gamemode: ${payload.gameMode}`);
@@ -51,13 +56,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // client = null; // linter
     // console.warn(`client ${client} unused`);
   }
-
-  //   @SubscribeMessage('pos')
-  //   handlePos(client:any, payload: any) {
-  //     // console.log("yes");
-  //     this.server.emit('pos', this.currGameState);
-  //     console.warn(`client ${client} and payload ${payload} unused`);
-  //   }
 
   @SubscribeMessage('ArrowDown')
   handleKeyDown(client: any, payload: any) {

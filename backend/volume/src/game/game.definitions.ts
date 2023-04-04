@@ -3,6 +3,7 @@ export enum GameMode {
   FREEMOVE = 'FreeMove',
   POWERUP = 'PowerUp',
   FIESTA = 'Fiesta',
+  UNMATCHED = 'UnMatched',
   }
 
 export enum PaddleInput {
@@ -23,8 +24,8 @@ export enum MapSize {
   }
 
 export enum MoveSpeedPerTick {
-  PADDLE = 2,
-  BALL = 3,
+  PADDLE = 2.5,
+  BALL = 4,
   POWERUP = 5,
   }
 
@@ -36,7 +37,7 @@ export enum DefaultElementSize {
   }
 
 // make paddle invisible?
-export enum PowerUpEffects { // UPDATE IN FRONTEND IF CHANGED
+export enum PowerUpEffects {
   PADDLE_SLOW_ENEMY, // slow effect for x amount of seconds
   PADDLE_SPEED_BUFF, // speed effect for x amount of seconds
   BALL_RADIUS, // ball radius decrease till next paddle hit
@@ -55,6 +56,7 @@ export enum PowerUpTimings {
 	SLOW_TIME = 0.7 * 1000,
 	SPEED_TIME = 7 * 1000,
 	NOT_TIME_BASED = -1,
+	SPAWN_TIMER = 5 * 1000,
   }
   
 export enum PowerUpModifier {
