@@ -184,7 +184,7 @@ export default {
         return;
       }
 
-      const payload = {userId: this.userId};
+      const payload = {userId: this.userId, gameId: this.gameId};
       if (!this.arrowDown && e.key === 'ArrowDown')
       {
         this.socket.emit(e.key, payload);
@@ -211,7 +211,7 @@ export default {
       if (this.userId === -1 || this.matched === false)
         return;
 
-      const payload = {userId: this.userId};
+      const payload = {userId: this.userId, gameId: this.gameId};
       if (e.key === 'ArrowDown')
       {
         this.socket.emit(e.key, payload);

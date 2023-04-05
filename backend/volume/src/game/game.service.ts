@@ -235,24 +235,24 @@ export class GameService {
     // console.log(toSend);
   }
   
-  UpdatePlayerInput(playerId: number, input: PaddleInput) {
-    for (let index = 0; index < this.games.length; index++) { // make this faster, store all players inside an array?
-      const game = this.games[index];
+  UpdatePlayerInput(playerId: number, gameId: number, input: PaddleInput) {
+    const game: GameData = this.getGameByGameId(gameId);
 
-      for (let index = 0; index < game.players.length; index++) {
-        const player = game.players[index];
+    if (game === null)
+      return ;
 
-        // enables / disables the current move input
-        if (player.userId === playerId) {
-          player.updateInput(input);
-          return;
-        }
+    for (let index = 0; index < game.players.length; index++) {
+      const player = game.players[index];
+
+      if (player.userId === playerId) {
+        player.updateInput(input);
+        return;
       }
     }
   }
 
   checkIfPlaying(userId: number, client: Socket) {
-    for (let index = 0; index < this.games.length; index++) { // make this faster, store all players inside an array?
+    for (let index = 0; index < this.games.length; index++) { // also check if the player is already in a queue for a game
       const game = this.games[index];
 
       for (let index = 0; index < game.players.length; index++) {
@@ -267,6 +267,15 @@ export class GameService {
     }
     // user isn't found in a game so they can try to queue for one
     client.emit('GameStatus', {alreadyInGame: false, gameId: -1, gameMode: GameMode.UNMATCHED});
+  }
+
+  private getGameByGameId(gameId: number) {
+    for (let index = 0; index < this.games.length; index++) {
+      const game = this.games[index];
+      if (game.gameID === gameId)
+        return (game);
+    }
+    return (null);
   }
 }
 
