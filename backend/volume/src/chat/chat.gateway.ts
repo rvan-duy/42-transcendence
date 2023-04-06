@@ -83,7 +83,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('createRoom')
   createNewRoom(client: any, payload: roomDto) { // client verification? / extraction
     // verify that it is either an admin or the client self?
-    console.log('Received delete Request:', client);
+    console.log('Received create Request:', client);
     this.roomService.createChat(payload);
   }
 
