@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 </script>
 
@@ -7,7 +6,7 @@
     <body>
       <div class="join-container">
         <header class="join-header">
-          <h1><i class="fas fa-smile" /> ChatCord</h1>
+          <h1><i class="fas fa-smile" /> RubenSpeak</h1>
         </header>
         <main class="join-main">
           <form v-if="chatCreate === false">
@@ -22,6 +21,7 @@
               >
                 <option
                   v-for="chat in chats"
+                  :key="chat"
                   :value="chat"
                 >
                   {{ chat.name }}
@@ -85,12 +85,12 @@
                   class="pt-2"
                 >Chat name</label>
                 <span class="text-black pr-4"><input
-                  id="username"
+                  id="chatName"
                   v-model="newChat.name"
                   VALYE
                   type="text"
                   name="username"
-                  placeholder="Enter username..."
+                  placeholder="Enter a name for the chat"
                   required
                   style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
                 > </span>
@@ -100,17 +100,18 @@
                     class="pt-2"
                   >Password</label>
                   <span class="text-black pr-4"><input
-                    id="username"
+                    id="password"
                     v-model="newChat.password"
                     VALYE
                     type="text"
                     name="username"
-                    placeholder="Enter username..."
+                    placeholder="Enter a password for the chat"
                     required
                     style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
                   > </span>
                 </div>
               </form>
+			  DEBUGGING STATEMENT:
               {{ newChat }}
               <button
                 class="btn bg-blue-100"
