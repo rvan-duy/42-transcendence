@@ -59,14 +59,14 @@
           >
             Create Chat
           </button>
-          <form @submit.prevent="goTo('chatroom')">
+          <form @submit.prevent="createChat('chatroom')">
             <div
               v-if="chatCreate === true"
               class="form-control"
             >
               <label for="room">Select a Chat Type</label>
               <select
-                id="room"
+                id="chat_type"
                 v-model="newChat.type"
                 class="text-black"
                 name="room"
@@ -119,7 +119,7 @@
               {{ newChat }}
               <button
                 class="btn bg-blue-100"
-                @click="goTo('chatroom')"
+                @click="createChat(newChat)"
               >
                 Create Chat
               </button>
@@ -185,10 +185,9 @@ export default {
       console.log('/' + route);
       this.$router.push('/' + route);
     },
-    // createChat()
-    // {
-    //   this.chatCreate = true;
-    // }
+    createChat(chatObject: any) {
+      console.log(`Creating chat: ${chatObject.name}`);
+    },
   },
 };
 </script>
