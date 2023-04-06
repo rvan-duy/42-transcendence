@@ -49,10 +49,11 @@ interface.
           <span class="text-white text-xs p-1">
             {{ user.name }}
           </span>
-          <span>
+        
+        </div>
+        <span>
           <button class="bg-blue-500 hover:bg-blue-300 text-white text-xs py-1 px-2 rounded-full m-1" @click="goTo('game')">Invite to game</button>
           </span>
-        </div>
       </li>
      
             </ul>

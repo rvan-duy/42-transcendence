@@ -97,7 +97,7 @@ import SearchBar from '@/components/SearchBarUsers.vue';
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
               > </span></div>
             {{ newChat }}
-              <button :disabled="newChat.name === ''" @click="createChat() && goTo('chatroom/' + newChat.name)" 
+              <button :disabled="newChat.name === ''" @click="createChat(newChat.name)" 
               class="btn bg-blue-100"
             >
               Create Chat
@@ -178,11 +178,11 @@ export default {
       
       this.$router.push('/' + route + '?id=3')
       },
-    createChat()
+    createChat(nameChat: string)
     {
      this.newChat.channelOwnerId = this.id;
      console.log('create chat');
-    //   this.chatCreate = true;
+     this.goTo('chatroom/' + nameChat);
     }
   },
 }
