@@ -9,7 +9,10 @@
           <h1><i class="fas fa-smile" /> RubenSpeak</h1>
         </header>
         <main class="join-main">
-          <form v-if="chatCreate === false">
+          <form
+            v-if="chatCreate === false"
+            @submit.prevent="goTo('chatroom')"
+          >
             <div class="form-control">
               <label for="room">Room</label>
               <select
@@ -56,7 +59,7 @@
           >
             Create Chat
           </button>
-          <form>
+          <form @submit.prevent="goTo('chatroom')">
             <div
               v-if="chatCreate === true"
               class="form-control"
