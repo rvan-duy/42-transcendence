@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import SocketioService from '../services/socketio.service.js';
 </script>
 
 <template>
@@ -132,9 +133,12 @@
 </template>
 
 <script lang="ts">
+const connection = SocketioService;
+connection.setupSocketConnection('/chat');
 export default {
   data() {
     return {
+	//   socket: connection,
       chatCreate: false,
       enteredPW: '',
       chats: [
