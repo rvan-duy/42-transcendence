@@ -71,8 +71,7 @@ async function chatFormSubmit(e){
 }
 
 // Displays the messages that the frontend receives from the server.
-function outputMessages(message)
-{
+function outputMessages(message) {
   const div = document.createElement('div');
   div.classList.add('message');
   div.innerHTML =
@@ -87,8 +86,7 @@ function outputMessages(message)
   }
 }
 
-function displayUsers(username)
-{
+function displayUsers(username) {
   const list_item = document.createElement('li');
   list_item.innerHTML = `${username}`;
   const usersList = document.querySelector('.users');
@@ -96,8 +94,7 @@ function displayUsers(username)
     usersList.appendChild(list_item);
 }
 
-function formatMessage(packet)
-{
+function formatMessage(packet) {
   return {
     username: packet.username,
     body: packet.msg,
