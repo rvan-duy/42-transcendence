@@ -61,13 +61,14 @@
               v-if="chatCreate === true"
               class="form-control"
             >
-              <label for="room">Room</label>
+              <label for="room">Select a Chat Type</label>
               <select
                 id="room"
                 v-model="newChat.type"
                 class="text-black"
                 name="room"
                 style="border-radius: 20px"
+                required
               >
                 <option value="private">
                   Private
@@ -111,7 +112,7 @@
                   > </span>
                 </div>
               </form>
-			  DEBUGGING STATEMENT:
+              DEBUGGING STATEMENT:
               {{ newChat }}
               <button
                 class="btn bg-blue-100"
