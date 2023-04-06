@@ -113,7 +113,7 @@ function formatMessage(packet)
     <body>
       <div class="chat-container p-8">
         <header class="chat-header">
-          <h1><i class="fas fa-smile" /> ChatCord</h1>
+          <h1><i class="fas fa-smile" /> RubenSpeak</h1>
           <a
             href="/chat"
             class="btn"
