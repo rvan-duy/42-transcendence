@@ -46,7 +46,7 @@ export class MatchmakingService {
   }
 
   private checkAndMatchPlayers(arr: number[], mode: GameMode) {
-    if (arr.length < 1) // CHANGE THIS IF YOU WANT TO MAKE MATCHMAKING WORK, CURRENTLY IN DEBUG MODE
+    if (arr.length < 2) // CHANGE THIS IF YOU WANT TO MAKE MATCHMAKING WORK, CURRENTLY IN DEBUG MODE
       return;
 
     const player2 = arr.pop();
