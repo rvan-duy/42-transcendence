@@ -41,28 +41,33 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @WebSocketServer() all_clients: Server; //all clients
   
   @SubscribeMessage('sendMsg')
-  handleMessage(client: Socket, packet: any) {
-    const id = packet.id;
-    // const user = packet.username;
-    const text = packet.msg;
-    this.all_clients.emit('receiveNewMsg', packet);
-	
-    const dto: MsgDto = {id: -1, roomId: 1, body: text, authorId: id, invite: false};
-    this.msgService.handleIncomingMsg(dto);  // handles db placement of the new msg based on sender id
+  async handleMessage(client: Socket, packet: MsgDto) {
+    // const id = packet.id;
+    // // const user = packet.username;
+    // const text = packet.msg;
+    // this.all_clients.emit('receiveNewMsg', packet);
+    const userId = await this.gate.getUserBySocket(client);
+
+    packet.authorId = userId;
+    // const dto: MsgDto = {id: -1, roomId: 1, body: text, authorId: id, invite: false};
+    this.msgService.handleIncomingMsg(packet);  // handles db placement of the new msg based on sender id
+
+    // add functionality to send the message to the users in that chat who are online
   }
 
   afterInit(server: Server) {
     this.server = server;
-    console.log('Gateway initialised.');
   }
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   async handleConnection(client: Socket, @Request() req: any) {
     if (client.handshake.auth.token === "")
       return;
     const user = await this.jwtService.verify(
       client.handshake.auth.token, { secret: process.env.JWT_SECRET }
     );
+    // if error maybe we need to recover or exit or something!!!
+
     // waarom is id 'sub' ???
     const userId = user.sub;
     this.gate.addSocket(userId, client);
@@ -80,7 +85,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   handleDisconnect(client: Socket) {
-    console.log(`Client ${client.id} disconnected from chat`);
+    // removes this socket connection from the gate service when that socket goes offline
     this.gate.removeSocket(client);
   }
 
@@ -111,12 +116,10 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
   @SubscribeMessage('createRoom')
   async createNewRoom(client: any, payload: roomDto) {
-    // client verification? 
-    // verification not needed since anyone can create a room!
-    // extraction
+    // client extraction
     const userId = await this.gate.getUserBySocket(client);
 
-    // force user to be owner
+    // force room-creating user to be owner
     payload.ownerId = userId;
 
     // use the roomService to create a new chatroom and return the room object
@@ -155,7 +158,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('makeUserAdmin')
-  async makeUserAdmin(client: any, payload: any) { // client verification? / extraction
+  async makeUserAdmin(client: any, payload: any) {
     const {roomId, userId} = payload;
 
     // client verification
@@ -170,16 +173,30 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('banUserFromRoom')
-  banUserFromRoom(client: any, payload: any) { // client verification? / extraction
-    const {roomId, userId} = payload;
-    // check if the user sending this is admin or owner!
-    this.roomService.banUser(roomId, userId);
+  async banUserFromRoom(client: any, payload: any) {
+    const {roomId, banUserId} = payload;
+
+    const clientId = await this.gate.getUserBySocket(client);
+
+    // only alow the chat owner and admins to ban members from the chat
+    if (await this.chatService.isOwner(roomId, clientId) == false && await this.chatService.isAdmin(roomId, clientId))
+      return ;  // add error return later
+
+    // add user to the banned list in this chat
+    this.roomService.banUser(roomId, banUserId);
   }
 
   @SubscribeMessage('muteUserInRoom')
-  muteUserInRoom(client: any, payload: any) { // client verification? / extraction
-    // not implemented yet
-    console.warn(`${client} is unused`);
-    console.warn(`${payload} is unused`);
+  async muteUserInRoom(client: any, payload: any) { // client verification? / extraction
+    const {roomId, muteUserId} = payload;
+
+    const clientId = await this.gate.getUserBySocket(client);
+
+    // only alow the chat owner and admins to ban members from the chat
+    if (await this.chatService.isOwner(roomId, clientId) == false && await this.chatService.isAdmin(roomId, clientId))
+      return ;  // add error return later
+
+    // add user to the banned list in this chat
+    this.roomService.muteUser(roomId, muteUserId);
   }
 }
