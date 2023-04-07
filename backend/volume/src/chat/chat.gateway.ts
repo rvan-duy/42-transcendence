@@ -104,9 +104,15 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return ;  // maybe add error msg for frontend
 
     const users = await this.roomService.getRoomUsers(roomId);
-    const data = await this.msgService.getChatHistory(roomId);
-    client.emit('loadRoomUsers', users);
-    client.emit('loadChatHistory', data);
+    const chatHistory = await this.msgService.getChatHistory(roomId);
+    const chatData = await this.roomService.getRoomById(roomId);
+    client.emit('loadChatBase', {
+      chat: chatData,
+      users: users,
+      history: chatHistory,
+    })
+    // client.emit('loadRoomUsers', users);
+    // client.emit('loadChatHistory', data);
   }
 
   @SubscribeMessage('deleteMsg')

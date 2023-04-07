@@ -9,6 +9,16 @@ export interface roomDto {
   access: Access;
 }
 
+function exclude<Room, Key extends keyof Room>(
+  room: Room,
+  keys: Key[]
+): Omit<Room, Key> {
+  for (let key of keys) {
+    delete room[key]
+  }
+  return room
+}
+
 @Injectable()
 export class RoomService {
   constructor(
@@ -43,6 +53,12 @@ export class RoomService {
   async getRoomUsers(roomId: number){
     const roomAndUsers = await this.prismaRoom.RoomWithUsers({id: roomId});
     return(roomAndUsers.users);
+  }
+
+  async getRoomById(roomId: number) {
+    const room = await this.prismaRoom.Room({id: roomId})
+    const roomWithoutPasscode = exclude(room, ['hashedCode'])
+    return roomWithoutPasscode;
   }
 
   async removeChat(roomId: number) {

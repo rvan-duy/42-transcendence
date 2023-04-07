@@ -94,7 +94,7 @@ interface Chat {
 }
 
 
-var chats: Chat[] = [];
+let chats: Chat[] = [];
 
 connection.socket.on('loadAllChats', async (allChats: any) => {
   chats = allChats;

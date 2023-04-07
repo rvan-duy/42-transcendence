@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import SocketioService from '../services/socketio.service.js';
 import { getBackend } from '@/utils/backend-requests';
 
 </script>
@@ -25,6 +24,7 @@ interface.
   <div class="chat">
 
     <body>
+      <div v-if="!chat || !users.length">Loading...</div>
       <div id="app">
         <div class="chat-container p-8">
           <header class="chat-header">
@@ -38,13 +38,14 @@ interface.
                 @click="goTo('chat')">
                 Leave Chat
               </button>
-              <span v-if="chat.type === 'withPassword'"
+              <!-- below is double is needed === '?' -->
+              <span v-if="chat?.access === 'PROTECTED'"
                 class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white" @click="goTo('chat')">Change
                 Password</span>
-              <span v-if="chat.type === 'withPassword'"
+              <span v-if="chat?.access === 'PROTECTED'"
                 class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white" @click="goTo('chat')">Delete
                 Password</span>
-              <span v-if="chat.type === 'public'"
+              <span v-if="chat?.access === 'PUBLIC'"
                 class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white" @click="goTo('chat')"> Set
                 Password</span>
               <span class="btn ml-3" @click="goTo('chat')">Leave Room</span>
@@ -56,7 +57,7 @@ interface.
               <h3><i class="fas fa-users" /> Users</h3>
               <ul id="users">
                 <!-- oswin testing for linter -->
-                <li v-for="user in chat.users" :key="user.id" :value="user">
+                <li v-for="user in users" :key="user.id" :value="user">
                   <!-- <li v-for="user in chat.users"> -->
                   <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
                     <img src="../assets/dagmar.jpeg" width="30" height="30"
@@ -66,13 +67,13 @@ interface.
                     </span>
                   </span>
 
-                  <span v-if="user.id === chat.channelOwnerId" class="text-green-800 text-xs p-1 font-bold">
+                  <span v-if="user.id === chat?.ownerId" class="text-green-800 text-xs p-1 font-bold">
                     Channel Owner
                   </span>
-                  <span v-if="user.id !== chat.channelOwnerId && user.admin === true" class="text-green-200 text-xs p-1">
+                  <span v-if="user.id !== chat?.ownerId && user.admin === true" class="text-green-200 text-xs p-1">
                     Admin
                   </span>
-                  <span v-if="user.id !== chat.channelOwnerId && user.admin !== true && idUser === chat.channelOwnerId"
+                  <span v-if="user.id !== chat?.ownerId && user.admin !== true && idUser === chat?.ownerId"
                     class="text-green-200 text-xs p-1">
                     <button class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
                       @click="goTo('game')">Make Admin</button>
@@ -82,7 +83,8 @@ interface.
                     Invite to game
                   </button>
 
-                  <div v-if="isAdmin && user.id !== idUser && user.id !== chat.channelOwnerId">
+                  <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
+                  <div v-if="isAdmin && user.id !== idUser && user.id !== chat?.ownerId">
                     <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
                       @click="goTo('game')">
                       Ban
@@ -121,19 +123,23 @@ interface.
   </div>
 </template>
 <script lang="ts">
+import SocketioService from '../services/socketio.service.js';
+
+
+interface Chat {
+  id: number;
+  name: string;
+  ownerId: number;
+  access: string;
+  lastId: number;
+}
+
+let chat: Chat | null = null;
+let users: any = [];
+
 export default {
   data() {
     return {
-      // users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}]
-
-      chat: {
-        id: 1,
-        name: 'Awesome Chat',
-        users: [{ name: 'Ruben1', pic: '', id: 1, admin: true }, { name: 'Ruben2', pic: '', id: 2, admin: false }, { name: 'Dagmar', pic: '', id: 3, admin: true }, { name: 'Oswin', pic: '', id: 4, admin: true }, { name: 'Lindsay', pic: '', id: 5, admin: false }],
-        type: 'public',
-        password: 'getIn',
-        channelOwnerId: 1
-      },
       idUser: null,
       isAdmin: false
     };
@@ -142,12 +148,12 @@ export default {
     await getBackend('user/me')
       .then((res) => {
         res.json()
-        .then((data) => {
-          this.idUser = data.id;
-          console.log(data.id);
-          this.determineAdmin();
+          .then((data) => {
+            this.idUser = data.id;
+            console.log(data.id);
+            this.determineAdmin();
 
-        });
+          });
       });
   },
   methods: {
@@ -159,7 +165,7 @@ export default {
       this.$router.push('/' + route);
     },
     determineAdmin() {
-      this.chat.users.find((user) => {
+      users.find((user) => {
         if (user.id === this.idUser) {
           if (user.admin === true)
             this.isAdmin = true;
@@ -174,14 +180,22 @@ const connection = SocketioService;
 connection.setupSocketConnection('/chat');
 connection.socket.emit('loadRequest', 1);
 
-connection.socket.on('loadRoomUsers', async (users) => {
-  console.log('loadRoomUsers: client received users for this room', users);
-  users.forEach(user => {
-    displayUsers(user.name);
-  });
-});
+connection.socket.on('loadChatBase', async (room: any) => {
+  console.log('loadRoom: ', room);
+  users = room.users;
+  chat = room.chat;
+  let history = room.history;
+  putHistory(history);
+}
+);
 
-connection.socket.on('loadChatHistory', async (data) => {
+// connection.socket.on('loadRoomUsers', async (incomingUsers) => {
+//   console.log('loadRoomUsers: client received users for this room', incomingUsers);
+//   users = incomingUsers;
+// });
+
+// connection.socket.on('loadChatHistory', async (data) => {
+async function putHistory(data: any) {
   console.log('loadChatHistory: client received chat history for this room');
   for (const msg of data) {
     var username = await getBackend(`user/id/${msg.authorId}`)
@@ -195,7 +209,7 @@ connection.socket.on('loadChatHistory', async (data) => {
     var packet = { username: username, time: format_time, body: msg.body };
     outputMessages(packet);
   }
-});
+};
 
 connection.socket.on('receiveNewMsg', (msg) => {
   msg.username = msg.author.name;
