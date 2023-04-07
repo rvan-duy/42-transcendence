@@ -24,7 +24,6 @@ interface.
   <div class="chat">
 
     <body>
-      <div v-if="!chat || !users.length">Loading...</div>
       <div id="app">
         <div class="chat-container p-8">
           <header class="chat-header">
@@ -137,6 +136,18 @@ interface Chat {
 let chat: Chat | null = null;
 let users: any = [];
 
+const connection = SocketioService;
+connection.setupSocketConnection('/chat');
+connection.socket.emit('loadRequest', 1);
+
+connection.socket.on('loadChatBase', async (room: any) => {
+  console.log('loadRoom: ', room);
+  users = room.users;
+  chat = room.chat;
+  let history = room.history;
+  putHistory(history);
+});
+
 export default {
   data() {
     return {
@@ -158,10 +169,6 @@ export default {
   },
   methods: {
     goTo(route: string) {
-      // if (isAuthenticated) {
-      //   this.$router.push('/dashboard')
-      // } else {
-      //   this.$router.push('/login')
       this.$router.push('/' + route);
     },
     determineAdmin() {
@@ -176,27 +183,8 @@ export default {
   },
 };
 
-const connection = SocketioService;
-connection.setupSocketConnection('/chat');
-connection.socket.emit('loadRequest', 1);
-
-connection.socket.on('loadChatBase', async (room: any) => {
-  console.log('loadRoom: ', room);
-  users = room.users;
-  chat = room.chat;
-  let history = room.history;
-  putHistory(history);
-}
-);
-
-// connection.socket.on('loadRoomUsers', async (incomingUsers) => {
-//   console.log('loadRoomUsers: client received users for this room', incomingUsers);
-//   users = incomingUsers;
-// });
-
-// connection.socket.on('loadChatHistory', async (data) => {
 async function putHistory(data: any) {
-  console.log('loadChatHistory: client received chat history for this room');
+  console.log('chat history : ', data);
   for (const msg of data) {
     var username = await getBackend(`user/id/${msg.authorId}`)
       .then(async function (res) {
@@ -204,7 +192,6 @@ async function putHistory(data: any) {
         return data.name;
       })
       .catch(error => console.log(`loadChatHistory: Couldn't fetch username for userId ${msg.authorId}: ` + error.message));
-    // const format_time = `${new Date(msg.timestamp).getHours()}:`+ `00${new Date(msg.timestamp).getMinutes()}`.slice(-2);
     const format_time = new Date(msg.timestamp).toLocaleTimeString('nl-NL');
     var packet = { username: username, time: format_time, body: msg.body };
     outputMessages(packet);
