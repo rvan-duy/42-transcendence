@@ -64,7 +64,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('loadRequest')
   async handleLoad(client: any, roomId: number) { // client verification?
-    console.log('/chat/load received roomId:', roomId);
 
     const usrs = await this.roomService.getRoomUsers(roomId);
     client.emit('loadRoomUsers', usrs);
