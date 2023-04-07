@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import SocketioService from '../services/socketio.service.js';
+// import { chat_socket } from '../main.ts';
 </script>
 
 <template>
@@ -32,7 +33,7 @@ import SocketioService from '../services/socketio.service.js';
                 </option>
               </select>
             </div>
-            <div v-if="selectedChat.type === 'withPassword'">
+            <div v-if="selectedChat.type === 'PROTECTED'">
               <label for="name">Password</label>
               <span class="text-black pr-4"><input
                 id="username"
@@ -46,7 +47,7 @@ import SocketioService from '../services/socketio.service.js';
               > </span>
             </div>
             <button
-              v-if="enteredPW === selectedChat.password || selectedChat.type === 'public' || selectedChat.type === 'private'"
+              v-if="enteredPW === selectedChat.password || selectedChat.type === 'PUBLIC' || selectedChat.type === 'PRIVATE'"
               class="btn bg-blue-100"
               @click="goTo('chatroom')"
             >
@@ -60,7 +61,7 @@ import SocketioService from '../services/socketio.service.js';
           >
             Create Chat
           </button>
-          <form @submit.prevent="createChat('chatroom')">
+          <form @submit.prevent>
             <div
               v-if="chatCreate === true"
               class="form-control"
@@ -74,13 +75,13 @@ import SocketioService from '../services/socketio.service.js';
                 style="border-radius: 20px"
                 required
               >
-                <option value="private">
+                <option value="PRIVATE">
                   Private
                 </option>
-                <option value="public">
+                <option value="PUBLIC">
                   Public
                 </option>
-                <option value="withPassword">
+                <option value="PROTECTED">
                   With Password
                 </option>
               </select>
@@ -99,7 +100,7 @@ import SocketioService from '../services/socketio.service.js';
                   required
                   style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
                 > </span>
-                <div v-if="newChat.type === 'withPassword'">
+                <div v-if="newChat.type === 'PROTECTED'">
                   <label
                     for="name"
                     class="pt-2"
@@ -133,33 +134,30 @@ import SocketioService from '../services/socketio.service.js';
 </template>
 
 <script lang="ts">
-const connection = SocketioService;
-connection.setupSocketConnection('/chat');
 export default {
   data() {
     return {
-	//   socket: connection,
       chatCreate: false,
       enteredPW: '',
       chats: [
         {
           name: 'Awesome Chat',
           users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '', id: 3}, {name: 'Oswin', pic: '', id: 4}, {name: 'Lindsay', pic: '', id: 5}],
-          type: 'withPassword',
+          type: 'PROTECTED',
           password: 'getIn',
           channelOwnerId: 3
         },
         {
           name: 'Less Awesome Chat',
           users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '', id: 3}, {name: 'Oswin', pic: '', id: 4}, {name: 'Lindsay', pic: '', id: 5}],
-          type: 'private',
+          type: 'PRIVATE',
           password: 'getIn',
           channelOwnerId: 3
         },
         {
           name: 'Least Awesome Chat',
           users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '', id: 3}, {name: 'Oswin', pic: '', id: 4}, {name: 'Lindsay', pic: '', id: 5}],
-          type: 'public',
+          type: 'PUBLIC',
           password: 'getIn',
           channelOwnerId: 3
         },
@@ -190,7 +188,12 @@ export default {
       this.$router.push('/' + route);
     },
     createChat(chatObject: any) {
-      console.log(`Creating chat: ${chatObject.name}`);
+		var dto = {name: chatObject.name, ownerId: chatObject.channelOwnerId, access: chatObject.type};
+      console.log(`Creating chat (frontend): ${dto.name}`);
+		const connection = SocketioService;
+		connection.setupSocketConnection('/chat');
+		connection.socket.emit('createRoom', dto); //make this a global socket like the example below
+    //   chat_socket.$socket.emit('createRoom', dto);
     },
   },
 };
