@@ -3,6 +3,7 @@ import { TwoFactorAuthenticationService } from './twoFactorAuthentication.servic
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
 import { TwoFactorAuthenticationController } from './twoFactorAuthentication.controller';
+import { AuthService } from 'src/auth/auth.service';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { TwoFactorAuthenticationController } from './twoFactorAuthentication.con
   ],
   providers: [
     TwoFactorAuthenticationService,
+    AuthService,
     PrismaUserService,
   ],
   exports: [

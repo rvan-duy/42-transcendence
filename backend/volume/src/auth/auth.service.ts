@@ -15,12 +15,11 @@ export class AuthService {
     return await this.prismaUserService.findOrCreateUser({intraId, name});
   }
 
-  login(user: any): any {
+  login(user: any, isSecondFactorAuthenticated = false): any {
     const payload = {
       username: user.name,
       sub: user.id,
-      isTwoFactorAuthenticationEnabled: user.twoFactor,
-      isTwoFactorAuthenticated: false,
+      isSecondFactorAuthenticated,
     };
     return {
       access_token: this.jwtService.sign(payload),
