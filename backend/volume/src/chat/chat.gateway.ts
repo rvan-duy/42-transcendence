@@ -42,25 +42,31 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
   @SubscribeMessage('sendMsg')
   async handleMessage(client: Socket, packet: MsgDto) {
-    // const id = packet.id;
-    // // const user = packet.username;
-    // const text = packet.msg;
-    // this.all_clients.emit('receiveNewMsg', packet);
+    // input protection
+    if (packet.roomId === undefined || packet.body === undefined)
+      return ;
+    if (packet.invite === undefined)
+      packet.invite = false;
+
     const userId = await this.gate.getUserBySocket(client);
 
     packet.authorId = userId;
-    // const dto: MsgDto = {id: -1, roomId: 1, body: text, authorId: id, invite: false};
-    this.msgService.handleIncomingMsg(packet);  // handles db placement of the new msg based on sender id
 
+    console.log("msg : ", packet);
+
+    const msg = await this.msgService.handleIncomingMsg(packet);  // handles db placement of the new msg based on sender id
+
+    console.log(msg);
     // add functionality to send the message to the users in that chat who are online
+    // temporarely send to everyone connected !!! not for end production
+    this.spreadMessage(msg);
   }
 
   afterInit(server: Server) {
     this.server = server;
   }
 
-  // @UseGuards(JwtAuthGuard)
-  async handleConnection(client: Socket, @Request() req: any) {
+  async handleConnection(client: Socket) {
     if (client.handshake.auth.token === "")
       return;
     const user = await this.jwtService.verify(

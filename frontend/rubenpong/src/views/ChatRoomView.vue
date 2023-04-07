@@ -55,7 +55,7 @@ connection.socket.on('receiveNewMsg', (msg) => {
 async function chatFormSubmit(e){
   const msg = e.target.elements.msg;
   const info_bundle = await getUserInfo();
-  const packet = {id: info_bundle.id, username: info_bundle.username, msg: (msg.value)};
+  const packet = {roomId: info_bundle.id, body: (msg.value)};
   connection.socket.emit('sendMsg', packet);
   msg.value = ''; //clears the message text you just entered
   msg.focus(); //focuses on the text input area again after sending
@@ -76,10 +76,12 @@ function outputMessages(message)
   chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-function formatMessage(packet)
+async function formatMessage(packet)
 {
+  console.log(packet);
+  const user = await getBackend(`user/id/${packet.authorId}`);
   return {
-    username: packet.username,
+    username: user.name,
     body: packet.msg,
     time: new Date().toLocaleTimeString('nl-NL'),
   };

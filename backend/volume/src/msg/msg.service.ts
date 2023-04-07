@@ -14,7 +14,7 @@ export class MsgService {
   constructor(private prismaMsg: PrismaMsgService) {}
 
   async handleIncomingMsg(dataInDto: MsgDto) {
-    this.prismaMsg.createMsgWithIds(dataInDto);
+    return this.prismaMsg.createMsgWithIds(dataInDto);
   }
 
   async handleDeleteMsg(data: MsgDto) {
