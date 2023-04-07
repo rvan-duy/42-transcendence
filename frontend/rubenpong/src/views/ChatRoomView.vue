@@ -56,48 +56,50 @@ interface.
               <h3><i class="fas fa-users" /> Users</h3>
               <ul id="users">
                 <!-- oswin testing for linter -->
-                <li v-for="user in users" :key="user.id" :value="user">
-                  <!-- <li v-for="user in chat.users"> -->
-                  <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
-                    <img src="../assets/dagmar.jpeg" width="30" height="30"
-                      style="border-radius: 50%; vertical-align: center; float: left;">
-                    <span class="text-white text-xs p-1">
-                      {{ user.name }}
+                <div v-if="isLoaded">
+                  <li v-for="user in users" :key="user.id" :value="user">
+                    <!-- <li v-for="user in chat.users"> -->
+                    <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
+                      <img src="../assets/dagmar.jpeg" width="30" height="30"
+                        style="border-radius: 50%; vertical-align: center; float: left;">
+                      <span class="text-white text-xs p-1">
+                        {{ user.name }}
+                      </span>
                     </span>
-                  </span>
 
-                  <span v-if="user.id === chat?.ownerId" class="text-green-800 text-xs p-1 font-bold">
-                    Channel Owner
-                  </span>
-                  <span v-if="user.id !== chat?.ownerId && user.admin === true" class="text-green-200 text-xs p-1">
-                    Admin
-                  </span>
-                  <span v-if="user.id !== chat?.ownerId && user.admin !== true && idUser === chat?.ownerId"
-                    class="text-green-200 text-xs p-1">
-                    <button class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="goTo('game')">Make Admin</button>
-                  </span>
-                  <button class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                    @click="goTo('game')">
-                    Invite to game
-                  </button>
+                    <span v-if="user.id === chat?.ownerId" class="text-green-800 text-xs p-1 font-bold">
+                      Channel Owner
+                    </span>
+                    <span v-if="user.id !== chat?.ownerId && user.admin === true" class="text-green-200 text-xs p-1">
+                      Admin
+                    </span>
+                    <span v-if="user.id !== chat?.ownerId && user.admin !== true && idUser === chat?.ownerId"
+                      class="text-green-200 text-xs p-1">
+                      <button class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                        @click="goTo('game')">Make Admin</button>
+                    </span>
+                    <button class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')">
+                      Invite to game
+                    </button>
 
-                  <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
-                  <div v-if="isAdmin && user.id !== idUser && user.id !== chat?.ownerId">
-                    <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="goTo('game')">
-                      Ban
-                    </button>
-                    <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="goTo('game')">
-                      Mute
-                    </button>
-                    <button class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="goTo('game')">
-                      Kick
-                    </button>
-                  </div>
-                </li>
+                    <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
+                    <div v-if="isAdmin && user.id !== idUser && user.id !== chat?.ownerId">
+                      <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
+                        @click="goTo('game')">
+                        Ban
+                      </button>
+                      <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
+                        @click="goTo('game')">
+                        Mute
+                      </button>
+                      <button class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
+                        @click="goTo('game')">
+                        Kick
+                      </button>
+                    </div>
+                  </li>
+                </div>
               </ul>
             </div>
             <div class="chat-messages">
@@ -124,7 +126,6 @@ interface.
 <script lang="ts">
 import SocketioService from '../services/socketio.service.js';
 
-
 interface Chat {
   id: number;
   name: string;
@@ -135,6 +136,7 @@ interface Chat {
 
 let chat: Chat | null = null;
 let users: any = [];
+var isLoaded = false;
 
 const connection = SocketioService;
 connection.setupSocketConnection('/chat');
@@ -144,7 +146,8 @@ connection.socket.on('loadChatBase', async (room: any) => {
   console.log('loadRoom: ', room);
   users = room.users;
   chat = room.chat;
-  let history = room.history;
+  isLoaded = true;
+  const history = room.history;
   putHistory(history);
 });
 
@@ -196,7 +199,7 @@ async function putHistory(data: any) {
     var packet = { username: username, time: format_time, body: msg.body };
     outputMessages(packet);
   }
-};
+}
 
 connection.socket.on('receiveNewMsg', (msg) => {
   msg.username = msg.author.name;
@@ -225,14 +228,6 @@ function outputMessages(message) {
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
-}
-
-function displayUsers(username) {
-  const list_item = document.createElement('li');
-  list_item.innerHTML = `${username}`;
-  const usersList = document.querySelector('.users');
-  if (usersList != null)
-    usersList.appendChild(list_item);
 }
 
 </script>

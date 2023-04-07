@@ -8,7 +8,6 @@ import SearchBar from '@/components/SearchBarUsers.vue';
 
 <template>
   <div class="chat">
-
     <body>
       <div class="join-container">
         <header class="join-header">
@@ -18,31 +17,64 @@ import SearchBar from '@/components/SearchBarUsers.vue';
           <div v-if="chatCreate === false">
             <div class="form-control">
               <label for="room">Room</label>
-              <select id="room" v-model="selectedChat" class="text-black" name="room" style="border-radius: 20px">
-                <option v-for="chat in chats" :key="chat.id" :value="chat">
+              <select
+                id="room"
+                v-model="selectedChat"
+                class="text-black"
+                name="room"
+                style="border-radius: 20px"
+              >
+                <option
+                  v-for="chat in chats"
+                  :key="chat.id"
+                  :value="chat"
+                >
                   {{ chat.name }}
                 </option>
               </select>
             </div>
             <div v-if="selectedChat?.access === 'PROTECTED'">
               <label for="name">Password</label>
-              <span class="text-black pr-4"><input id="username" v-model="enteredPW" VALYE type="text" name="username"
-                  placeholder="Enter username..." required
-                  style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"> </span>
+              <span class="text-black pr-4"><input
+                id="username"
+                v-model="enteredPW"
+                VALYE
+                type="text"
+                name="username"
+                placeholder="Enter username..."
+                required
+                style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+              > </span>
             </div>
-            <button v-if="selectedChat?.access === 'PUBLIC' || selectedChat?.access === 'PRIVATE'"
-              :disabled="selectedChat?.name === ''" class="btn bg-blue-100"
-              @click="goTo('chatroom/' + selectedChat?.name)">
+            <button
+              v-if="selectedChat?.access === 'PUBLIC' || selectedChat?.access === 'PRIVATE'"
+              :disabled="selectedChat?.name === ''"
+              class="btn bg-blue-100"
+              @click="goTo('chatroom/' + selectedChat?.name)"
+            >
               Join Chat
             </button>
           </div>
-          <button v-if="chatCreate === false" class="btn bg-blue-500 text-white" @click="chatCreate = true">
+          <button
+            v-if="chatCreate === false"
+            class="btn bg-blue-500 text-white"
+            @click="chatCreate = true"
+          >
             Create Chat
           </button>
-          <div v-if="chatCreate === true" class="form-control">
+          <div
+            v-if="chatCreate === true"
+            class="form-control"
+          >
             <label for="room">Room</label>
-            <select id="chat_type" v-model="newChat.type" class="text-black" name="room" style="border-radius: 20px"
-              required>
+            <select
+              id="chat_type"
+              v-model="newChat.type"
+              class="text-black"
+              name="room"
+              style="border-radius: 20px"
+              required
+            >
               <option value="private">
                 Private
               </option>
@@ -54,23 +86,50 @@ import SearchBar from '@/components/SearchBarUsers.vue';
               </option>
             </select>
             <div v-if="newChat.type === 'private'">
-              <label for="name" class="pt-2">Add users</label>
+              <label
+                for="name"
+                class="pt-2"
+              >Add users</label>
               <span class="text-black pr-4">
                 <SearchBar />
               </span>
             </div>
-            <label for="name" class="pt-2">Chat name</label>
-            <span class="text-black pr-4"><input id="username" v-model="newChat.name" VALYE type="text" name="username"
-                placeholder="Enter username..." required
-                style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"> </span>
+            <label
+              for="name"
+              class="pt-2"
+            >Chat name</label>
+            <span class="text-black pr-4"><input
+              id="username"
+              v-model="newChat.name"
+              VALYE
+              type="text"
+              name="username"
+              placeholder="Enter username..."
+              required
+              style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+            > </span>
             <div v-if="newChat.type === 'withPassword'">
-              <label for="name" class="pt-2">Password</label>
-              <span class="text-black pr-4"><input id="username" v-model="newChat.password" VALYE type="text"
-                  name="username" placeholder="Enter username..." required
-                  style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"> </span>
+              <label
+                for="name"
+                class="pt-2"
+              >Password</label>
+              <span class="text-black pr-4"><input
+                id="username"
+                v-model="newChat.password"
+                VALYE
+                type="text"
+                name="username"
+                placeholder="Enter username..."
+                required
+                style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+              > </span>
             </div>
             {{ newChat }}
-            <button :disabled="newChat.name === ''" class="btn bg-blue-100" @click="createChat(newChat.name)">
+            <button
+              :disabled="newChat.name === ''"
+              class="btn bg-blue-100"
+              @click="createChat(newChat.name)"
+            >
               Create Chat
             </button>
           </div>
@@ -92,7 +151,6 @@ interface Chat {
   access: string;
   lastId: number;
 }
-
 
 let chats: Chat[] = [];
 

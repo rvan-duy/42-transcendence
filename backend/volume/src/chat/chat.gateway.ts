@@ -110,7 +110,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       chat: chatData,
       users: users,
       history: chatHistory,
-    })
+    });
     // client.emit('loadRoomUsers', users);
     // client.emit('loadChatHistory', data);
   }

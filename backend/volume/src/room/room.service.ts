@@ -13,10 +13,10 @@ function exclude<Room, Key extends keyof Room>(
   room: Room,
   keys: Key[]
 ): Omit<Room, Key> {
-  for (let key of keys) {
-    delete room[key]
+  for (const key of keys) {
+    delete room[key];
   }
-  return room
+  return room;
 }
 
 @Injectable()
@@ -56,8 +56,8 @@ export class RoomService {
   }
 
   async getRoomById(roomId: number) {
-    const room = await this.prismaRoom.Room({id: roomId})
-    const roomWithoutPasscode = exclude(room, ['hashedCode'])
+    const room = await this.prismaRoom.Room({id: roomId});
+    const roomWithoutPasscode = exclude(room, ['hashedCode']);
     return roomWithoutPasscode;
   }
 
