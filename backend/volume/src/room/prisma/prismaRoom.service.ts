@@ -19,7 +19,9 @@ export class PrismaRoomService {
   ): Promise<any | null> {
     return this.prisma.room.findUnique({
       where: RoomWhereUniqueInput,
-      include: {users: true},
+      include: {
+        users: true,
+      }
     });
   }
 
