@@ -48,14 +48,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     packet.authorId = userId;
 
-    console.log('msg : ', packet);
+    const msgWithAuthor = await this.msgService.handleIncomingMsg(packet);  // handles db placement of the new msg based on sender id
 
-    const msg = await this.msgService.handleIncomingMsg(packet);  // handles db placement of the new msg based on sender id
-
-    console.log(msg);
     // add functionality to send the message to the users in that chat who are online
     // temporarely send to everyone connected !!! not for end production
-    this.spreadMessage(msg);
+    this.spreadMessage(msgWithAuthor);
   }
 
   afterInit(server: Server) {
@@ -109,10 +106,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('deleteMsg')
-  handleDeleteMsg(client: any, payload: MsgDto) { // client verification?
-
+  async handleDeleteMsg(client: any, payload: MsgDto) {
+    const { roomId } = payload;
+    // client extraction
+    const userId = await this.gate.getUserBySocket(client);
     // verify that it is either an admin or the client self?
-    console.log('Received delete Request:', payload);
+    if (this.chatService.IsAdminOrOwner(roomId, userId))
+
+
+
+
     this.msgService.handleDeleteMsg(payload);
   }
   

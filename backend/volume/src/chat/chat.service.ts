@@ -11,6 +11,10 @@ export class ChatService {
 
   ){}
 
+  async IsAdminOrOwner(roomId: number, userId: number) {
+    return (this.isAdmin(roomId, userId) || this.isOwner(roomId, userId));
+  }
+
   async isOwner(roomId: number, userId: number) {
     const room = await this.prismaRoomService.Room({id: roomId});
     if (room.ownerId === userId)

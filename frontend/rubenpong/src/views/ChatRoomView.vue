@@ -58,13 +58,14 @@ connection.socket.on('loadChatHistory', async (data) =>{
 });
 
 connection.socket.on('receiveNewMsg', (msg) => {
-  outputMessages(formatMessage(msg));
+  msg.username = msg.author.name;
+  msg.time = new Date().toLocaleTimeString('nl-NL'),
+  outputMessages(msg);
 });
 
 async function chatFormSubmit(e){
   const msg = e.target.elements.msg;
-  const info_bundle = await getUserInfo();
-  const packet = {roomId: info_bundle.id, body: (msg.value)};
+  const packet = {roomId: 1, body: (msg.value)};  // hardcoded roomid
   connection.socket.emit('sendMsg', packet);
   msg.value = ''; //clears the message text you just entered
   msg.focus(); //focuses on the text input area again after sending
@@ -94,17 +95,6 @@ function displayUsers(username)
   const usersList = document.querySelector('.users');
   if (usersList != null)
     usersList.appendChild(list_item);
-}
-
-async function formatMessage(packet)
-{
-  console.log(packet);
-  const user = await getBackend(`user/id/${packet.authorId}`);
-  return {
-    username: user.name,
-    body: packet.msg,
-    time: new Date().toLocaleTimeString('nl-NL'),
-  };
 }
 
 </script>
