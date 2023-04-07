@@ -37,7 +37,6 @@ export class UserController {
     this.userService.updateUser({
       where: {
         id: Number(req.user.id),
-        name: req.user.name
       },
       data: {
         name: req.body.name

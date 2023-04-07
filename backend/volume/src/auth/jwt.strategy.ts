@@ -13,10 +13,9 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  // Remember you are fundamentally changing the auth flow here, things will break!!!
+  // When changing names of the user, the jwt token still has the old name
+  // So do not rely on the username in the jwt token, use the id instead
   async validate(payload: any) {
     return { id: payload.sub, username: payload.username };
-
-
   }
 }
