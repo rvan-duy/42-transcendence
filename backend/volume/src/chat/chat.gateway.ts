@@ -191,9 +191,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (await this.chatService.isOwner(roomId, clientId) === false && await this.chatService.isAdmin(roomId, clientId))
       return ;  // add error return later
 
-	// check if the muted user is not the owner
-	if (this.chatService.isOwner(roomId, banUserId))
-		return ;
+    // check if the muted user is not the owner
+    if (this.chatService.isOwner(roomId, banUserId))
+      return ;
 
     // add user to the banned list in this chat
     this.roomService.banUser(roomId, banUserId);
@@ -209,9 +209,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (await this.chatService.IsAdminOrOwner(roomId, clientId) === false)
       return ;  // add error return later
 
-	// check if the muted user is not the owner
-	if (this.chatService.isOwner(roomId, muteUserId))
-		return ;
+    // check if the muted user is not the owner
+    if (this.chatService.isOwner(roomId, muteUserId))
+      return ;
 
     // add user to the muted list in this chat
     this.roomService.muteUser(roomId, muteUserId);

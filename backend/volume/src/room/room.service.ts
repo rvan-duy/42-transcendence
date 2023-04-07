@@ -18,7 +18,7 @@ export class RoomService {
 
   //  creates a new chatroom
   async createChat(roomData: roomDto) {
-	console.log(`Trying to create room from DTO: ${roomData}`);
+    console.log(`Trying to create room from DTO: ${roomData}`);
     this.prismaRoom.createRoom(roomData);
   }
 

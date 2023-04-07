@@ -188,11 +188,11 @@ export default {
       this.$router.push('/' + route);
     },
     createChat(chatObject: any) {
-		var dto = {name: chatObject.name, ownerId: chatObject.channelOwnerId, access: chatObject.type};
+      var dto = {name: chatObject.name, ownerId: chatObject.channelOwnerId, access: chatObject.type};
       console.log(`Creating chat (frontend): ${dto.name}`);
-		const connection = SocketioService;
-		connection.setupSocketConnection('/chat');
-		connection.socket.emit('createRoom', dto); //make this a global socket like the example below
+      const connection = SocketioService;
+      connection.setupSocketConnection('/chat');
+      connection.socket.emit('createRoom', dto); //make this a global socket like the example below
     //   chat_socket.$socket.emit('createRoom', dto);
     },
   },
