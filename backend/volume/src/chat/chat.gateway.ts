@@ -72,7 +72,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.gate.addSocket(userId, client);
 
     // get all chats from the user here and add them to loadAllChats
-    const userWithChats = await this.userService.UserChats({id: userId});
+    const userWithChats = await this.userService.userChats({id: userId});
     const chatsFromUser = userWithChats.rooms as Room[];
 
     // get public chats and add them to the list
