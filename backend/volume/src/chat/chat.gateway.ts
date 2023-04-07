@@ -67,7 +67,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     );
     // if error maybe we need to recover or exit or something!!!
 
-    // waarom is id 'sub' ???
+    // Oswin vraagt: waarom is id 'sub' ??? 
+	// Ruben legt uit: .verify() returns a payload object, not a user object. This is also why sub contains the user id. As it is the Subject of the payload.
     const userId = user.sub;
     this.gate.addSocket(userId, client);
 
