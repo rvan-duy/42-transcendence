@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
-import { Access } from "@prisma/client";
-import { PrismaRoomService } from "src/room/prisma/prismaRoom.service";
-import { RoomService } from "src/room/room.service";
+import { Injectable } from '@nestjs/common';
+import { Access } from '@prisma/client';
+import { PrismaRoomService } from 'src/room/prisma/prismaRoom.service';
+import { RoomService } from 'src/room/room.service';
 
 @Injectable()
 export class ChatService {
@@ -15,12 +15,12 @@ export class ChatService {
     const room = await this.prismaRoomService.Room({id: roomId});
     if (room.ownerId === userId)
       return true;
-    return false
+    return false;
   }
 
   async isAdmin(roomId: number, userId: number) {
     const room = await this.prismaRoomService.RoomWithUsers({id: roomId});
-    if (room.access == Access.PUBLIC)
+    if (room.access === Access.PUBLIC)
       return true;
     if (room.ownerId === userId)
       return true;
@@ -33,7 +33,7 @@ export class ChatService {
 
   async isChatter(roomId: number, userId: number) {
     const room = await this.prismaRoomService.RoomWithUsers({id: roomId});
-    if (room.access == Access.PUBLIC)
+    if (room.access === Access.PUBLIC)
       return true;
     if (room.ownerId === userId)
       return true;

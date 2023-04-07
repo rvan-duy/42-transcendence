@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 
 function getKeyByValue(map: Map<any, any>, searchValue: any): any {
-  for (let [key, value] of map.entries()) {
+  for (const [key, value] of map.entries()) {
     if (value === searchValue) {
       return key;
     }
@@ -19,7 +19,7 @@ export class CookieService {
   }
 
   removeCookie(sock: string) {
-    this.userByCookie.delete(sock)
+    this.userByCookie.delete(sock);
   }
 
   async getCookieByUser(userId: number): Promise<string> {
@@ -27,7 +27,7 @@ export class CookieService {
     return allUserChatCookies;
   }
 
-  async getUserByCookie(Cookie: string): Promise<number>  {
+  async getUserByCookie(Cookie: string): Promise<number> {
     return this.userByCookie.get(Cookie);
   }
 }

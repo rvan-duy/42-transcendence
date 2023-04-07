@@ -1,7 +1,6 @@
 import { io } from 'socket.io-client';
 import { getJwtFromCookies } from '../utils/backend-requests';
 
-
 class SocketioService {
   // socket: Socket;
   socket: any;

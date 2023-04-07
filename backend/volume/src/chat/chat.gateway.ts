@@ -1,5 +1,4 @@
 import {
-  ConnectedSocket,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
@@ -11,13 +10,10 @@ import { Server, Socket } from 'socket.io';
 import { MsgDto, MsgService } from '../msg/msg.service';
 import { GateService } from 'src/gate/gate.service';
 import { roomDto, RoomService } from 'src/room/room.service';
-import { User, Room } from '@prisma/client';
+import { Room } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
 import { ChatService } from './chat.service';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { UseGuards, Request } from '@nestjs/common';
-import * as dotenv from 'dotenv';
 
 @WebSocketGateway({
   cors: {
@@ -52,7 +48,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     packet.authorId = userId;
 
-    console.log("msg : ", packet);
+    console.log('msg : ', packet);
 
     const msg = await this.msgService.handleIncomingMsg(packet);  // handles db placement of the new msg based on sender id
 
@@ -67,7 +63,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   async handleConnection(client: Socket) {
-    if (client.handshake.auth.token === "")
+    if (client.handshake.auth.token === '')
       return;
     const user = await this.jwtService.verify(
       client.handshake.auth.token, { secret: process.env.JWT_SECRET }
@@ -140,7 +136,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const userId = await this.gate.getUserBySocket(client);
 
     // is the sender is not the chat owner leave it intact adn return and error
-    if (await this.chatService.isOwner(roomId, userId) == false)
+    if (await this.chatService.isOwner(roomId, userId) === false)
       return ;  // add error return later
 
     // destroy with fire
@@ -156,7 +152,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const clientId = await this.gate.getUserBySocket(client);
 
     // only alow the chat owner and admins to add members to the chat
-    if (await this.chatService.isOwner(roomId, clientId) == false && await this.chatService.isAdmin(roomId, clientId))
+    if (await this.chatService.isOwner(roomId, clientId) === false && await this.chatService.isAdmin(roomId, clientId))
       return ;  // add error return later
 
     // add the user to the chat
@@ -171,7 +167,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const clientId = await this.gate.getUserBySocket(client);
 
     // is the sender is not the chat owner leave it intact and return and error
-    if (await this.chatService.isOwner(roomId, clientId) == false)
+    if (await this.chatService.isOwner(roomId, clientId) === false)
       return ;  // add error return later
 
     // make the user admin in this chat
@@ -185,7 +181,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const clientId = await this.gate.getUserBySocket(client);
 
     // only alow the chat owner and admins to ban members from the chat
-    if (await this.chatService.isOwner(roomId, clientId) == false && await this.chatService.isAdmin(roomId, clientId))
+    if (await this.chatService.isOwner(roomId, clientId) === false && await this.chatService.isAdmin(roomId, clientId))
       return ;  // add error return later
 
     // add user to the banned list in this chat
@@ -199,7 +195,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const clientId = await this.gate.getUserBySocket(client);
 
     // only alow the chat owner and admins to ban members from the chat
-    if (await this.chatService.isOwner(roomId, clientId) == false && await this.chatService.isAdmin(roomId, clientId))
+    if (await this.chatService.isOwner(roomId, clientId) === false && await this.chatService.isAdmin(roomId, clientId))
       return ;  // add error return later
 
     // add user to the banned list in this chat

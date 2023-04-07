@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
-import { Socket } from "socket.io";
+import { Injectable } from '@nestjs/common';
+import { Socket } from 'socket.io';
 
 function getKeysByValue(map: Map<any, any>, searchValue: any): any[] {
-  let keys: any[] = [];
-  for (let [key, value] of map.entries()) {
+  const keys: any[] = [];
+  for (const [key, value] of map.entries()) {
     if (value === searchValue) {
       keys.push(key);
     }
@@ -21,7 +21,7 @@ export class GateService {
   }
 
   removeSocket(sock: Socket) {
-    this.userBySocket.delete(sock)
+    this.userBySocket.delete(sock);
   }
 
   async getSocketsByUser(userId: number): Promise<Socket[]> {

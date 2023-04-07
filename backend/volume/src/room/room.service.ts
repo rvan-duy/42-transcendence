@@ -70,7 +70,7 @@ export class RoomService {
       where: {
         access: Access.PUBLIC,
       }
-    }))
+    }));
   }
 
   async removeAdmin(roomId: number, userId: number) {
@@ -119,7 +119,7 @@ export class RoomService {
           }
         }
       }
-    })
+    });
   }
 
 }

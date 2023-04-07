@@ -16,7 +16,7 @@ import { JwtModule } from '@nestjs/jwt';
     UserModule,
     PrismaRoomModule,
     JwtModule
-    ],
+  ],
   controllers: [],
   providers: [ChatGateway, ChatService],
   exports: [],
