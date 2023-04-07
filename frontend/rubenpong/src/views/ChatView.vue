@@ -119,6 +119,7 @@ export default {
       enteredPW: '',
       chats: [
         {
+          id: 1,
           name: 'Awesome Chat',
           users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}],
           type: 'withPassword',
@@ -126,6 +127,7 @@ export default {
           channelOwnerId: 3
         },
         {
+          id: 2,
           name: 'Less Awesome Chat',
           users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}],
           type: 'private',
@@ -133,6 +135,7 @@ export default {
           channelOwnerId: 3
         },
         {
+          id: 3,
           name: 'Least Awesome Chat',
           users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}],
           type: 'public',
@@ -141,6 +144,7 @@ export default {
         },
       ],
       selectedChat: {
+        id: null,
         name: '',
         users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}],
         type: '',
@@ -148,6 +152,7 @@ export default {
         channelOwnerId: 3
       },
       newChat: {
+        id: null,
         name: '',
         users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}],
         type: '',

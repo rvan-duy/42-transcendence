@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { getBackend } from '@/utils/backend-requests';
+
 </script>
 
 <template>
@@ -103,7 +105,7 @@ export default {
     let name: string = '';
     let status: string = '';
     let rank: number = 500;
-    await fetch('http://localhost:3000/user/me')
+    await getBackend('user/id/2')
       .then(function(res){
         return res.json();
       })

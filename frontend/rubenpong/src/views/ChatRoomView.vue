@@ -39,8 +39,8 @@ interface.
          
             <h3><i class="fas fa-users" /> Users</h3>
             <ul id="users">
-      <li v-for="user in users"><div
-        @click="goTo('otheruser/' + user.name)">
+      <li v-for="user in chat.users"><div
+        @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
       <img
             src="../assets/dagmar.jpeg"
             width="30"
@@ -49,7 +49,15 @@ interface.
           <span class="text-white text-xs p-1">
             {{ user.name }}
           </span>
-        
+        <span v-if="user.id === chat.channelOwnerId" class="text-green-800 text-xs p-1 font-bold">
+        Channel Owner
+        </span>
+        <span v-if="user.id !== chat.channelOwnerId && user.admin === true" class="text-green-200 text-xs p-1">
+        Admin
+        </span>
+        <span v-if="isAdmin">
+          <button class="bg-blue-500 hover:bg-blue-300 text-white text-xs py-1 px-2 rounded-full m-1" @click="goTo('game')">Ban</button>
+          </span>
         </div>
         <span>
           <button class="bg-blue-500 hover:bg-blue-300 text-white text-xs py-1 px-2 rounded-full m-1" @click="goTo('game')">Invite to game</button>
@@ -92,8 +100,31 @@ interface.
 export default {
   data() {
     return {
-      users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}]
+      // users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}]
+      
+      chat: {
+          id: 1,
+          name: 'Awesome Chat',
+          users: [{name: 'Ruben1', pic: '', id: 1, admin: true}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '',  id: 3, admin: true}, {name: 'Oswin', pic: '',  id: 4, admin: false}, {name: 'Lindsay', pic: '', id: 5, admin: false}],
+          type: 'withPassword',
+          password: 'getIn',
+          channelOwnerId: 3
+      },
+      idUser: null,
+      isAdmin: false
     }
+  },
+  async created() {
+    let idUser: number = -1;
+    await getBackend('user/me')
+        .then((res) => { res.json()
+          .then((data) => {
+            this.idUser = data.id;
+            console.log(data.id);
+            this.determineAdmin();
+
+          });
+        });
   },
   methods: {
     goTo(route: string) {
@@ -102,9 +133,19 @@ export default {
       // } else {
       //   this.$router.push('/login')
       this.$router.push('/' + route)
-      }
+    },
+    determineAdmin() {
+      this.chat.users.find((o, i) => {
+          if (o.id === this.idUser) {
+            if (o.admin === true)
+              this.isAdmin = true;
+            return true; // stop searching
+          }
+        });
+    }
   },
 };
+
 const connection = SocketioService;
 var username;
 var id;
