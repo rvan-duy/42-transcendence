@@ -7,27 +7,27 @@ import { getBackend } from '@/utils/backend-requests';
 <script lang="ts">
 const connection = SocketioService;
 
-var username;
-var id;
-var intraId;
+// var username;
+// var id;
+// var intraId;
 
-async function getUserInfo(){
-  if (typeof username !== 'undefined' & typeof id !== 'undefined' & typeof intraId !== 'undefined'){
-    console.log('getUserInfo: User info already fetched');
-    return {username, id, intraId};
-  }
-  else{
-    console.log('getUserInfo: Fetching user info');
-    await getBackend('user/me')
-      .then((response => response.json()))
-      .then((data) => {
-        username = data.name;
-        id = data.id;
-        intraId = data.intraId;
-      }).catch(error => console.log('getUserInfo: Failed to fetch user : ' + error.message));
-  }
-  return {username, id, intraId};
-}
+// async function getUserInfo(){
+//   if (typeof username !== 'undefined' & typeof id !== 'undefined' & typeof intraId !== 'undefined'){
+//     console.log('getUserInfo: User info already fetched');
+//     return {username, id, intraId};
+//   }
+//   else{
+//     console.log('getUserInfo: Fetching user info');
+//     await getBackend('user/me')
+//       .then((response => response.json()))
+//       .then((data) => {
+//         username = data.name;
+//         id = data.id;
+//         intraId = data.intraId;
+//       }).catch(error => console.log('getUserInfo: Failed to fetch user : ' + error.message));
+//   }
+//   return {username, id, intraId};
+// }
 
 connection.setupSocketConnection('/chat');
 connection.socket.emit('loadRequest', 1);

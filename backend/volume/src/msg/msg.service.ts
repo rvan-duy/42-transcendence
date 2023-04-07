@@ -33,6 +33,14 @@ export class MsgService {
     );
   }
 
+  async verifyAuthor(roomId: number, msgId: number, authorId: number) {
+    const msg = await this.prismaMsg.Msg({roomId_id: {
+      id: msgId,
+      roomId: roomId,
+    }});
+    return msg.authorId === authorId;
+  }
+
   async getChatHistory(roomId: number): Promise<MsgDto[]> {
     return this.prismaMsg.Msgs({
       where: {

@@ -107,15 +107,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('deleteMsg')
   async handleDeleteMsg(client: any, payload: MsgDto) {
-    const { roomId } = payload;
+    const { roomId, id } = payload;
     // client extraction
     const userId = await this.gate.getUserBySocket(client);
     // verify that it is either an admin or the client self?
-    if (this.chatService.IsAdminOrOwner(roomId, userId))
-
-
-
-
+    
+    if (await this.chatService.IsAdminOrOwner(roomId, userId) === false
+      && await this.msgService.verifyAuthor(roomId, id, userId) === false
+    )
+      return ;
+      
+    // delete the message
     this.msgService.handleDeleteMsg(payload);
   }
   
