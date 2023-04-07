@@ -82,6 +82,9 @@ export class PrismaMsgService {
         room: { connect: { id: roomId } },
         author: { connect: { id: authorId } },
       },
+      include: {
+        author: true
+      }
     });
   }
 
