@@ -4,6 +4,8 @@ import ChatRoomView from '@/views/ChatRoomView.vue';
 import GameView from '@/views/GameView.vue';
 import LogoutView from '@/views/LogoutView.vue';
 import UserView from '@/views/UserView.vue';
+import OtherUserView from '@/views/OtherUserView.vue';
+import SearchUserView from '@/views/SearchUserView.vue';
 
 const routes = [
   {
@@ -16,11 +18,11 @@ const routes = [
     name: 'chat',
     component: ChatView,
   },
-  {
-    path: '/chatroom',
-    name: 'chatroom',
-    component: ChatRoomView,
-  },
+  // {
+  //   path: '/chatroom',
+  //   name: 'chatroom',
+  //   component: ChatRoomView,
+  // },
   {
     path: '/game',
     name: 'game',
@@ -35,6 +37,23 @@ const routes = [
     path: '/user',
     name: 'user',
     component: UserView,
+  },
+  {
+    path: '/otheruser/:id',
+    name: 'otheruser',
+    component: OtherUserView,
+    props: { id: null }
+  },
+  {
+    path: '/chatroom/:id',
+    name: 'chatroom',
+    component: ChatRoomView,
+    props: { id: null }
+  },
+  {
+    path: '/searchuser',
+    name: 'searchuser',
+    component: SearchUserView,
   },
 ];
 

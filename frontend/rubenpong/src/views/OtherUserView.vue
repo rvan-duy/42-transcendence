@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getBackend } from '@/utils/backend-requests';
 
 </script>
 
@@ -7,61 +8,27 @@
     <body>
       <div class="join-container">
         <header class="join-header">
-          <div
-            class="columns-1"
-            style="text-align: center"
-          >
-            <p style="text-align: center">
+          <div style="text-align: center;">
+            <span>
               <img
-                :src="backendPictureUrl"
+                src="../assets/dagmar.jpeg"
                 width="50"
                 height="50"
-                style="border-radius: 50%; display:block; margin-left: auto; margin-right: auto;"
-                class="w-11 h-11 shrink-0 grow-0 rounded-full"
+                style="border-radius: 50%; display:block;margin-left: auto; margin-right: auto"
               >
-            </p>
-            <figcaption class="text-white text-m">
-              {{ name }}
-            </figcaption>
+              <figcaption class="text-white text-m">
+                {{ name }}
+              </figcaption>
+            </span>
           </div>
         </header>
         <main class="join-main">
-          <!-- <form action="/chatroom"> -->
-          <div class="form-control">
-            <form action="">
-              <label for="username">Change Username</label>
-              <span class="text-black pr-4"><input
-                id="username"
-                v-model="newUsername"
-                VALYE
-                type="text"
-                name="username"
-                placeholder="Enter username..."
-                required
-                style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-              > </span><span><button
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-full"
-                @click="changeName"
-              >Submit
-              </button></span>
-            </form>
-          </div>
-          <div class="form-control">
-            <label
-              class="custom-file-upload"
-              style="border-radius: 20px"
-            >
-              Change Avatar
-              <div><input
-                type="file"
-                style=" width:315px"
-              ><span><button
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-full"
-              >Submit
-              </button></span></div>
-               
-            </label>
-          </div>
+          <button
+            class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
+            style="float: right"
+          >
+            Block User
+          </button>
           <label for="status">Status</label>
           <p class="text-black">
             {{ status }}
@@ -86,9 +53,9 @@
               0
             </p>
           </div>
-          <label for="status">Elo</label>
+          <label for="status">Ranking</label>
           <p class="text-black">
-            {{ elo }}
+            {{ rank }}
           </p>
           <label for="status">Match History</label>
           <p
@@ -127,55 +94,57 @@
   </div>
 </template>
 <script lang="ts">
-import { getBackend, putBackend } from '@/utils/backend-requests';
 export default {
   data()
   {
     return {
       name: '',
-      id: 0,
-      backendPictureUrl: '',
       status: 'Online',
       matches_played: 1,
       newUsername: '',
-      elo: 500,
+      rank: 0,
       matches: [{player1: 'Oswin', player2: 'Alice', won: 'Alice'}, {player1: 'Alice', player2: 'Ruben', won: 'Ruben'}]
     };
   },
   async created () {
-    await getBackend('user/me')
-      .then((response => response.json()))
-      .then((data) => {
-        this.name = data.name;
-        this.id = data.id;
-        this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.jpg`;
-        this.elo = data.elo;
-        this.status = 'Online';
+    let name: string = '';
+    let status: string = '';
+    let rank: number = 500;
+    await getBackend('user/id/2')
+      .then(function(res){
+        return res.json();
+      })
+      .then(function(data){
+        name = data.name;
+        status = data.status;
+        rank = data.elo;
+        console.log(data);
       });
+    this.name = name;
+    this.rank = rank;
+    this.status = status;
+    this.status = 'Online';
   },
   methods: {
-    async changeName() {
-      await putBackend('user/me', { name: this.newUsername })
-        .then((response => response.json()))
-        .then((data) => {
-          this.name = data.name;
-        });
+    goTo(route: string) {
+      // if (isAuthenticated) {
+      //   this.$router.push('/dashboard')
+      // } else {
+      //   this.$router.push('/login')
+      this.$router.push('/' + route);
     }
-  },
+  }
 };
 </script>
 <style src="../assets/chat.css">
-
 @media (min-width: 1024px) {
   .chat {
     min-height: 100vh;
     align-items: center;
   }
 }
-
 .custom-file-upload {
     border: 1px solid #ccc;
     border-radius: 50%;
 }
 </style>
-

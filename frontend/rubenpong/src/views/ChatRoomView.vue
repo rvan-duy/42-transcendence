@@ -4,31 +4,219 @@ import { getBackend } from '@/utils/backend-requests';
 
 </script>
 
+<!-- • The user should be able to create channels (chat rooms) that can be either public,
+or private, or protected by a password.
+• The user should be able to send direct messages to other users.
+• The user should be able to block other users. This way, they will see no more
+messages from the account they blocked.
+• The user who has created a new channel is automatically set as the channel owner
+until they leave it.
+◦ The channel owner can set a password required to access the channel, change
+it, and also remove it.
+◦ The channel owner is a channel administrator. They can set other users as
+administrators.
+◦ A user who is an administrator of a channel can kick, ban or mute (for a
+limited time) other users, but not the channel owners.
+• The user should be able to invite other users to play a Pong game through the chat
+interface.
+• The user should be able to access other players profiles through the chat interface. -->
+
+<template>
+  <div class="chat">
+    <body>
+      <div id="app">
+        <div class="chat-container p-8">
+          <header class="chat-header">
+            <!-- <p>This is the page that opens on <strong>/blog/{{ $route.params.id }}</strong> route</p> -->
+            <h1 class="text-xl">
+              {{ $route.params.id }}
+            </h1>
+            <!-- {{ $route.query.id}} -->
+            <div style="text-align: right;">
+              <button
+                class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs"
+                @click="goTo('chat')"
+              >
+                Leave Chat
+              </button>
+              <span
+                v-if="chat.type === 'withPassword'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                @click="goTo('chat')"
+              >Change Password</span>
+              <span
+                v-if="chat.type === 'withPassword'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                @click="goTo('chat')"
+              >Delete Password</span>
+              <span
+                v-if="chat.type === 'public'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                @click="goTo('chat')"
+              > Set Password</span>
+              <span
+                class="btn ml-3"
+                @click="goTo('chat')"
+              >Leave Room</span>
+            </div>
+            <div style="text-align: right;" />
+          </header>
+          <main class="chat-main">
+            <div class="chat-sidebar">
+              <h3><i class="fas fa-users" /> Users</h3>
+              <ul id="users">
+                <!-- oswin testing for linter -->
+                <li
+                  v-for="user in chat.users"
+                  :key="user.id"
+                  :value="user"
+                >
+                  <!-- <li v-for="user in chat.users"> -->
+                  <span
+                    @click="goTo('otheruser/' + user.name + '?id=' + user.id)"
+                  >
+                    <img
+                      src="../assets/dagmar.jpeg"
+                      width="30"
+                      height="30"
+                      style="border-radius: 50%; vertical-align: center; float: left;"
+                    >
+                    <span class="text-white text-xs p-1">
+                      {{ user.name }}
+                    </span>
+                  </span>
+
+                  <span
+                    v-if="user.id === chat.channelOwnerId"
+                    class="text-green-800 text-xs p-1 font-bold"
+                  >
+                    Channel Owner
+                  </span>
+                  <span
+                    v-if="user.id !== chat.channelOwnerId && user.admin === true"
+                    class="text-green-200 text-xs p-1"
+                  >
+                    Admin
+                  </span>
+                  <span
+                    v-if="user.id !== chat.channelOwnerId && user.admin !== true && idUser === chat.channelOwnerId"
+                    class="text-green-200 text-xs p-1"
+                  >
+                    <button
+                      class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')"
+                    >Make Admin</button>
+                  </span>
+                  <button
+                    class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                    @click="goTo('game')"
+                  >
+                    Invite to game
+                  </button>
+
+                  <div v-if="isAdmin && user.id !== idUser && user.id !== chat.channelOwnerId">
+                    <button
+                      class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')"
+                    >
+                      Ban
+                    </button>
+                    <button
+                      class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')"
+                    >
+                      Mute
+                    </button>
+                    <button
+                      class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')"
+                    >
+                      Kick
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </div>
+            <div class="chat-messages">
+            <!-- CHAT MESSAGES APPEAR HERE -->
+            </div>
+          </main>
+          <div class="chat-form-container">
+            <form
+              id="chat-form"
+              @submit.prevent="chatFormSubmit($event)"
+            >
+              <input
+                id="msg"
+                style="border-radius: 20px"
+                type="text"
+                placeholder="Enter Message"
+                required
+                autocomplete="off"
+              >
+
+              <div class="px-2">
+                <button class="btn">
+                  <font-awesome-icon icon="paper-plane" /> Send
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </body>
+  </div>
+</template>
 <script lang="ts">
+export default {
+  data() {
+    return {
+      // users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}]
+      
+      chat: {
+        id: 1,
+        name: 'Awesome Chat',
+        users: [{name: 'Ruben1', pic: '', id: 1, admin: true}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '', id: 3, admin: true}, {name: 'Oswin', pic: '', id: 4, admin: true}, {name: 'Lindsay', pic: '', id: 5, admin: false}],
+        type: 'public',
+        password: 'getIn',
+        channelOwnerId: 1
+      },
+      idUser: null,
+      isAdmin: false
+    };
+  },
+  async created() {
+    await getBackend('user/me')
+      .then((res) => { res.json()
+        .then((data) => {
+          this.idUser = data.id;
+          console.log(data.id);
+          this.determineAdmin();
+
+        });
+      });
+  },
+  methods: {
+    goTo(route: string) {
+      // if (isAuthenticated) {
+      //   this.$router.push('/dashboard')
+      // } else {
+      //   this.$router.push('/login')
+      this.$router.push('/' + route);
+    },
+    determineAdmin() {
+      this.chat.users.find((user) => {
+        if (user.id === this.idUser) {
+          if (user.admin === true)
+            this.isAdmin = true;
+          return true; // stop searching
+        }
+      });
+    }
+  },
+};
+
 const connection = SocketioService;
-
-// var username;
-// var id;
-// var intraId;
-
-// async function getUserInfo(){
-//   if (typeof username !== 'undefined' & typeof id !== 'undefined' & typeof intraId !== 'undefined'){
-//     console.log('getUserInfo: User info already fetched');
-//     return {username, id, intraId};
-//   }
-//   else{
-//     console.log('getUserInfo: Fetching user info');
-//     await getBackend('user/me')
-//       .then((response => response.json()))
-//       .then((data) => {
-//         username = data.name;
-//         id = data.id;
-//         intraId = data.intraId;
-//       }).catch(error => console.log('getUserInfo: Failed to fetch user : ' + error.message));
-//   }
-//   return {username, id, intraId};
-// }
-
 connection.setupSocketConnection('/chat');
 connection.socket.emit('loadRequest', 1);
 
@@ -62,7 +250,7 @@ connection.socket.on('receiveNewMsg', (msg) => {
   msg.time = new Date().toLocaleTimeString('nl-NL'),
   outputMessages(msg);
 });
-
+// const chatForm = document.getElementById('chat-form');
 async function chatFormSubmit(e){
   const msg = e.target.elements.msg;
   const packet = {roomId: 1, body: (msg.value)};  // hardcoded roomid
@@ -70,7 +258,6 @@ async function chatFormSubmit(e){
   msg.value = ''; //clears the message text you just entered
   msg.focus(); //focuses on the text input area again after sending
 }
-
 // Displays the messages that the frontend receives from the server.
 function outputMessages(message) {
   const div = document.createElement('div');
@@ -96,59 +283,6 @@ function displayUsers(username) {
 }
 
 </script>
-
-<template>
-  <div class="chat">
-    <!-- <h1 id="chat_text">This is the chat page (for now)</h1> -->
-    <body>
-      <div class="chat-container p-8">
-        <header class="chat-header">
-          <h1><i class="fas fa-smile" /> RubenSpeak</h1>
-          <a
-            href="/chat"
-            class="btn"
-          >Leave Room</a>
-        </header>
-        <main class="chat-main">
-          <div class="chat-sidebar">
-            <h3><i class="fas fa-comments" /> Room Name:</h3>
-            <h2 id="room-name">
-              Room 1
-            </h2>
-            <h3><i class="fas fa-users" /> Users</h3>
-            <ul class="users">
-              <!-- USERS APPEAR HERE -->
-            </ul>
-          </div>
-          <div class="chat-messages">
-            <!-- CHAT MESSAGES APPEAR HERE -->
-          </div>
-        </main>
-        <div class="chat-form-container">
-          <form
-            id="chat-form"
-            @submit.prevent="chatFormSubmit($event)"
-          >
-            <input
-              id="msg"
-              style="border-radius: 20px"
-              type="text"
-              placeholder="Enter Message"
-              required
-              autocomplete="off"
-            >
-
-            <div class="px-2">
-              <button class="btn">
-                <font-awesome-icon icon="paper-plane" /> Send
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </body>
-  </div>
-</template>
 
 <style src="../assets/chat.css">
 @media (min-width: 1024px) {

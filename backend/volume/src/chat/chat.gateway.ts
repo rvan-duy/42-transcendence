@@ -82,6 +82,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     // send the loadAllChats socket-msg with the chats you are activel in!
     client.emit('loadAllChats', combinedChats);
+    console.log(combinedChats);
   }
 
   handleDisconnect(client: Socket) {

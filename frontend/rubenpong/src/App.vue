@@ -33,6 +33,13 @@
         <RouterLink
           v-if="userIsLoggedIn"
           class="text-blue-100 p-2 text-lg hover:text-white"
+          to="/searchuser"
+        >
+          Search User
+        </RouterLink>
+        <RouterLink
+          v-if="userIsLoggedIn"
+          class="text-blue-100 p-2 text-lg hover:text-white"
           to="/logout"
         >
           Log Out
@@ -50,9 +57,9 @@
             :src="backendPictureUrl"
             width="50"
             height="50"
-            style="border-radius: 50%"
+            class="w-11 h-11 shrink-0 grow-0 rounded-full"
           >
-          <figcaption class="text-white text-xs p-1">
+          <figcaption class="text-white text-xs">
             {{ name }}
           </figcaption>
         </RouterLink>
@@ -60,16 +67,17 @@
     </div>
   </nav>
   <br>
-  <RouterView />
+  <main><RouterView /></main>
 </template>
 
 <script lang="ts">
 
-import { RouterLink, RouterView } from 'vue-router';
 import { isLoggedIn } from '@/router/auth';
 import { getBackend } from './utils/backend-requests';
-
+import { RouterLink, RouterView } from 'vue-router';
 export default {
+
+  components: {RouterView, RouterLink},
   data()
   {
     return {

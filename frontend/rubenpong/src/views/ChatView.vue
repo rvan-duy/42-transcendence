@@ -1,6 +1,9 @@
+
 <script setup lang="ts">
 import SocketioService from '../services/socketio.service.js';
 // import { chat_socket } from '../main.ts';
+import SearchBar from '@/components/SearchBarUsers.vue';
+
 </script>
 
 <template>
@@ -11,10 +14,7 @@ import SocketioService from '../services/socketio.service.js';
           <h1><i class="fas fa-smile" /> RubenSpeak</h1>
         </header>
         <main class="join-main">
-          <form
-            v-if="chatCreate === false"
-            @submit.prevent="goTo('chatroom')"
-          >
+          <div v-if="chatCreate === false">
             <div class="form-control">
               <label for="room">Room</label>
               <select
@@ -24,16 +24,23 @@ import SocketioService from '../services/socketio.service.js';
                 name="room"
                 style="border-radius: 20px"
               >
+                <!-- <option
+                  v-for="chat in chats"
+                  :value="chat"
+                >
+                  {{ chat.name }}
+                </option> -->
+                <!-- oswin testing for linter -->
                 <option
                   v-for="chat in chats"
-                  :key="chat"
+                  :key="chat.id"
                   :value="chat"
                 >
                   {{ chat.name }}
                 </option>
               </select>
             </div>
-            <div v-if="selectedChat.type === 'PROTECTED'">
+            <div v-if="selectedChat.access === 'PROTECTED'">
               <label for="name">Password</label>
               <span class="text-black pr-4"><input
                 id="username"
@@ -47,13 +54,14 @@ import SocketioService from '../services/socketio.service.js';
               > </span>
             </div>
             <button
-              v-if="enteredPW === selectedChat.password || selectedChat.type === 'PUBLIC' || selectedChat.type === 'PRIVATE'"
+              v-if="selectedChat.access === 'PUBLIC' || selectedChat.type === 'PRIVATE'"
+              :disabled="selectedChat.name === ''"
               class="btn bg-blue-100"
-              @click="goTo('chatroom')"
+              @click="goTo('chatroom/' + selectedChat.name)"
             >
               Join Chat
             </button>
-          </form>
+          </div>
           <button
             v-if="chatCreate === false"
             class="btn bg-blue-500 text-white"
@@ -61,72 +69,75 @@ import SocketioService from '../services/socketio.service.js';
           >
             Create Chat
           </button>
-          <form @submit.prevent>
-            <div
-              v-if="chatCreate === true"
-              class="form-control"
+          <div
+            v-if="chatCreate === true"
+            class="form-control"
+          >
+            <label for="room">Room</label>
+            <select
+              id="chat_type"
+              v-model="newChat.type"
+              class="text-black"
+              name="room"
+              style="border-radius: 20px"
+              required
             >
-              <label for="room">Select a Chat Type</label>
-              <select
-                id="chat_type"
-                v-model="newChat.type"
-                class="text-black"
-                name="room"
-                style="border-radius: 20px"
-                required
-              >
-                <option value="PRIVATE">
-                  Private
-                </option>
-                <option value="PUBLIC">
-                  Public
-                </option>
-                <option value="PROTECTED">
-                  With Password
-                </option>
-              </select>
-              <form action="">
-                <label
-                  for="name"
-                  class="pt-2"
-                >Chat name</label>
-                <span class="text-black pr-4"><input
-                  id="chatName"
-                  v-model="newChat.name"
-                  VALYE
-                  type="text"
-                  name="username"
-                  placeholder="Enter a name for the chat"
-                  required
-                  style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-                > </span>
-                <div v-if="newChat.type === 'PROTECTED'">
-                  <label
-                    for="name"
-                    class="pt-2"
-                  >Password</label>
-                  <span class="text-black pr-4"><input
-                    id="password"
-                    v-model="newChat.password"
-                    VALYE
-                    type="text"
-                    name="username"
-                    placeholder="Enter a password for the chat"
-                    required
-                    style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-                  > </span>
-                </div>
-              </form>
-              DEBUGGING STATEMENT:
-              {{ newChat }}
-              <button
-                class="btn bg-blue-100"
-                @click="createChat(newChat)"
-              >
-                Create Chat
-              </button>
+              <option value="private">
+                Private
+              </option>
+              <option value="public">
+                Public
+              </option>
+              <option value="withPassword">
+                With Password
+              </option>
+            </select>
+            <div v-if="newChat.type === 'private'">
+              <label
+                for="name"
+                class="pt-2"
+              >Add users</label>
+              <span class="text-black pr-4"><SearchBar /></span>
             </div>
-          </form>
+            <label
+              for="name"
+              class="pt-2"
+            >Chat name</label>
+            <span class="text-black pr-4"><input
+              id="username"
+              v-model="newChat.name"
+              VALYE
+              type="text"
+              name="username"
+              placeholder="Enter username..."
+              required
+              style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+            > </span>
+            <div v-if="newChat.type === 'withPassword'">
+              <label
+                for="name"
+                class="pt-2"
+              >Password</label>
+              <span class="text-black pr-4"><input
+                id="username"
+                v-model="newChat.password"
+                VALYE
+                type="text"
+                name="username"
+                placeholder="Enter username..."
+                required
+                style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+              > </span>
+            </div>
+            {{ newChat }}
+            <button
+              :disabled="newChat.name === ''"
+              class="btn bg-blue-100"
+              @click="createChat(newChat.name)"
+            >
+              Create Chat
+            </button>
+          </div>
         </main>
       </div>
     </body>
@@ -134,49 +145,50 @@ import SocketioService from '../services/socketio.service.js';
 </template>
 
 <script lang="ts">
+import { getBackend } from '../utils/backend-requests';
+const connection = SocketioService;
+connection.setupSocketConnection('/chat');
+
+var chats: [];
+
+connection.socket.on('loadAllChats', async (allChats) => {
+  chats = allChats;
+});
+
 export default {
   data() {
     return {
       chatCreate: false,
       enteredPW: '',
-      chats: [
-        {
-          name: 'Awesome Chat',
-          users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '', id: 3}, {name: 'Oswin', pic: '', id: 4}, {name: 'Lindsay', pic: '', id: 5}],
-          type: 'PROTECTED',
-          password: 'getIn',
-          channelOwnerId: 3
-        },
-        {
-          name: 'Less Awesome Chat',
-          users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '', id: 3}, {name: 'Oswin', pic: '', id: 4}, {name: 'Lindsay', pic: '', id: 5}],
-          type: 'PRIVATE',
-          password: 'getIn',
-          channelOwnerId: 3
-        },
-        {
-          name: 'Least Awesome Chat',
-          users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '', id: 3}, {name: 'Oswin', pic: '', id: 4}, {name: 'Lindsay', pic: '', id: 5}],
-          type: 'PUBLIC',
-          password: 'getIn',
-          channelOwnerId: 3
-        },
-      ],
-      selectedChat: {
-        name: '',
-        users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '', id: 3}, {name: 'Oswin', pic: '', id: 4}, {name: 'Lindsay', pic: '', id: 5}],
-        type: '',
-        password: '',
-        channelOwnerId: 3
-      },
+      selectedChat: null, //{
+      //   id: null,
+      //   name: '',
+      //   users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '', id: 3}, {name: 'Oswin', pic: '', id: 4}, {name: 'Lindsay', pic: '', id: 5}],
+      //   type: '',
+      //   password: '',
+      //   channelOwnerId: 2
+      // },
       newChat: {
+        id: null,
         name: '',
         users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '', id: 3}, {name: 'Oswin', pic: '', id: 4}, {name: 'Lindsay', pic: '', id: 5}],
         type: '',
         password: '',
-        channelOwnerId: 3
-      }
+        channelOwnerId: -1
+      },
+      id: -1,
     };
+  },
+  async created() {
+    await getBackend('user/me')
+      .then((response => response.json()))
+      .then((data) => {
+        // this.name = data.name;
+        // this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/${this.name}.jpg`;
+        this.id = data.id;
+        console.log(this.id);
+        // this.status = 'Online';
+      });
   },
   methods: {
     goTo(route: string) {
@@ -184,17 +196,16 @@ export default {
       //   this.$router.push('/dashboard')
       // } else {
       //   this.$router.push('/login')
-      console.log('/' + route);
-      this.$router.push('/' + route);
+      console.log('/' + route + '?id=3');
+      
+      this.$router.push('/' + route + '?id=3');
     },
-    createChat(chatObject: any) {
-      var dto = {name: chatObject.name, ownerId: chatObject.channelOwnerId, access: chatObject.type};
-      console.log(`Creating chat (frontend): ${dto.name}`);
-      const connection = SocketioService;
-      connection.setupSocketConnection('/chat');
-      connection.socket.emit('createRoom', dto); //make this a global socket like the example below
-    //   chat_socket.$socket.emit('createRoom', dto);
-    },
+    createChat(nameChat: string)
+    {
+      this.newChat.channelOwnerId = this.id;
+      console.log('create chat');
+      this.goTo('chatroom/' + nameChat);
+    }
   },
 };
 </script>
@@ -206,4 +217,5 @@ export default {
     align-items: center;
   }
 }
+
 </style>
