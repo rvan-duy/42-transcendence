@@ -18,6 +18,7 @@ export class RoomService {
 
   //  creates a new chatroom
   async createChat(roomData: roomDto) {
+	console.log(`Trying to create room from DTO: ${roomData}`);
     this.prismaRoom.createRoom(roomData);
   }
 
@@ -41,9 +42,7 @@ export class RoomService {
   // fetches all users of this chatroom
   async getRoomUsers(roomId: number){
     const roomAndUsers = await this.prismaRoom.RoomWithUsers({id: roomId});
-    console.log(roomAndUsers.users);
     return(roomAndUsers.users);
-    // return([1, 2, 3]); //This might be a tiny bit hardcoded atm. (Alice, Bob, and You <3)
   }
 
   async removeChat(roomId: number) {

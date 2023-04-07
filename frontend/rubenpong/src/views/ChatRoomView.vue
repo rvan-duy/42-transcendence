@@ -32,9 +32,9 @@ const connection = SocketioService;
 connection.setupSocketConnection('/chat');
 connection.socket.emit('loadRequest', 1);
 
-connection.socket.on('loadRoomUsers', async (usrs) => {
-  console.log('loadRoomUsers: client received users for this room', usrs);
-  usrs.forEach(usr => {
+connection.socket.on('loadRoomUsers', async (users) => {
+  console.log('loadRoomUsers: client received users for this room', users);
+  users.forEach(usr => {
     displayUsers(usr.name);
   });
 });
@@ -72,8 +72,7 @@ async function chatFormSubmit(e){
 }
 
 // Displays the messages that the frontend receives from the server.
-function outputMessages(message)
-{
+function outputMessages(message) {
   const div = document.createElement('div');
   div.classList.add('message');
   div.innerHTML =
@@ -88,8 +87,7 @@ function outputMessages(message)
   }
 }
 
-function displayUsers(username)
-{
+function displayUsers(username) {
   const list_item = document.createElement('li');
   list_item.innerHTML = `${username}`;
   const usersList = document.querySelector('.users');
@@ -105,7 +103,7 @@ function displayUsers(username)
     <body>
       <div class="chat-container p-8">
         <header class="chat-header">
-          <h1><i class="fas fa-smile" /> ChatCord</h1>
+          <h1><i class="fas fa-smile" /> RubenSpeak</h1>
           <a
             href="/chat"
             class="btn"

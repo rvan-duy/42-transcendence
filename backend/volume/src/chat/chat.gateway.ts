@@ -95,18 +95,20 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('loadRequest')
-  async handleLoad(client: any, roomId: number) {
+  async handleLoad(client: Socket, roomId: number) {
     // client verification
     const user = await this.gate.getUserBySocket(client);
     if (false === await this.chatService.isChatter(roomId, user))
       return ;  // maybe add error msg for frontend
-    
+
+    const users = await this.roomService.getRoomUsers(roomId);
     const data = await this.msgService.getChatHistory(roomId);
+    client.emit('loadRoomUsers', users);
     client.emit('loadChatHistory', data);
   }
 
   @SubscribeMessage('deleteMsg')
-  async handleDeleteMsg(client: any, payload: MsgDto) {
+  async handleDeleteMsg(client: Socket, payload: MsgDto) {
     const { roomId, id } = payload;
     // client extraction
     const userId = await this.gate.getUserBySocket(client);
@@ -122,7 +124,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
   
   @SubscribeMessage('createRoom')
-  async createNewRoom(client: any, payload: roomDto) {
+  async createNewRoom(client: Socket, payload: roomDto) {
     // client extraction
     const userId = await this.gate.getUserBySocket(client);
 
@@ -134,7 +136,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('destroyRoom')
-  async destroyRoom(client: any, payload: number) {
+  async destroyRoom(client: Socket, payload: number) {
     const roomId: number = payload;
 
     // client verification
@@ -150,7 +152,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   // check if this needs to be an invite according to pdf || think adding is enough
   @SubscribeMessage('addUserToRoom')
-  async addUserToRoom(client: any, payload: any) {
+  async addUserToRoom(client: Socket, payload: any) {
     const {roomId, userId} = payload;
 
     // client verification
@@ -165,7 +167,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('makeUserAdmin')
-  async makeUserAdmin(client: any, payload: any) {
+  async makeUserAdmin(client: Socket, payload: any) {
     const {roomId, userId} = payload;
 
     // client verification
@@ -180,7 +182,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   @SubscribeMessage('banUserFromRoom')
-  async banUserFromRoom(client: any, payload: any) {
+  async banUserFromRoom(client: Socket, payload: any) {
     const {roomId, banUserId} = payload;
 
     const clientId = await this.gate.getUserBySocket(client);
@@ -189,21 +191,29 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (await this.chatService.isOwner(roomId, clientId) === false && await this.chatService.isAdmin(roomId, clientId))
       return ;  // add error return later
 
+	// check if the muted user is not the owner
+	if (this.chatService.isOwner(roomId, banUserId))
+		return ;
+
     // add user to the banned list in this chat
     this.roomService.banUser(roomId, banUserId);
   }
 
   @SubscribeMessage('muteUserInRoom')
-  async muteUserInRoom(client: any, payload: any) { // client verification? / extraction
+  async muteUserInRoom(client: Socket, payload: any) { // client verification? / extraction
     const {roomId, muteUserId} = payload;
 
     const clientId = await this.gate.getUserBySocket(client);
 
     // only alow the chat owner and admins to ban members from the chat
-    if (await this.chatService.isOwner(roomId, clientId) === false && await this.chatService.isAdmin(roomId, clientId))
+    if (await this.chatService.IsAdminOrOwner(roomId, clientId) === false)
       return ;  // add error return later
 
-    // add user to the banned list in this chat
+	// check if the muted user is not the owner
+	if (this.chatService.isOwner(roomId, muteUserId))
+		return ;
+
+    // add user to the muted list in this chat
     this.roomService.muteUser(roomId, muteUserId);
   }
 }
