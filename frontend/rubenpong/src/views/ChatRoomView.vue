@@ -23,6 +23,7 @@ interface.
 
 <template>
   <div class="chat">
+
     <body>
       <div id="app">
         <div class="chat-container p-8">
@@ -33,31 +34,20 @@ interface.
             </h1>
             <!-- {{ $route.query.id}} -->
             <div style="text-align: right;">
-              <button
-                class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs"
-                @click="goTo('chat')"
-              >
+              <button class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs"
+                @click="goTo('chat')">
                 Leave Chat
               </button>
-              <span
-                v-if="chat.type === 'withPassword'"
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                @click="goTo('chat')"
-              >Change Password</span>
-              <span
-                v-if="chat.type === 'withPassword'"
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                @click="goTo('chat')"
-              >Delete Password</span>
-              <span
-                v-if="chat.type === 'public'"
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                @click="goTo('chat')"
-              > Set Password</span>
-              <span
-                class="btn ml-3"
-                @click="goTo('chat')"
-              >Leave Room</span>
+              <span v-if="chat.type === 'withPassword'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white" @click="goTo('chat')">Change
+                Password</span>
+              <span v-if="chat.type === 'withPassword'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white" @click="goTo('chat')">Delete
+                Password</span>
+              <span v-if="chat.type === 'public'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white" @click="goTo('chat')"> Set
+                Password</span>
+              <span class="btn ml-3" @click="goTo('chat')">Leave Room</span>
             </div>
             <div style="text-align: right;" />
           </header>
@@ -66,71 +56,43 @@ interface.
               <h3><i class="fas fa-users" /> Users</h3>
               <ul id="users">
                 <!-- oswin testing for linter -->
-                <li
-                  v-for="user in chat.users"
-                  :key="user.id"
-                  :value="user"
-                >
+                <li v-for="user in chat.users" :key="user.id" :value="user">
                   <!-- <li v-for="user in chat.users"> -->
-                  <span
-                    @click="goTo('otheruser/' + user.name + '?id=' + user.id)"
-                  >
-                    <img
-                      src="../assets/dagmar.jpeg"
-                      width="30"
-                      height="30"
-                      style="border-radius: 50%; vertical-align: center; float: left;"
-                    >
+                  <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
+                    <img src="../assets/dagmar.jpeg" width="30" height="30"
+                      style="border-radius: 50%; vertical-align: center; float: left;">
                     <span class="text-white text-xs p-1">
                       {{ user.name }}
                     </span>
                   </span>
 
-                  <span
-                    v-if="user.id === chat.channelOwnerId"
-                    class="text-green-800 text-xs p-1 font-bold"
-                  >
+                  <span v-if="user.id === chat.channelOwnerId" class="text-green-800 text-xs p-1 font-bold">
                     Channel Owner
                   </span>
-                  <span
-                    v-if="user.id !== chat.channelOwnerId && user.admin === true"
-                    class="text-green-200 text-xs p-1"
-                  >
+                  <span v-if="user.id !== chat.channelOwnerId && user.admin === true" class="text-green-200 text-xs p-1">
                     Admin
                   </span>
-                  <span
-                    v-if="user.id !== chat.channelOwnerId && user.admin !== true && idUser === chat.channelOwnerId"
-                    class="text-green-200 text-xs p-1"
-                  >
-                    <button
-                      class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="goTo('game')"
-                    >Make Admin</button>
+                  <span v-if="user.id !== chat.channelOwnerId && user.admin !== true && idUser === chat.channelOwnerId"
+                    class="text-green-200 text-xs p-1">
+                    <button class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')">Make Admin</button>
                   </span>
-                  <button
-                    class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                    @click="goTo('game')"
-                  >
+                  <button class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                    @click="goTo('game')">
                     Invite to game
                   </button>
 
                   <div v-if="isAdmin && user.id !== idUser && user.id !== chat.channelOwnerId">
-                    <button
-                      class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="goTo('game')"
-                    >
+                    <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')">
                       Ban
                     </button>
-                    <button
-                      class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="goTo('game')"
-                    >
+                    <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')">
                       Mute
                     </button>
-                    <button
-                      class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="goTo('game')"
-                    >
+                    <button class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')">
                       Kick
                     </button>
                   </div>
@@ -138,22 +100,13 @@ interface.
               </ul>
             </div>
             <div class="chat-messages">
-            <!-- CHAT MESSAGES APPEAR HERE -->
+              <!-- CHAT MESSAGES APPEAR HERE -->
             </div>
           </main>
           <div class="chat-form-container">
-            <form
-              id="chat-form"
-              @submit.prevent="chatFormSubmit($event)"
-            >
-              <input
-                id="msg"
-                style="border-radius: 20px"
-                type="text"
-                placeholder="Enter Message"
-                required
-                autocomplete="off"
-              >
+            <form id="chat-form" @submit.prevent="chatFormSubmit($event)">
+              <input id="msg" style="border-radius: 20px" type="text" placeholder="Enter Message" required
+                autocomplete="off">
 
               <div class="px-2">
                 <button class="btn">
@@ -172,11 +125,11 @@ export default {
   data() {
     return {
       // users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}]
-      
+
       chat: {
         id: 1,
         name: 'Awesome Chat',
-        users: [{name: 'Ruben1', pic: '', id: 1, admin: true}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '', id: 3, admin: true}, {name: 'Oswin', pic: '', id: 4, admin: true}, {name: 'Lindsay', pic: '', id: 5, admin: false}],
+        users: [{ name: 'Ruben1', pic: '', id: 1, admin: true }, { name: 'Ruben2', pic: '', id: 2, admin: false }, { name: 'Dagmar', pic: '', id: 3, admin: true }, { name: 'Oswin', pic: '', id: 4, admin: true }, { name: 'Lindsay', pic: '', id: 5, admin: false }],
         type: 'public',
         password: 'getIn',
         channelOwnerId: 1
@@ -187,7 +140,8 @@ export default {
   },
   async created() {
     await getBackend('user/me')
-      .then((res) => { res.json()
+      .then((res) => {
+        res.json()
         .then((data) => {
           this.idUser = data.id;
           console.log(data.id);
@@ -222,25 +176,23 @@ connection.socket.emit('loadRequest', 1);
 
 connection.socket.on('loadRoomUsers', async (users) => {
   console.log('loadRoomUsers: client received users for this room', users);
-  users.forEach(usr => {
-    displayUsers(usr.name);
+  users.forEach(user => {
+    displayUsers(user.name);
   });
 });
 
-connection.socket.on('loadChatHistory', async (data) =>{
+connection.socket.on('loadChatHistory', async (data) => {
   console.log('loadChatHistory: client received chat history for this room');
-  for (const msg of data)
-  {
+  for (const msg of data) {
     var username = await getBackend(`user/id/${msg.authorId}`)
-      .then(async function(res)
-      {
+      .then(async function (res) {
         var data = await res.json();
         return data.name;
       })
       .catch(error => console.log(`loadChatHistory: Couldn't fetch username for userId ${msg.authorId}: ` + error.message));
     // const format_time = `${new Date(msg.timestamp).getHours()}:`+ `00${new Date(msg.timestamp).getMinutes()}`.slice(-2);
     const format_time = new Date(msg.timestamp).toLocaleTimeString('nl-NL');
-    var packet = {username: username, time: format_time, body: msg.body};
+    var packet = { username: username, time: format_time, body: msg.body };
     outputMessages(packet);
   }
 });
@@ -248,12 +200,12 @@ connection.socket.on('loadChatHistory', async (data) =>{
 connection.socket.on('receiveNewMsg', (msg) => {
   msg.username = msg.author.name;
   msg.time = new Date().toLocaleTimeString('nl-NL'),
-  outputMessages(msg);
+    outputMessages(msg);
 });
 // const chatForm = document.getElementById('chat-form');
-async function chatFormSubmit(e){
+async function chatFormSubmit(e) {
   const msg = e.target.elements.msg;
-  const packet = {roomId: 1, body: (msg.value)};  // hardcoded roomid
+  const packet = { roomId: 1, body: (msg.value) };  // hardcoded roomid
   connection.socket.emit('sendMsg', packet);
   msg.value = ''; //clears the message text you just entered
   msg.focus(); //focuses on the text input area again after sending
@@ -263,12 +215,12 @@ function outputMessages(message) {
   const div = document.createElement('div');
   div.classList.add('message');
   div.innerHTML =
-	`<p class="meta">${message.username} <span>${message.time}</span></p>
+    `<p class="meta">${message.username} <span>${message.time}</span></p>
 	<p class="text">
 		${message.body}
 	</p>`;
   const chatMessages = document.querySelector('.chat-messages');
-  if (chatMessages != null){
+  if (chatMessages != null) {
     chatMessages.appendChild(div);
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
