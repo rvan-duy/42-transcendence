@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Put, Request, Response, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Param, Put, Request, Response, UseGuards, HttpStatus, Query } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
@@ -68,8 +68,12 @@ export class UserController {
 
   @UseGuards(JwtAuthGuard)
   @Get('id/:id')
-  async getUserById(@Param('id') id: string, @Response() res: any) {
-    const user = await this.userService.user({ id: Number(id) });
+  async getUserById(@Param('id') id: number, @Response() res: any, @Query('withGames') withGames: boolean = false) {
+    let user
+    if (withGames)
+      user = await this.userService.userWithGames({ id });
+    else
+      user = await this.userService.user({ id });
     
     if (!user) {
       res.status(HttpStatus.NOT_FOUND).send(`User with id ${id} not found`);

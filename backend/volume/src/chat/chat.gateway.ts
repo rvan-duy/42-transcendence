@@ -111,8 +111,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       users: users,
       history: chatHistory,
     });
-    // client.emit('loadRoomUsers', users);
-    // client.emit('loadChatHistory', data);
   }
 
   @SubscribeMessage('deleteMsg')
@@ -150,7 +148,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // client verification
     const userId = await this.gate.getUserBySocket(client);
 
-    // is the sender is not the chat owner leave it intact adn return and error
+    // is the sender is not the chat owner leave it intact and return and error
     if (await this.chatService.isOwner(roomId, userId) === false)
       return ;  // add error return later
 
