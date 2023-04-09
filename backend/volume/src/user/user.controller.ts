@@ -69,7 +69,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Get('id/:id')
   async getUserById(@Param('id') id: number, @Response() res: any, @Query('withGames') withGames: boolean = false) {
-    let user
+    let user;
     if (withGames)
       user = await this.userService.userWithGames({ id: Number(id) });
     else
