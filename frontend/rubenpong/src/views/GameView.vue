@@ -4,7 +4,7 @@
 <template>
   <div class="item">
     <div style="text-align: center">
-      <div v-if="!gameModeSelected">
+      <div v-if="!inQueue && !inGame">
         <h1 class="text-4xl p-16">
           Wanna Match? ;)
         </h1>
@@ -79,9 +79,8 @@ export default {
     return {
       selectGameMode: false,
       gameMode : GameMode.UNMATCHED,
-      gameModeSelected: false,
       inQueue: false,
-      matched: false,
+      inGame: false,
       powerUp: '',
       frame: 0,
       userId : -1,
@@ -121,26 +120,24 @@ export default {
     });
     
     // ask the server to check if the user is already in a game or not
-    this.socket.emit('CheckPlayerStatus', this.userId);
+    this.socket.emit('CheckGameStatus', this.userId);
     
     // retrieve if the user is already in a game or not
     this.socket.on('GameStatus', (data) => {
       if (data.alreadyInGame === true) {
-        this.gameModeSelected = true;
         this.namePlayer1 = data.namePlayer1;
         this.namePlayer2 = data.namePlayer2;
-        this.matched = true;
+        this.inGame = true;
+        this.inQueue = false;
         this.gameId = data.gameId;
         this.gameMode = data.gameMode;
         this.listenToGame(ctx, canvas);
       }
       else {
         this.inQueue = false;
-        this.matched = false;
+        this.inGame = false;
         this.gameMode = GameMode.UNMATCHED;
       }
-
-      // check if the user is already inside of a queue
     });
 
     // once a game is created with the user inside start listening to the game
@@ -149,7 +146,8 @@ export default {
         this.namePlayer1 = data.namePlayer1;
         this.namePlayer2 = data.namePlayer2;
         this.gameId = data.gameId;
-        this.matched = true;
+        this.inGame = true;
+        this.inQueue = false;
         this.listenToGame(ctx, canvas);
       }
     });
@@ -163,6 +161,8 @@ export default {
   unmounted() {
     document.removeEventListener('keydown', this.keyDownEvent);
     document.removeEventListener('keyup', this.keyUpEvent);
+    if (this.inQueue)
+      this.socket.emit('ChangeGameTab', this.userId);
   },
   methods: {
     listenToGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
@@ -187,13 +187,14 @@ export default {
 
       // Listen to the game ending and the winner of that match
       this.socket.on(`Winner_${this.gameId}`, (winningUser: string) => {
-        this.matched = false;
+        this.inGame = false;
         this.drawEndScreen(ctx, canvas, winningUser);
+        this.socket.off(`GameState_${this.gameId}`);
       });
     },
 
     keyDownEvent(e: KeyboardEvent) {
-      if (this.userId === -1 || this.matched === false) {
+      if (this.userId === -1 || this.inGame === false) {
         return;
       }
 
@@ -221,7 +222,7 @@ export default {
     },
 
     keyUpEvent(e: KeyboardEvent) {
-      if (this.userId === -1 || this.matched === false)
+      if (this.userId === -1 || this.inGame === false)
         return;
 
       const payload = {userId: this.userId, gameId: this.gameId};
@@ -249,7 +250,7 @@ export default {
 
     queueForGame(gameMode: string) {
       this.gameMode = gameMode as GameMode;
-      this.gameModeSelected = true;
+      this.inQueue = true;
 
       // Send the server a request to be queued in the given game-mode's queue
       const packet = {gameMode: this.gameMode, userId: this.userId};

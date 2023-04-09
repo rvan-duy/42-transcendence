@@ -255,7 +255,7 @@ export class GameService {
   }
 
   checkIfPlaying(userId: number, client: Socket) {
-    for (let index = 0; index < this.games.length; index++) { // also check if the player is already in a queue for a game
+    for (let index = 0; index < this.games.length; index++) {
       const game = this.games[index];
 
       for (let index = 0; index < game.players.length; index++) {

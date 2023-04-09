@@ -72,7 +72,7 @@ export class MatchmakingService {
     this.checkAndMatchPlayers(this.queueFiesta, GameMode.FIESTA);
   }
 
-  inviteToPrivateGame(creatorId: number, guestId: number) {
+  sendInvite(creatorId: number, guestId: number) {
     // some logic stuff & things
     console.log(`Inviting ${guestId} to a game with ${creatorId}`);
   }

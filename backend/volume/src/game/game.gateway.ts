@@ -3,6 +3,7 @@ import { SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection,
 import { Socket, Server } from 'socket.io';
 import { GameService } from './game.service';
 import { MatchmakingService } from './matchmaking.service';
+import { GameMode } from './game.definitions';
 
 enum PaddleInput {
   UP = 'KeyUp',
@@ -44,9 +45,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log(`Client disconnected inside game gateway: ${client.id}`);
   }
 
-  @SubscribeMessage('CheckPlayerStatus')
-  checkPlayerStatus(client: Socket, userId: number) {
+  @SubscribeMessage('CheckGameStatus')
+  checkGameStatus(client: Socket, userId: number) {
     this.gameService.checkIfPlaying(userId, client);
+  }
+
+  @SubscribeMessage('ChangeGameTab')
+  userChangedTabs(client: Socket, userId: number) {
+    this.matchmakingService.removePlayerFromQueue(userId);
   }
 
   @SubscribeMessage('QueueForGame')
