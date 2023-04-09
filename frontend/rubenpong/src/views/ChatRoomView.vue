@@ -55,51 +55,47 @@ interface.
             <div class="chat-sidebar">
               <h3><i class="fas fa-users" /> Users</h3>
               <ul id="users">
-                <!-- oswin testing for linter -->
-                <div v-if="isLoaded">
-                  <li v-for="user in users" :key="user.id" :value="user">
-                    <!-- <li v-for="user in chat.users"> -->
-                    <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
-                      <img src="../assets/dagmar.jpeg" width="30" height="30"
-                        style="border-radius: 50%; vertical-align: center; float: left;">
-                      <span class="text-white text-xs p-1">
-                        {{ user.name }}
-                      </span>
+                <li v-for="user in users" :key="user.id" :value="user">
+                  <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
+                    <img src="../assets/dagmar.jpeg" width="30" height="30"
+                      style="border-radius: 50%; vertical-align: center; float: left;">
+                    <span class="text-white text-xs p-1">
+                      {{ user.name }}
                     </span>
+                  </span>
 
-                    <span v-if="user.id === chat?.ownerId" class="text-green-800 text-xs p-1 font-bold">
-                      Channel Owner
-                    </span>
-                    <span v-if="user.id !== chat?.ownerId && user.admin === true" class="text-green-200 text-xs p-1">
-                      Admin
-                    </span>
-                    <span v-if="user.id !== chat?.ownerId && user.admin !== true && idUser === chat?.ownerId"
-                      class="text-green-200 text-xs p-1">
-                      <button class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                        @click="goTo('game')">Make Admin</button>
-                    </span>
-                    <button class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                  <span v-if="user.id === chat?.ownerId" class="text-green-800 text-xs p-1 font-bold">
+                    Channel Owner
+                  </span>
+                  <span v-if="user.id !== chat?.ownerId && user.admin === true" class="text-green-200 text-xs p-1">
+                    Admin
+                  </span>
+                  <span v-if="user.id !== chat?.ownerId && user.admin !== true && idUser === chat?.ownerId"
+                    class="text-green-200 text-xs p-1">
+                    <button class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')">Make Admin</button>
+                  </span>
+                  <button class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                    @click="goTo('game')">
+                    Invite to game
+                  </button>
+
+                  <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
+                  <div v-if="isAdmin && user.id !== idUser && user.id !== chat?.ownerId">
+                    <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
                       @click="goTo('game')">
-                      Invite to game
+                      Ban
                     </button>
-
-                    <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
-                    <div v-if="isAdmin && user.id !== idUser && user.id !== chat?.ownerId">
-                      <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
-                        @click="goTo('game')">
-                        Ban
-                      </button>
-                      <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
-                        @click="goTo('game')">
-                        Mute
-                      </button>
-                      <button class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
-                        @click="goTo('game')">
-                        Kick
-                      </button>
-                    </div>
-                  </li>
-                </div>
+                    <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')">
+                      Mute
+                    </button>
+                    <button class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')">
+                      Kick
+                    </button>
+                  </div>
+                </li>
               </ul>
             </div>
             <div class="chat-messages">
@@ -134,25 +130,24 @@ interface Chat {
   lastId: number;
 }
 
-let chat: Chat | null = null;
-let users: any = [];
-var isLoaded = false;
+interface User {
+  id: number;
+  name: string;
+
+}
+
+// let chat: Chat | null = null;
+// let users: any = [];
 
 const connection = SocketioService;
 connection.setupSocketConnection('/chat');
 
-connection.socket.on('loadChatBase', async (room: any) => {
-  console.log('loadRoom: ', room);
-  users = room.users;
-  chat = room.chat;
-  isLoaded = true;
-  const history = room.history;
-  putHistory(history);
-});
 
 export default {
   data() {
     return {
+      chat: null as Chat | null,
+      users: [] as User[],
       idUser: null,
       isAdmin: false
     };
@@ -169,6 +164,13 @@ export default {
 
           });
       });
+    connection.socket.on('loadChatBase', async (room: any) => {
+      console.log('loadRoom: ', room);
+      this.users = room.users;
+      this.chat = room.chat;
+      const history = room.history;
+      putHistory(history);
+    });
   },
   methods: {
     goTo(route: string) {
