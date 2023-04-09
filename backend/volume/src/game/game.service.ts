@@ -24,8 +24,8 @@ export class GameData {
   ball: Ball;
   server: Server;
 
-  emit(message: string, payload: any) {
-    this.server.emit(`${message}_${this.gameID}`, payload);
+  emit(path: string, payload: any) {
+    this.server.emit(`${path}_${this.gameID}`, payload);
   }
 }
 
@@ -134,10 +134,9 @@ export class GameService {
 
     if (game.score[scoringPlayer] === game.pointsToWin ) {
       const winningPlayer: Player = game.players[scoringPlayer];
-      const winningUser: User = await this.prismaUserService.user({ id: Number(winningPlayer.userId) });
 
       game.isFinished = true;
-      game.emit('Winner', winningUser.name);
+      game.emit('Winner', winningPlayer.name);
     }
     ball.x = MapSize.WIDTH / 2;
     ball.y = MapSize.HEIGHT / 2;
@@ -148,19 +147,23 @@ export class GameService {
       game.powerUp.resetPowerUpState(game, false);
   }
 
-  createGame(player1: number, player2: number, mode: GameMode) {
+  async createGame(player1: number, player2: number, mode: GameMode) {
     const newGame = new GameData;
+	const dataPlayer1: User = await this.prismaUserService.user({ id: player1 });
+	const dataPlayer2: User = await this.prismaUserService.user({ id: player2 });
                                                                                      
     newGame.gameID = this.gamesPlayed;
-    newGame.players.push(new Player(player1, PlayerDefinitions.PLAYER1));
-    newGame.players.push(new Player(player2, PlayerDefinitions.PLAYER2));
+    newGame.players.push(new Player(dataPlayer1, PlayerDefinitions.PLAYER1));
+    newGame.players.push(new Player(dataPlayer2, PlayerDefinitions.PLAYER2));
     newGame.ball = new Ball();
     newGame.powerUp = new PowerUp();
     newGame.mode = mode;
     newGame.server = this.server;
     this.games.push(newGame);
     this.gamesPlayed++;
-    this.server.emit('GameCreated', {gameId: newGame.gameID, player1: player1, player2: player2});
+    this.server.emit('GameCreated', {gameId: newGame.gameID,
+									player1: player1, namePlayer1: dataPlayer1.name,
+									player2: player2, namePlayer2: dataPlayer2.name});
   }
 
   logGames() {
@@ -260,13 +263,15 @@ export class GameService {
 
         // sends the user the gameId and game-mode back
         if (player.userId === userId) {
-          client.emit('GameStatus', {alreadyInGame: true, gameId: game.gameID, gameMode: game.mode});
+          client.emit('GameStatus', {alreadyInGame: true, gameId: game.gameID, gameMode: game.mode,
+									namePlayer1: game.players[0].name, namePlayer2: game.players[1].name});
           return ;
         }
       }
     }
     // user isn't found in a game so they can try to queue for one
-    client.emit('GameStatus', {alreadyInGame: false, gameId: -1, gameMode: GameMode.UNMATCHED});
+    client.emit('GameStatus', {alreadyInGame: false, gameId: -1, gameMode: GameMode.UNMATCHED,
+								namePlayer1: '', namePlayer2: ''});
   }
 
   private getGameByGameId(gameId: number) {

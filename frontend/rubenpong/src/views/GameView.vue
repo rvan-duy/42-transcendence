@@ -80,6 +80,7 @@ export default {
       selectGameMode: false,
       gameMode : GameMode.UNMATCHED,
       gameModeSelected: false,
+      inQueue: false,
       matched: false,
       powerUp: '',
       frame: 0,
@@ -90,6 +91,8 @@ export default {
       arrowLeft: false,
       arrowRight: false,
       socket: io(`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/game`),
+      namePlayer1: '',
+      namePlayer2: '',
     };
   },
   async created () {
@@ -124,12 +127,16 @@ export default {
     this.socket.on('GameStatus', (data) => {
       if (data.alreadyInGame === true) {
         this.gameModeSelected = true;
+        this.namePlayer1 = data.namePlayer1;
+        this.namePlayer2 = data.namePlayer2;
         this.matched = true;
         this.gameId = data.gameId;
         this.gameMode = data.gameMode;
         this.listenToGame(ctx, canvas);
       }
       else {
+        this.inQueue = false;
+        this.matched = false;
         this.gameMode = GameMode.UNMATCHED;
       }
 
@@ -139,7 +146,8 @@ export default {
     // once a game is created with the user inside start listening to the game
     this.socket.on('GameCreated', (data: any) => {
       if (data.player1 === this.userId || data.player2 === this.userId) {
-        console.log('Created a game! starting to listen to it now!');
+        this.namePlayer1 = data.namePlayer1;
+        this.namePlayer2 = data.namePlayer2;
         this.gameId = data.gameId;
         this.matched = true;
         this.listenToGame(ctx, canvas);
@@ -277,7 +285,7 @@ export default {
       // draw text player 1
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
-      ctx.fillText('Player 1', canvas.width / 4 - 100, canvas.height / 8);
+      ctx.fillText(this.namePlayer1, canvas.width / 4 - 100, canvas.height / 8);
 
       // draw text score player 1
       ctx.fillStyle = 'white';
@@ -287,7 +295,7 @@ export default {
       // draw text player 2
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
-      ctx.fillText('Player 2', canvas.width / 4 * 3 - 100, canvas.height / 8);
+      ctx.fillText(this.namePlayer2, canvas.width / 4 * 3 - 100, canvas.height / 8);
 
       // draw text score player 2
       ctx.fillStyle = 'white';

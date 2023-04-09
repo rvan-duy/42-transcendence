@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { GameService } from './game.service';
 import { GameMode } from './game.definitions';
 
+enum  Debug {
+  ENABLED = 1,
+}
+
 @Injectable()
 export class MatchmakingService {
   constructor (private gameService: GameService) {
@@ -46,6 +50,11 @@ export class MatchmakingService {
   }
 
   private checkAndMatchPlayers(arr: number[], mode: GameMode) {
+	  if (Debug.ENABLED && arr.length === 1) { // make sure to seed before
+      this.gameService.createGame(arr.pop(), 2, mode);
+      return ;
+    }
+
     if (arr.length < 2)
       return;
 
@@ -61,5 +70,9 @@ export class MatchmakingService {
     this.checkAndMatchPlayers(this.queueFreeMove, GameMode.FREEMOVE);
     this.checkAndMatchPlayers(this.queuePowerUp, GameMode.POWERUP);
     this.checkAndMatchPlayers(this.queueFiesta, GameMode.FIESTA);
+  }
+
+  inviteToPrivateGame(creatorId: number, guestId: number) {
+	// some logic stuff & things
   }
 }

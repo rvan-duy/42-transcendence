@@ -1,10 +1,12 @@
+import { User } from '@prisma/client';
 import { DefaultElementSize, MapSize, PaddleInput, PlayerDefinitions } from './game.definitions';
 import { Paddle } from './game.paddle';
 
 export class Player {
-  constructor(id: number, side: PlayerDefinitions) {
+  constructor(playerData: User, side: PlayerDefinitions) {
     this.paddle = new Paddle;
-    this.userId = id;
+    this.userId = playerData.id;
+	this.name = playerData.name;
     if (side === PlayerDefinitions.PLAYER1) {
       this.paddle.x = 0;
       this.paddle.y = MapSize.HEIGHT / 2 - DefaultElementSize.PADDLEHEIGHT / 2;
@@ -16,6 +18,7 @@ export class Player {
   }
 
   userId: number;
+  name: string;
   paddle: Paddle;
   moveUp: boolean = false;
   moveDown: boolean = false;
