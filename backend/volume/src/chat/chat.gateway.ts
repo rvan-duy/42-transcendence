@@ -42,7 +42,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
   async handleConnection(client: Socket) {
     if (client.handshake.auth.token === '')
-    return;
+      return;
     const user = await this.jwtService.verify(
       client.handshake.auth.token, { secret: process.env.JWT_SECRET }
       );
