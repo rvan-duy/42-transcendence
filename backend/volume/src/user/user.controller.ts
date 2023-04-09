@@ -71,9 +71,9 @@ export class UserController {
   async getUserById(@Param('id') id: number, @Response() res: any, @Query('withGames') withGames: boolean = false) {
     let user
     if (withGames)
-      user = await this.userService.userWithGames({ id });
+      user = await this.userService.userWithGames({ id: Number(id) });
     else
-      user = await this.userService.user({ id });
+      user = await this.userService.user({ id: Number(id) });
     
     if (!user) {
       res.status(HttpStatus.NOT_FOUND).send(`User with id ${id} not found`);

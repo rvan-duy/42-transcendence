@@ -140,7 +140,6 @@ var isLoaded = false;
 
 const connection = SocketioService;
 connection.setupSocketConnection('/chat');
-connection.socket.emit('loadRequest', 1);
 
 connection.socket.on('loadChatBase', async (room: any) => {
   console.log('loadRoom: ', room);
@@ -159,6 +158,7 @@ export default {
     };
   },
   async created() {
+    connection.socket.emit('loadRequest', 1);
     await getBackend('user/me')
       .then((res) => {
         res.json()
