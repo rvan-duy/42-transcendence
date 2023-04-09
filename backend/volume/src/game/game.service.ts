@@ -137,7 +137,7 @@ export class GameService {
 
       game.isFinished = true;
       game.emit('Winner', winningPlayer.name);
-	    this.storeGameInfo(game);
+      this.storeGameInfo(game);
     }
     ball.x = MapSize.WIDTH / 2;
     ball.y = MapSize.HEIGHT / 2;
@@ -150,8 +150,8 @@ export class GameService {
 
   async createGame(player1: number, player2: number, mode: GameMode) {
     const newGame = new GameData;
-	const dataPlayer1: User = await this.prismaUserService.user({ id: player1 });
-	const dataPlayer2: User = await this.prismaUserService.user({ id: player2 });
+    const dataPlayer1: User = await this.prismaUserService.user({ id: player1 });
+    const dataPlayer2: User = await this.prismaUserService.user({ id: player2 });
                                                                                      
     newGame.gameID = this.gamesPlayed;
     newGame.players.push(new Player(dataPlayer1, PlayerDefinitions.PLAYER1));
@@ -163,8 +163,8 @@ export class GameService {
     this.games.push(newGame);
     this.gamesPlayed++;
     this.server.emit('GameCreated', {gameId: newGame.gameID,
-									player1: player1, namePlayer1: dataPlayer1.name,
-									player2: player2, namePlayer2: dataPlayer2.name});
+      player1: player1, namePlayer1: dataPlayer1.name,
+      player2: player2, namePlayer2: dataPlayer2.name});
   }
 
   logGames() {
@@ -264,14 +264,14 @@ export class GameService {
         // sends the user the gameId and game-mode back
         if (player.userId === userId) {
           client.emit('GameStatus', {alreadyInGame: true, gameId: game.gameID, gameMode: game.mode,
-									namePlayer1: game.players[0].name, namePlayer2: game.players[1].name});
+            namePlayer1: game.players[0].name, namePlayer2: game.players[1].name});
           return ;
         }
       }
     }
     // user isn't found in a game so they can try to queue for one
     client.emit('GameStatus', {alreadyInGame: false, gameId: -1, gameMode: GameMode.UNMATCHED,
-								namePlayer1: '', namePlayer2: ''});
+      namePlayer1: '', namePlayer2: ''});
   }
 
   private getGameByGameId(gameId: number) {

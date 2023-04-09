@@ -167,7 +167,7 @@ export class PowerUp {
     this.powerUpEnabled = false;
     this.powerUpOnField = false;
     this.hitsSinceLastPowerUp = 0;
-	this.timeSinceLastReset = new Date().getTime();
+    this.timeSinceLastReset = new Date().getTime();
     game.powerUpOnField = false;
     game.ball.radius = DefaultElementSize.BALLRADIUS;
     game.players[PlayerDefinitions.PLAYER1].paddle.acceleration = 1;

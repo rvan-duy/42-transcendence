@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { GameService } from './game.service';
 import { GameMode } from './game.definitions';
 
-enum  Debug {
-  ENABLED = 1,
+enum Debug {
+  ENABLED = 0,
 }
 
 @Injectable()
@@ -50,7 +50,7 @@ export class MatchmakingService {
   }
 
   private checkAndMatchPlayers(arr: number[], mode: GameMode) {
-	  if (Debug.ENABLED && arr.length === 1) { // make sure to seed before
+    if (Debug.ENABLED && arr.length === 1) { // make sure to seed before
       this.gameService.createGame(arr.pop(), 2, mode);
       return ;
     }
@@ -73,6 +73,12 @@ export class MatchmakingService {
   }
 
   inviteToPrivateGame(creatorId: number, guestId: number) {
-	// some logic stuff & things
+    // some logic stuff & things
+    console.log(`Inviting ${guestId} to a game with ${creatorId}`);
   }
+
+  acceptInvite(guestId: number) {
+    console.log(`${guestId} accepted a game invite`);
+  }
+
 }

@@ -6,7 +6,7 @@ export class Player {
   constructor(playerData: User, side: PlayerDefinitions) {
     this.paddle = new Paddle;
     this.userId = playerData.id;
-	this.name = playerData.name;
+    this.name = playerData.name;
     if (side === PlayerDefinitions.PLAYER1) {
       this.paddle.x = 0;
       this.paddle.y = MapSize.HEIGHT / 2 - DefaultElementSize.PADDLEHEIGHT / 2;
