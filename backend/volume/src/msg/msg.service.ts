@@ -14,7 +14,7 @@ export class MsgService {
   constructor(private prismaMsg: PrismaMsgService) {}
 
   async handleIncomingMsg(dataInDto: MsgDto) {
-    this.prismaMsg.createMsgWithIds(dataInDto);
+    return this.prismaMsg.createMsgWithIds(dataInDto);
   }
 
   async handleDeleteMsg(data: MsgDto) {
@@ -31,6 +31,14 @@ export class MsgService {
         }
       },
     );
+  }
+
+  async verifyAuthor(roomId: number, msgId: number, authorId: number) {
+    const msg = await this.prismaMsg.Msg({roomId_id: {
+      id: msgId,
+      roomId: roomId,
+    }});
+    return msg.authorId === authorId;
   }
 
   async getChatHistory(roomId: number): Promise<MsgDto[]> {

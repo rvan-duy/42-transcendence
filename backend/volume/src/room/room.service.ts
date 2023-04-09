@@ -1,6 +1,6 @@
 import { PrismaRoomService } from './prisma/prismaRoom.service';
 import { Injectable } from '@nestjs/common';
-import { Access } from '@prisma/client';
+import { Access, Status } from '@prisma/client';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
 
 export interface roomDto {
@@ -18,10 +18,12 @@ export class RoomService {
 
   //  creates a new chatroom
   async createChat(roomData: roomDto) {
+    console.log(`Trying to create room from DTO: ${roomData}`);
     this.prismaRoom.createRoom(roomData);
   }
 
   // adds user to the chatroom
+  // need to add uban to this too? FUTURE feature
   async addToChat(userId: number, roomId: number) {
     this.prismaRoom.updateRoom({
       where: {
@@ -35,6 +37,12 @@ export class RoomService {
         }
       }
     });
+  }
+
+  // fetches all users of this chatroom
+  async getRoomUsers(roomId: number){
+    const roomAndUsers = await this.prismaRoom.RoomWithUsers({id: roomId});
+    return(roomAndUsers.users);
   }
 
   async removeChat(roomId: number) {
@@ -54,6 +62,14 @@ export class RoomService {
         }
       }
     });
+  }
+
+  async getPublicRooms() {
+    return (this.prismaRoom.Rooms({
+      where: {
+        access: Access.PUBLIC,
+      }
+    }));
   }
 
   async removeAdmin(roomId: number, userId: number) {
@@ -77,9 +93,10 @@ export class RoomService {
         id: roomId,
       },
       data: {
-        banned: {
+        banMute: {
           create: {
             userId: userId,
+            status: Status.BANNED,
             timestamp: new Date(Date.now() + 45000), // 45sec
           }
         }
@@ -87,20 +104,21 @@ export class RoomService {
     });
   }
 
-  // async muteUser(roomId: number, userId: number) {
-  //   this.prismaRoom.updateRoom({
-  //     where: {
-  //       id: roomId,
-  //     },
-  //     data: {
-  //       muted: {
-  //         create: {
-  //           userId: userId,
-  //           timestamp: new Date(Date.now() + 45000), // 45sec
-  //         }
-  //       }
-  //     }
-  //   })
-  // }
+  async muteUser(roomId: number, userId: number) {
+    this.prismaRoom.updateRoom({
+      where: {
+        id: roomId,
+      },
+      data: {
+        banMute: {
+          create: {
+            userId: userId,
+            status: Status.MUTED,
+            timestamp: new Date(Date.now() + 45000), // 45sec
+          }
+        }
+      }
+    });
+  }
 
 }

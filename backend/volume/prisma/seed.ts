@@ -57,9 +57,12 @@ async function main() {
         }
       },
       users: {
-        connect: {
+        connect: [{
           id: 1,
-        }
+        },
+        {
+          id: 2,
+        }]
       },
     },
 

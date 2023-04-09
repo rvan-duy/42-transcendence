@@ -7,30 +7,38 @@ import { getBackend } from '@/utils/backend-requests';
 <script lang="ts">
 const connection = SocketioService;
 
-var username;
-var id;
-var intraId;
+// var username;
+// var id;
+// var intraId;
 
-async function getUserInfo(){
-  if (typeof username !== 'undefined' & typeof id !== 'undefined' & typeof intraId !== 'undefined'){
-    console.log('getUserInfo: User info already fetched');
-    return {username, id, intraId};
-  }
-  else{
-    console.log('getUserInfo: Fetching user info');
-    await getBackend('user/me')
-      .then((response => response.json()))
-      .then((data) => {
-        username = data.name;
-        id = data.id;
-        intraId = data.intraId;
-      }).catch(error => console.log('getUserInfo: Failed to fetch user : ' + error.message));
-  }
-  return {username, id, intraId};
-}
+// async function getUserInfo(){
+//   if (typeof username !== 'undefined' & typeof id !== 'undefined' & typeof intraId !== 'undefined'){
+//     console.log('getUserInfo: User info already fetched');
+//     return {username, id, intraId};
+//   }
+//   else{
+//     console.log('getUserInfo: Fetching user info');
+//     await getBackend('user/me')
+//       .then((response => response.json()))
+//       .then((data) => {
+//         username = data.name;
+//         id = data.id;
+//         intraId = data.intraId;
+//       }).catch(error => console.log('getUserInfo: Failed to fetch user : ' + error.message));
+//   }
+//   return {username, id, intraId};
+// }
 
 connection.setupSocketConnection('/chat');
 connection.socket.emit('loadRequest', 1);
+
+connection.socket.on('loadRoomUsers', async (users) => {
+  console.log('loadRoomUsers: client received users for this room', users);
+  users.forEach(usr => {
+    displayUsers(usr.name);
+  });
+});
+
 connection.socket.on('loadChatHistory', async (data) =>{
   console.log('loadChatHistory: client received chat history for this room');
   for (const msg of data)
@@ -48,22 +56,23 @@ connection.socket.on('loadChatHistory', async (data) =>{
     outputMessages(packet);
   }
 });
+
 connection.socket.on('receiveNewMsg', (msg) => {
-  outputMessages(formatMessage(msg));
+  msg.username = msg.author.name;
+  msg.time = new Date().toLocaleTimeString('nl-NL'),
+  outputMessages(msg);
 });
 
 async function chatFormSubmit(e){
   const msg = e.target.elements.msg;
-  const info_bundle = await getUserInfo();
-  const packet = {id: info_bundle.id, username: info_bundle.username, msg: (msg.value)};
+  const packet = {roomId: 1, body: (msg.value)};  // hardcoded roomid
   connection.socket.emit('sendMsg', packet);
   msg.value = ''; //clears the message text you just entered
   msg.focus(); //focuses on the text input area again after sending
 }
 
 // Displays the messages that the frontend receives from the server.
-function outputMessages(message)
-{
+function outputMessages(message) {
   const div = document.createElement('div');
   div.classList.add('message');
   div.innerHTML =
@@ -72,17 +81,18 @@ function outputMessages(message)
 		${message.body}
 	</p>`;
   const chatMessages = document.querySelector('.chat-messages');
-  chatMessages.appendChild(div);
-  chatMessages.scrollTop = chatMessages.scrollHeight;
+  if (chatMessages != null){
+    chatMessages.appendChild(div);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
 }
 
-function formatMessage(packet)
-{
-  return {
-    username: packet.username,
-    body: packet.msg,
-    time: new Date().toLocaleTimeString('nl-NL'),
-  };
+function displayUsers(username) {
+  const list_item = document.createElement('li');
+  list_item.innerHTML = `${username}`;
+  const usersList = document.querySelector('.users');
+  if (usersList != null)
+    usersList.appendChild(list_item);
 }
 
 </script>
@@ -93,7 +103,7 @@ function formatMessage(packet)
     <body>
       <div class="chat-container p-8">
         <header class="chat-header">
-          <h1><i class="fas fa-smile" /> ChatCord</h1>
+          <h1><i class="fas fa-smile" /> RubenSpeak</h1>
           <a
             href="/chat"
             class="btn"
@@ -106,12 +116,8 @@ function formatMessage(packet)
               Room 1
             </h2>
             <h3><i class="fas fa-users" /> Users</h3>
-            <ul id="users">
-              <li>Ruben 1</li>
-              <li>Ruben 2</li>
-              <li>Lindsay</li>
-              <li>Oswin</li>
-              <li>Dagmar</li>
+            <ul class="users">
+              <!-- USERS APPEAR HERE -->
             </ul>
           </div>
           <div class="chat-messages">
