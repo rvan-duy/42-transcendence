@@ -107,10 +107,10 @@ export default {
         userId = -1;
         console.log(e);
       });
+
     this.userId = userId;
     console.log(`received userId: ${this.userId}`);
-  },
-  mounted() {
+
     var canvas: HTMLCanvasElement = document.getElementById('pixels') as HTMLCanvasElement;
     var ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
     this.socket.on('connect_error', (err) => {
@@ -132,13 +132,9 @@ export default {
       else {
         this.gameMode = GameMode.UNMATCHED;
       }
+
+      // check if the user is already inside of a queue
     });
-
-    // set the functions for the movement handling
-    document.addEventListener('keydown', this.keyDownEvent);
-    document.addEventListener('keyup', this.keyUpEvent);
-
-    // this.waitForGameModeSelection();
 
     // once a game is created with the user inside start listening to the game
     this.socket.on('GameCreated', (data: any) => {
@@ -150,6 +146,15 @@ export default {
       }
     });
 
+  },
+  mounted() {
+    // set the functions for the movement handling
+    document.addEventListener('keydown', this.keyDownEvent);
+    document.addEventListener('keyup', this.keyUpEvent);
+  },
+  unmounted() {
+    document.removeEventListener('keydown', this.keyDownEvent);
+    document.removeEventListener('keyup', this.keyUpEvent);
   },
   methods: {
     listenToGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
