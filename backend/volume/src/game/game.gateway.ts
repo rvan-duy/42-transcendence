@@ -3,7 +3,6 @@ import { SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection,
 import { Socket, Server } from 'socket.io';
 import { GameService } from './game.service';
 import { MatchmakingService } from './matchmaking.service';
-import { GameMode } from './game.definitions';
 
 enum PaddleInput {
   UP = 'KeyUp',
