@@ -137,6 +137,7 @@ export class GameService {
 
       game.isFinished = true;
       game.emit('Winner', winningPlayer.name);
+	    this.storeGameInfo(game);
     }
     ball.x = MapSize.WIDTH / 2;
     ball.y = MapSize.HEIGHT / 2;
@@ -173,7 +174,6 @@ export class GameService {
   private removeFinishedGames() {
     for (let index = 0; index < this.games.length; index++) {
       if (this.games[index].isFinished) {
-        this.storeGameInfo(this.games[index]);
         console.log(`removing game ${this.games[index].gameID}`);
         this.games.splice(index, 1);
         index--; // is this necessary ??
