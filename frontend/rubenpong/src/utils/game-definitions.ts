@@ -9,6 +9,14 @@ export enum DefaultElementSize {
   BALLRADIUS = 20,
 }
 
+export enum GameMode {
+  NORMAL = 'Normal',
+  FREEMOVE = 'FreeMove',
+  POWERUP = 'PowerUp',
+  FIESTA = 'Fiesta',
+  UNMATCHED = 'UnMatched',
+  }
+
 export class CurrentGameState {
   score:number[] = [0, 0];
   leftPaddleCoords: number[] = [0, MapSize.HEIGHT / 2];

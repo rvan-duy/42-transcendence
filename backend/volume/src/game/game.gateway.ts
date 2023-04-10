@@ -44,46 +44,49 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log(`Client disconnected inside game gateway: ${client.id}`);
   }
 
+  @SubscribeMessage('CheckGameStatus')
+  checkGameStatus(client: Socket, userId: number) {
+    this.gameService.checkIfPlaying(userId, client);
+  }
+
+  @SubscribeMessage('ChangeGameTab')
+  userChangedTabs(client: Socket, userId: number) {
+    this.matchmakingService.removePlayerFromQueue(userId);
+  }
+
   @SubscribeMessage('QueueForGame')
   handleMessage(client: Socket, payload: any) {
     console.log(`player: ${payload.userId} is queuing for gamemode: ${payload.gameMode}`);
     this.matchmakingService.addPlayerToQueue(payload.gameMode, payload.userId);
-    client = null; // linter
+    // client = null; // linter
     // console.warn(`client ${client} unused`);
   }
 
-  //   @SubscribeMessage('pos')
-  //   handlePos(client:any, payload: any) {
-  //     // console.log("yes");
-  //     this.server.emit('pos', this.currGameState);
-  //     console.warn(`client ${client} and payload ${payload} unused`);
-  //   }
-
   @SubscribeMessage('ArrowDown')
   handleKeyDown(client: any, payload: any) {
-    this.gameService.UpdatePlayerInput(payload.userId, PaddleInput.DOWN); // input validation / auth
-    client = null; // linter
+    this.gameService.UpdatePlayerInput(payload.userId, payload.gameId, PaddleInput.DOWN); // input validation / auth
+    // client = null; // linter
     // console.warn(`client ${client} unused`);
   }
 
 @SubscribeMessage('ArrowUp')
   handleKeyUp(client: any, payload: any) {
-    this.gameService.UpdatePlayerInput(payload.userId, PaddleInput.UP); // input validation / auth
-    client = null; // linter
+    this.gameService.UpdatePlayerInput(payload.userId, payload.gameId, PaddleInput.UP); // input validation / auth
+    // client = null; // linter
     // console.warn(`client ${client} unused`);
   }
 
 @SubscribeMessage('ArrowLeft')
 handleKeyLeft(client: any, payload: any) {
-  client = null; // linter
-  this.gameService.UpdatePlayerInput(payload.userId, PaddleInput.LEFT); // input validation / auth
+//   client = null; // linter
+  this.gameService.UpdatePlayerInput(payload.userId, payload.gameId, PaddleInput.LEFT); // input validation / auth
   // console.warn(`client ${client} unused`);
 }
 
 @SubscribeMessage('ArrowRight')
 handleKeyRight(client: any, payload: any) {
-  this.gameService.UpdatePlayerInput(payload.userId, PaddleInput.RIGHT); // input validation / auth
-  client = null; // linter
+  this.gameService.UpdatePlayerInput(payload.userId, payload.gameId, PaddleInput.RIGHT); // input validation / auth
+//   client = null; // linter
   // console.warn(`client ${client} unused`);
 }
 }

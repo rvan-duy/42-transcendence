@@ -7,6 +7,7 @@ import { User } from '@prisma/client';
 import { Player } from './game.player';
 import { Ball } from './game.ball';
 import { PowerUp } from './game.powerup';
+import { Socket } from 'socket.io';
 
 export class GameData {
   gameID: number;
@@ -21,6 +22,11 @@ export class GameData {
   powerUpOnField: Boolean = false;
   powerUp: PowerUp;
   ball: Ball;
+  server: Server;
+
+  emit(path: string, payload: any) {
+    this.server.emit(`${path}_${this.gameID}`, payload);
+  }
 }
 
 export class CurrentGameState {
@@ -128,10 +134,10 @@ export class GameService {
 
     if (game.score[scoringPlayer] === game.pointsToWin ) {
       const winningPlayer: Player = game.players[scoringPlayer];
-      const winningUser: User = await this.prismaUserService.user({ id: Number(winningPlayer.userId) });
 
       game.isFinished = true;
-      this.server.emit('winner', winningUser.name);
+      game.emit('Winner', winningPlayer.name);
+      this.storeGameInfo(game);
     }
     ball.x = MapSize.WIDTH / 2;
     ball.y = MapSize.HEIGHT / 2;
@@ -139,20 +145,26 @@ export class GameService {
     ball.yDirection = 0.0;
     ball.acceleration = 1;
     if (game.mode === GameMode.POWERUP || game.mode === GameMode.FIESTA)
-      game.powerUp.resetPowerUpState(game);
+      game.powerUp.resetPowerUpState(game, false);
   }
 
-  createGame(player1: number, player2: number, mode: GameMode) {
+  async createGame(player1: number, player2: number, mode: GameMode) {
     const newGame = new GameData;
+    const dataPlayer1: User = await this.prismaUserService.user({ id: player1 });
+    const dataPlayer2: User = await this.prismaUserService.user({ id: player2 });
                                                                                      
     newGame.gameID = this.gamesPlayed;
-    newGame.players.push(new Player(player1, PlayerDefinitions.PLAYER1));
-    newGame.players.push(new Player(player2, PlayerDefinitions.PLAYER2));
+    newGame.players.push(new Player(dataPlayer1, PlayerDefinitions.PLAYER1));
+    newGame.players.push(new Player(dataPlayer2, PlayerDefinitions.PLAYER2));
     newGame.ball = new Ball();
     newGame.powerUp = new PowerUp();
     newGame.mode = mode;
+    newGame.server = this.server;
     this.games.push(newGame);
     this.gamesPlayed++;
+    this.server.emit('GameCreated', {gameId: newGame.gameID,
+      player1: player1, namePlayer1: dataPlayer1.name,
+      player2: player2, namePlayer2: dataPlayer2.name});
   }
 
   logGames() {
@@ -162,7 +174,7 @@ export class GameService {
   private removeFinishedGames() {
     for (let index = 0; index < this.games.length; index++) {
       if (this.games[index].isFinished) {
-        this.storeGameInfo(this.games[index]);
+        console.log(`removing game ${this.games[index].gameID}`);
         this.games.splice(index, 1);
         index--; // is this necessary ??
       }
@@ -222,24 +234,53 @@ export class GameService {
 
     // send current game state back through socket
     if (!game.isFinished)
-      this.server.emit('pos', toSend);
+      game.emit('GameState', toSend);
     // console.log(toSend);
   }
   
-  UpdatePlayerInput(playerId: number, input: PaddleInput) {
-    for (let index = 0; index < this.games.length; index++) { // make this faster, store all players inside an array?
-      const games = this.games[index];
+  UpdatePlayerInput(playerId: number, gameId: number, input: PaddleInput) {
+    const game: GameData = this.getGameByGameId(gameId);
 
-      for (let index = 0; index < games.players.length; index++) {
-        const player = games.players[index];
+    if (game === null)
+      return ;
 
-        // enables / disables the current move input
-        if (player.userId === playerId) {
-          player.updateInput(input);
-          return;
+    for (let index = 0; index < game.players.length; index++) {
+      const player = game.players[index];
+
+      if (player.userId === playerId) {
+        player.updateInput(input);
+        return;
+      }
+    }
+  }
+
+  checkIfPlaying(userId: number, client: Socket) {
+    for (let index = 0; index < this.games.length; index++) {
+      const game = this.games[index];
+
+      for (let index = 0; index < game.players.length; index++) {
+        const player = game.players[index];
+
+        // sends the user the gameId and game-mode back
+        if (player.userId === userId) {
+          client.emit('GameStatus', {alreadyInGame: true, gameId: game.gameID, gameMode: game.mode,
+            namePlayer1: game.players[0].name, namePlayer2: game.players[1].name});
+          return ;
         }
       }
     }
+    // user isn't found in a game so they can try to queue for one
+    client.emit('GameStatus', {alreadyInGame: false, gameId: -1, gameMode: GameMode.UNMATCHED,
+      namePlayer1: '', namePlayer2: ''});
+  }
+
+  private getGameByGameId(gameId: number) {
+    for (let index = 0; index < this.games.length; index++) {
+      const game = this.games[index];
+      if (game.gameID === gameId)
+        return (game);
+    }
+    return (null);
   }
 }
 

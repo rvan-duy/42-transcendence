@@ -1,4 +1,4 @@
-import { BallStatus, DefaultElementSize, GameMode, MapSize, MoveSpeedPerTick, PlayerDefinitions } from './game.definitions';
+import { BallStatus, DefaultElementSize, GameMode, MapSize, MoveSpeedPerTick, PlayerDefinitions, PowerUpEffects } from './game.definitions';
 import { Paddle } from './game.paddle';
 import { GameData } from './game.service';
 
@@ -9,6 +9,8 @@ export class Ball {
   yDirection: number = 0;
   acceleration: number = 1;
   radius: number = 20;
+  superSmash: Boolean = false;
+  playerHoldingSmash: PlayerDefinitions = PlayerDefinitions.PLAYER1;
   
   ballPaddleCollision(paddle: Paddle) {
     // temporary variables to set edges for testing
@@ -40,14 +42,17 @@ export class Ball {
   }
 
   update(game: GameData) {
-    let paddle: Paddle;
+    let side: PlayerDefinitions;
   
     // check what side of the map the ball is on and which paddle to check collision for
     if (game.ball.x + this.radius < MapSize.WIDTH / 2)
-      paddle = game.players[PlayerDefinitions.PLAYER1].paddle;
+      side = PlayerDefinitions.PLAYER1;
     else
-      paddle = game.players[PlayerDefinitions.PLAYER2].paddle;
-  
+      side = PlayerDefinitions.PLAYER2;
+
+    // assign the right paddle to check collision for
+    const paddle: Paddle = game.players[side].paddle;
+
     // Update ball position
     this.x += this.xDirection;
     this.y += this.yDirection;
@@ -65,6 +70,11 @@ export class Ball {
       const returnAngle = Math.PI / 4 * normalizedCollisionPoint; // 45 degrees (Pi / 4) times the normalized paddle collision point which is between 1 and -1
       const returnDirection = (this.x + this.radius < MapSize.WIDTH / 2) ? 1 : -1;
 
+      if (this.superSmash && side === this.playerHoldingSmash) {
+        speed *= 1.5;
+        game.powerUp.resetPowerUpState(game, true);
+      }
+
       // prevent this from moving through paddle
       if (speed > DefaultElementSize.PADDLEWIDTH)
         speed = DefaultElementSize.PADDLEWIDTH - 1;
@@ -79,8 +89,8 @@ export class Ball {
       if (game.mode === GameMode.POWERUP || game.mode === GameMode.FIESTA) {
         if (game.powerUp.powerUpEnabled === false)
           game.powerUp.hitsSinceLastPowerUp++;
-        else
-          game.powerUp.resetOnPaddleHit(game);
+        else if (game.powerUp.effect !== PowerUpEffects.BALL_SMASH)
+          game.powerUp.resetPowerUpState(game, true);
       }
     }
 

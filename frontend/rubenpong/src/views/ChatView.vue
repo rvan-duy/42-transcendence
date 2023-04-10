@@ -1,5 +1,6 @@
 
 <script setup lang="ts">
+import SocketioService from '../services/socketio.service.js';
 import { ref } from "vue";
 let input = ref("");
 const users = [{name: 'Ruben1', pic: '', id: 1, admin: false}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '',  id: 3, admin: false}, {name: 'Oswin', pic: '',  id: 4, admin: false}, {name: 'Lindsay', pic: '', id: 5, admin: false}];
@@ -9,6 +10,7 @@ function filteredList() {
       user.name.toLowerCase().includes(input.value.toLowerCase())
     );
 }
+
 </script>
 
 <template>
@@ -16,7 +18,7 @@ function filteredList() {
     <body>
       <div class="join-container">
         <header class="join-header">
-          <h1><i class="fas fa-smile" /> ChatCord</h1>
+          <h1><i class="fas fa-smile" /> RubenSpeak</h1>
         </header>
         <main class="join-main">
           <div v-if="chatCreate === false">
@@ -35,6 +37,7 @@ function filteredList() {
               </select>
             </div>
             <div v-if="selectedChat.type === 'withPassword'">
+              <!-- <div v-if="selectedChat.type === 'PROTECTED'"></div> -->
                 <label for="name">Password</label>
               <span class="text-black pr-4"><input
                 id="username"
@@ -51,6 +54,7 @@ function filteredList() {
             >
               Join Chat
             </button>
+            <!-- v-if="enteredPW === selectedChat.password || selectedChat.type === 'PUBLIC' || selectedChat.type === 'PRIVATE'" -->
           </div>
           <button v-if="chatCreate === false"
               class="btn bg-blue-500 text-white" @click="chatCreate = true"
@@ -60,13 +64,24 @@ function filteredList() {
             <div  v-if="chatCreate === true" class="form-control">
               <label for="room">Type</label>
               <select
-                id="room"
+                id="chat_type"
+                v-model="newChat.type"
                 class="text-black"
                 name="room"
-                v-model="newChat.type"
                 style="border-radius: 20px"
+                required
               >
-                <option value="private">
+<!-- <option value="PRIVATE">
+                  Private
+                </option>
+                <option value="PUBLIC">
+                  Public
+                </option>
+                <option value="PROTECTED">
+                  With Password
+                </option>                 -->
+
+<option value="private">
                   Private
                 </option>
                 <option value="public">
@@ -211,6 +226,14 @@ export default {
      console.log('create chat');
      this.goTo('chatroom/' + nameChat);
     },
+    // createChat(chatObject: any) {
+    //   var dto = {name: chatObject.name, ownerId: chatObject.channelOwnerId, access: chatObject.type};
+    //   console.log(`Creating chat (frontend): ${dto.name}`);
+    //   const connection = SocketioService;
+    //   connection.setupSocketConnection('/chat');
+    //   connection.socket.emit('createRoom', dto); //make this a global socket like the example below
+    // //   chat_socket.$socket.emit('createRoom', dto);
+    // },
     addUser(user: any)
     {
       this.newChat.users.push(user);
