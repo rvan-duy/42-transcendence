@@ -255,6 +255,7 @@ export class GameService {
   }
 
   checkIfPlaying(userId: number, client: Socket) {
+    const powerUps: string[] = ['Paddle Slow', 'Paddle Speed', 'Ball Radius', 'Super Smash', 'Freeze'];
     for (let index = 0; index < this.games.length; index++) {
       const game = this.games[index];
 
@@ -264,14 +265,16 @@ export class GameService {
         // sends the user the gameId and game-mode back
         if (player.userId === userId) {
           client.emit('GameStatus', {alreadyInGame: true, gameId: game.gameID, gameMode: game.mode,
-            namePlayer1: game.players[0].name, namePlayer2: game.players[1].name});
+            namePlayer1: game.players[0].name, namePlayer2: game.players[1].name,
+            powerUpActive: game.powerUp.powerUpEnabled, powerUp: powerUps[game.powerUp.effect]});
           return ;
         }
       }
     }
     // user isn't found in a game so they can try to queue for one
     client.emit('GameStatus', {alreadyInGame: false, gameId: -1, gameMode: GameMode.UNMATCHED,
-      namePlayer1: '', namePlayer2: ''});
+      namePlayer1: '', namePlayer2: '',
+      powerUpActive: false, powerUp: ''});
   }
 
   private getGameByGameId(gameId: number) {

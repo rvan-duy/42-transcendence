@@ -54,6 +54,9 @@
           </div>
         </div>
       </div>
+      <div v-if="inQueue">
+        Queueing for a game!
+      </div>
       <div class="p-16">
         <canvas
           id="pixels"
@@ -82,6 +85,8 @@ export default {
       inQueue: false,
       inGame: false,
       powerUp: '',
+      powerUpActive: false,
+      powerUpOnField: false,
       frame: 0,
       userId : -1,
       gameId: -1,
@@ -131,9 +136,11 @@ export default {
         this.inQueue = false;
         this.gameId = data.gameId;
         this.gameMode = data.gameMode;
+        this.powerUpActive = data.powerUpActive;
+        this.powerUp = data.powerUp;
         this.listenToGame(ctx, canvas);
       }
-      else {
+      else { // Don't think this is necessary?
         this.inQueue = false;
         this.inGame = false;
         this.gameMode = GameMode.UNMATCHED;
@@ -161,6 +168,7 @@ export default {
   unmounted() {
     document.removeEventListener('keydown', this.keyDownEvent);
     document.removeEventListener('keyup', this.keyUpEvent);
+    this.resetInput();
     if (this.inQueue)
       this.socket.emit('ChangeGameTab', this.userId);
   },
@@ -176,13 +184,14 @@ export default {
       this.socket.on(`EnablePowerUp_${this.gameId}`, (data: any) => {
         const powerUpType: string = data;
         this.frame = 0;
+        this.powerUpActive = true;
         this.powerUp = `${powerUpType} enabled!`;
       });
       
       // Listen to the power up being disabled after being enabled
-      this.socket.on(`DisablePowerUp_${this.gameId}`, (data: any) => {
-        const reset: string = data;
-        this.powerUp = reset;
+      this.socket.on(`DisablePowerUp_${this.gameId}`, (resetString: string) => {
+        this.powerUp = resetString;
+        this.powerUpActive = false;
       });
 
       // Listen to the game ending and the winner of that match
@@ -190,7 +199,15 @@ export default {
         this.inGame = false;
         this.drawEndScreen(ctx, canvas, winningUser);
         this.socket.off(`GameState_${this.gameId}`);
+        this.resetInput();
       });
+    },
+
+    resetInput() {
+      this.arrowDown = false;
+      this.arrowUp = false;
+      this.arrowLeft = false;
+      this.arrowRight = false;
     },
 
     keyDownEvent(e: KeyboardEvent) {
@@ -249,8 +266,13 @@ export default {
     },
 
     queueForGame(gameMode: string) {
+      var canvas: HTMLCanvasElement = document.getElementById('pixels') as HTMLCanvasElement;
+      var ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
       this.gameMode = gameMode as GameMode;
       this.inQueue = true;
+
+      // clears the previous game if there is one still displayed
+      ctx.clearRect(0, 0, 1000, 6000);
 
       // Send the server a request to be queued in the given game-mode's queue
       const packet = {gameMode: this.gameMode, userId: this.userId};
@@ -313,7 +335,7 @@ export default {
       }
 
       // draw text power-up being enabled
-      if (this.powerUp !== '')
+      if (this.powerUpActive)
       {
         ctx.fillStyle = 'aqua';
         ctx.font = '30px arial';
