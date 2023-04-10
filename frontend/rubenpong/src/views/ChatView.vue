@@ -36,8 +36,7 @@ function filteredList() {
                 </option>
               </select>
             </div>
-            <div v-if="selectedChat.type === 'withPassword'">
-              <!-- <div v-if="selectedChat.type === 'PROTECTED'"></div> -->
+              <div v-if="selectedChat.type === 'PROTECTED'">
                 <label for="name">Password</label>
               <span class="text-black pr-4"><input
                 id="username"
@@ -71,7 +70,7 @@ function filteredList() {
                 style="border-radius: 20px"
                 required
               >
-<!-- <option value="PRIVATE">
+              <option value="PRIVATE">
                   Private
                 </option>
                 <option value="PUBLIC">
@@ -79,17 +78,7 @@ function filteredList() {
                 </option>
                 <option value="PROTECTED">
                   With Password
-                </option>                 -->
-
-<option value="private">
-                  Private
-                </option>
-                <option value="public">
-                  Public
-                </option>
-                <option value="withPassword">
-                  With Password
-                </option>
+                </option>                
               </select>
               <div v-if="newChat.type === 'private'">
               <label for="name" class="pt-2">Add users</label>
@@ -220,20 +209,25 @@ export default {
       
       this.$router.push('/' + route + '?id=' + 3)
       },
-    createChat(nameChat: string)
-    {
-     this.newChat.channelOwnerId = this.id;
+    // createChat(nameChat: string)
+    // {
+    //  this.newChat.channelOwnerId = this.id;
+    //  console.log('create chat');
+    //  this.goTo('chatroom/' + nameChat);
+    // },
+    createChat(nameChat: string) {
+      var dto = {name: this.newChat.name, ownerId: this.id, access: this.newChat.type};
+      console.log(`Creating chat (frontend): ${dto.name}`);
+      const connection = SocketioService;
+      connection.setupSocketConnection('/chat');
+      connection.socket.emit('createRoom', dto); //make this a global socket like the example below
+      connection.socket.on('createRoomResponse', (data: any) => {
+          console.log(data.id);
+        });
+      //   chat_socket.$socket.emit('createRoom', dto);
      console.log('create chat');
      this.goTo('chatroom/' + nameChat);
     },
-    // createChat(chatObject: any) {
-    //   var dto = {name: chatObject.name, ownerId: chatObject.channelOwnerId, access: chatObject.type};
-    //   console.log(`Creating chat (frontend): ${dto.name}`);
-    //   const connection = SocketioService;
-    //   connection.setupSocketConnection('/chat');
-    //   connection.socket.emit('createRoom', dto); //make this a global socket like the example below
-    // //   chat_socket.$socket.emit('createRoom', dto);
-    // },
     addUser(user: any)
     {
       this.newChat.users.push(user);

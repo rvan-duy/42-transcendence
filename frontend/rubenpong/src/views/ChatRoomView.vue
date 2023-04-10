@@ -186,14 +186,14 @@ interface.
         Admin
         </span>
         <span v-if="user.id !== chat.channelOwnerId && user.admin !== true && idUser === chat.channelOwnerId" class="text-green-200 text-xs p-1">
-          <button class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('make ' + user.name + ' Admin', banUser)">Make Admin</button>
+          <button class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('make ' + user.name + ' Admin', banUser, user.id)">Make Admin</button>
         </span>
         <button class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1" @click="goTo('game')">Invite to game</button>
 
         <div v-if="isAdmin && user.id !== idUser && user.id !== chat.channelOwnerId">
-          <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('ban ' + user.name, banUser)">Ban</button>
-          <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('mute ' + user.name, banUser)">Mute</button>
-          <button class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('kick ' + user.name, banUser)">Kick</button>
+          <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('ban ' + user.name, banUser, user.id)">Ban</button>
+          <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('mute ' + user.name, banUser, user.id)">Mute</button>
+          <button class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('kick ' + user.name, banUser, user.id)">Kick</button>
         </div>
       </li>
      
@@ -294,15 +294,29 @@ export default {
           }
         });
     },
-    banUser()
+    banUser(bannedUserId: number)
     {
       console.log('ban');
+      const connection = SocketioService;
+      connection.setupSocketConnection('/chat');
+      connection.socket.emit('banUserFromRoom', {roomId: 1, banUserId: bannedUserId}); //make this a global socket like the example below
+   
+      // $route.query.id
+    // //   chat_socket.$socket.emit('createRoom', dto);
     },
-    confirmAndGo(message: string, f: any)
+      // createChat(chatObject: any) {
+    //   var dto = {name: chatObject.name, ownerId: chatObject.channelOwnerId, access: chatObject.type};
+    //   console.log(`Creating chat (frontend): ${dto.name}`);
+    //   const connection = SocketioService;
+    //   connection.setupSocketConnection('/chat');
+    //   connection.socket.emit('createRoom', dto); //make this a global socket like the example below
+    // //   chat_socket.$socket.emit('createRoom', dto);
+    // },
+    confirmAndGo(message: string, f: any, param: number)
     {
       if (confirm('Are you sure you want to ' + message + '?') == true) {
         console.log("You pressed OK!");
-        f();
+        f(param);
       } else {
         console.log("You canceled!");
       }

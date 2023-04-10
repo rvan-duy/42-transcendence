@@ -9,7 +9,6 @@ import {
 import { Server, Socket } from 'socket.io';
 import { MsgDto, MsgService } from '../msg/msg.service';
 import { GateService } from 'src/gate/gate.service';
-import { roomDto, RoomService } from 'src/room/room.service';
 import { Room } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
@@ -126,6 +125,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.msgService.handleDeleteMsg(payload);
   }
   
+
   @SubscribeMessage('createRoom')
   async createNewRoom(client: Socket, payload: roomDto) {
     // client extraction
@@ -133,9 +133,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     // force room-creating user to be owner
     payload.ownerId = userId;
-
+    const newRoom = this.roomService.createChat(payload);
+    console.log(newRoom);
+    client.emit('createRoomResponse', newRoom);
     // use the roomService to create a new chatroom and return the room object
-    return (this.roomService.createChat(payload));
+    return (newRoom);
   }
 
   @SubscribeMessage('destroyRoom')
