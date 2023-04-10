@@ -1,5 +1,5 @@
-import { Controller, Get, Param, Put, Request, Response, UseGuards, HttpStatus } from '@nestjs/common';
-import { ApiCookieAuth, ApiOperation, ApiResponse, ApiResponseProperty, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Post, Request, Response, UseGuards, HttpStatus } from '@nestjs/common';
+import { ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
@@ -19,7 +19,7 @@ export class UserController {
     res.status(HttpStatus.OK).send(req.user);
   }
 
-  @Put('me/name')
+  @Post('me/name')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Update user name for current user' })
   @ApiResponse({ status: HttpStatus.OK, description: 'User name updated' })
@@ -49,8 +49,14 @@ export class UserController {
     res.status(HttpStatus.OK).send('User updated');
   }
 
+  //TOOD: Implement
+  @Get('me/picture')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'TODO: Get user picture for current user' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'TODO', type: String })
+
   /* Untested */
-  @Put('me/picture')
+  @Post('me/picture')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Update user picture for current user (NEEDS TESTING)' })
   @ApiResponse({ status: HttpStatus.OK, description: 'User picture updated', type: String })
@@ -71,6 +77,26 @@ export class UserController {
     res.status(HttpStatus.OK).send('User picture updated');
   }
 
+  @Get('me/friends')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'Get friends for current user' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Friends found', type: [Number] })
+  async getMeFriends(@Request() req: any, @Response() res: any) {
+    const user = await this.userService.user({ id: Number(req.user.id) });
+    const friends = user.friends;
+    res.status(HttpStatus.OK).send(friends);
+  }
+
+  @Post('me/friends/add/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({ summary: 'TODO: Add friend for current user' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'Friend added' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'User with id not found', type: String })
+  async addMeFriend(@Request() req: any, @Param('id') id: string, @Response() res: any) {
+    //TODO
+    res.status(HttpStatus.OK).send('TODO')
+  }
+
   @Get('id/:id')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get user information for user with id' })
@@ -89,7 +115,7 @@ export class UserController {
   @Get('all')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get all users' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'All users', type: Object })
+  @ApiResponse({ status: HttpStatus.OK, description: 'All users', type: [Object] })
   async getUsers(@Response() res: any) {
     const users = await this.userService.users({});
     res.status(HttpStatus.OK).send(users);

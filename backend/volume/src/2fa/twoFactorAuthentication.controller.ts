@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request, Response, HttpStatus } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Response, HttpStatus, Post } from '@nestjs/common';
 import { TwoFactorAuthenticationService } from './twoFactorAuthentication.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AuthService } from 'src/auth/auth.service';
@@ -22,7 +22,7 @@ export class TwoFactorAuthenticationController {
     return this.twoFactorAuthenticationService.pipeQrCode(res, otpauthUrl);
   }
 
-  @Get('get-secret')
+  @Get('secret')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get the two-factor authentication secret of the current user' })
   @ApiResponse({ status: 200, description: 'Two-factor authentication secret of current user', type: String })
@@ -35,7 +35,7 @@ export class TwoFactorAuthenticationController {
     return res.status(HttpStatus.OK).send(secret);
   }
 
-  @Get('turn-on')
+  @Post('turn-on')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ 
     summary: 'Turn on two-factor authentication for current user', 
@@ -52,7 +52,7 @@ export class TwoFactorAuthenticationController {
     return res.status(HttpStatus.OK).send('Two-factor authentication turned on');
   }
 
-  @Get('turn-off')
+  @Post('turn-off')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: 'Turn off two-factor authentication for current user',
@@ -69,8 +69,8 @@ export class TwoFactorAuthenticationController {
     return res.status(HttpStatus.OK).send('Two-factor authentication turned off');
   }
 
-  // doesn't this need to be a post request? also it needs to redirect maybe?
-  @Get('verify')
+  // TODO: Does this need to redirect to the frontend? Maybe. Okay probably since it is manipulating the cookie.
+  @Post('verify')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: 'Verify a two-factor authentication code for current user (UNFINISHED)',
