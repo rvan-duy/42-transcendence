@@ -14,7 +14,7 @@ export class PrismaRoomService {
     });
   }
 
-  async RoomAndUsers(
+  async RoomWithUsers(
     RoomWhereUniqueInput: Prisma.RoomWhereUniqueInput,
   ): Promise<any | null> {
     return this.prisma.room.findUnique({

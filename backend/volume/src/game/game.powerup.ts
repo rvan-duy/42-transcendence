@@ -1,15 +1,8 @@
-import { DefaultElementSize, MapSize, MoveSpeedPerTick, PlayerDefinitions, PowerUpEffects } from './game.definitions';
+import { DefaultElementSize, MapSize, MoveSpeedPerTick, PlayerDefinitions, PowerUpEffects, PowerUpModifier, PowerUpTimings } from './game.definitions';
 import { Paddle } from './game.paddle';
 import { GameData } from './game.service';
 
-// timings are in milliseconds
-enum PowerUpTimings {
-  FREEZE_TIME = 0.3 * 1000,
-  SLOW_TIME = 2 * 1000,
-  SPEED_TIME = 7 * 1000,
-}
-
-export class PowerUp { // extends Ball???
+export class PowerUp {
   x: number = MapSize.WIDTH / 2;
   y: number = MapSize.HEIGHT / 2;
   xDirection: number = 0;
@@ -20,11 +13,12 @@ export class PowerUp { // extends Ball???
   powerUpEnabled: Boolean = false;
   targetPlayer: PlayerDefinitions;
   timeActivated: number;
+  timeSinceLastReset: number = new Date().getTime();
   effect: PowerUpEffects;
 
   update(game: GameData) {
-    if (this.hitsSinceLastPowerUp >= 1 && this.powerUpEnabled === false &&
-      this.powerUpOnField === false) {
+    if (this.hitsSinceLastPowerUp >= 1 && this.powerUpEnabled === false && this.powerUpOnField === false &&
+      new Date().getTime() - this.timeSinceLastReset >= PowerUpTimings.SPAWN_TIMER) {
       this.spawnPowerUp(game);
       return ;
     }
@@ -50,23 +44,25 @@ export class PowerUp { // extends Ball???
     // if ball collision
     if (this.powerUpBallCollision(game)) {
       collision = true;
-      if (game.ball.xDirection < 0 && (this.effect === PowerUpEffects.FREEZE_ENEMY ||
-        this.effect === PowerUpEffects.PADDLE_SLOW_ENEMY ||
-        this.effect === PowerUpEffects.ADD_POINT))
+      if (game.ball.xDirection > 0 &&
+        (this.effect === PowerUpEffects.BALL_SMASH ||
+        this.effect === PowerUpEffects.PADDLE_SPEED_BUFF))
+        this.targetPlayer = PlayerDefinitions.PLAYER1;
+      else if (game.ball.xDirection < 0 &&
+        (this.effect === PowerUpEffects.FREEZE_ENEMY ||
+        this.effect === PowerUpEffects.PADDLE_SLOW_ENEMY))
         this.targetPlayer = PlayerDefinitions.PLAYER1;
       else
         this.targetPlayer = PlayerDefinitions.PLAYER2;
     }
 
     // currently unused since the ball only moves up and down
-    
     // // if paddle collision
     // if (this.powerUpPaddleCollision(game)) {
     //   collision = true;
     //   if (game.ball.x < MapSize.WIDTH / 2 &&
     //     (this.effect === PowerUpEffects.FREEZE_ENEMY ||
-    //     this.effect === PowerUpEffects.PADDLE_SLOW_ENEMY ||
-    //     this.effect === PowerUpEffects.ADD_POINT))
+    //     this.effect === PowerUpEffects.PADDLE_SLOW_ENEMY))
     //     this.targetPlayer = PlayerDefinitions.PLAYER1;
     //   else
     //       this.targetPlayer = PlayerDefinitions.PLAYER2;
@@ -77,17 +73,18 @@ export class PowerUp { // extends Ball???
   }
 
   private enablePowerUps(game: GameData) {
+    const messages: string[] = ['Paddle Slow', 'Paddle Speed', 'Ball Radius', 'Super Smash', 'Freeze'];
+    console.log(`Turning on PowerUp ${messages[this.effect]} for player ${this.targetPlayer + 1}`);
     this.timeActivated = new Date().getTime();
     this.powerUpEnabled = true;
     this.powerUpOnField = false;
     game.powerUpOnField = false;
 
-    if (this.effect === PowerUpEffects.BALL_SPEED)  // speeds the ball up till the next paddle hit
+    game.emit('EnablePowerUp', messages[this.effect]);
+    if (this.effect === PowerUpEffects.BALL_SMASH)  // Speeds up the ball for one 'turn' on the next paddle hit
       this.ballEffect(game);
     else if (this.effect === PowerUpEffects.BALL_RADIUS) // decreases the ball's radius till the next paddle hit
       this.ballEffect(game);
-    else if (this.effect === PowerUpEffects.ADD_POINT) // removes a point from the target player
-      this.addEffect(game);
     else if (this.effect === PowerUpEffects.PADDLE_SLOW_ENEMY ||
             this.effect === PowerUpEffects.PADDLE_SPEED_BUFF ||
             this.effect === PowerUpEffects.FREEZE_ENEMY) {
@@ -98,10 +95,7 @@ export class PowerUp { // extends Ball???
   private spawnPowerUp(game: GameData) {
     game.powerUpOnField = true;
     this.powerUpOnField = true;
-    this.effect = getRandomInt(5); // only allow for add_point to spawn if a player is far behind
-
-    // spawn somewhere away from the ball, paddles and sides.
-    // Sometimes it can move and if a player is far behind it is stationary on his side of the field.
+    this.effect = getRandomInt(5);
 
     const xMin = MapSize.WIDTH / 2 - DefaultElementSize.PADDLEWIDTH * 3;
     const xMax = MapSize.WIDTH / 2 + DefaultElementSize.PADDLEWIDTH * 3;
@@ -113,75 +107,73 @@ export class PowerUp { // extends Ball???
     this.y = randomIntFromInterval(yMin, yMax);
 
     // If the ball is too close to the powerUp change its spawn location
-    if (game.ball.x - this.x <= this.radius * 5)
+    if (Math.abs(game.ball.x - this.x) <= this.radius * 10 &&
+        Math.abs(game.ball.y - this.y) <= this.radius * 10)
       this.y = (this.y + 250) % MapSize.HEIGHT;
 
-    console.log(`spawned a powerup at location ${this.x} ${this.y} of type ${this.effect}`);
-  }
-
-  private addEffect(game: GameData) {
-    this.powerUpEnabled = false;
-    game.score[this.targetPlayer] += 1;
-    this.resetPowerUpState(game);
+    // console.log(`spawned a powerup at location ${this.x} ${this.y} of type ${this.effect}`);
   }
 
   private updatePaddleEffect(game: GameData) {
     // if the time between now and when the power up was activated is above the threshold it will reset
+    const limit: PowerUpTimings[] = [
+      PowerUpTimings.SLOW_TIME,
+      PowerUpTimings.SPEED_TIME,
+      PowerUpTimings.NOT_TIME_BASED,
+      PowerUpTimings.NOT_TIME_BASED,
+      PowerUpTimings.FREEZE_TIME];
+
+    if (limit[this.effect] === PowerUpTimings.NOT_TIME_BASED)
+      return ;
+
     const timePassed = new Date().getTime() - this.timeActivated;
-    console.log(`time since powerup: ${timePassed}`);
-    if (this.effect === PowerUpEffects.FREEZE_ENEMY && timePassed >= PowerUpTimings.FREEZE_TIME ||
-      this.effect === PowerUpEffects.PADDLE_SPEED_BUFF && timePassed >= PowerUpTimings.SPEED_TIME ||
-      this.effect === PowerUpEffects.PADDLE_SLOW_ENEMY && timePassed >= PowerUpTimings.SLOW_TIME)
-      this.resetPowerUpState(game);
+
+    if (timePassed >= limit[this.effect])
+      this.resetPowerUpState(game, false);
   }
 
   private enablePaddleEffect(game: GameData) {
     if (this.effect === PowerUpEffects.PADDLE_SPEED_BUFF) {
-      console.log(`triggered a paddle speed buff power up on player ${this.targetPlayer}`);
-      game.players[this.targetPlayer].paddle.acceleration += 0.5;
+    //   console.log(`triggered a paddle speed buff power up on player ${this.targetPlayer}`);
+      game.players[this.targetPlayer].paddle.acceleration += PowerUpModifier.PaddleSpeedIncrease;
     }
     else if (this.effect === PowerUpEffects.PADDLE_SLOW_ENEMY) {
-      console.log(`triggered a paddle slow debuff power on player ${this.targetPlayer}`);
-      game.players[this.targetPlayer].paddle.acceleration -= 0.3;
+    //   console.log(`triggered a paddle slow debuff power on player ${this.targetPlayer}`);
+      game.players[this.targetPlayer].paddle.acceleration -= PowerUpModifier.PaddleSpeedDecrease;
     }
     else if (this.effect === PowerUpEffects.FREEZE_ENEMY) {
-      console.log(`triggered a freeze power up on player ${this.targetPlayer}`);
-      game.players[this.targetPlayer].paddle.acceleration = 0;
+    //   console.log(`triggered a freeze power up on player ${this.targetPlayer}`);
+      game.players[this.targetPlayer].paddle.acceleration = PowerUpModifier.Freeze;
     }
   }
 
   private ballEffect(game: GameData) {
-    if (this.effect === PowerUpEffects.BALL_SPEED) {
-      console.log('Triggered a ball speed power up!');
-      game.ball.acceleration += 0.5;
+    if (this.effect === PowerUpEffects.BALL_SMASH) {
+    //   console.log('Triggered a ball speed power up!');
+      game.ball.superSmash = true;
+      game.ball.playerHoldingSmash = this.targetPlayer;
     }
     else if (this.effect === PowerUpEffects.BALL_RADIUS) {
-      console.log('Triggered a ball radius power up!');
-      game.ball.radius /= 2;
+    //   console.log('Triggered a ball radius power up!');
+      game.ball.radius /= PowerUpModifier.BallRadiusDivision;
     }
   }
 
-  resetPowerUpState(game: GameData) {
-    console.log('reset the power up state!');
+  resetPowerUpState(game: GameData, resetByPaddle: Boolean) {
+    if (resetByPaddle && (this.effect === PowerUpEffects.FREEZE_ENEMY ||
+              this.effect === PowerUpEffects.PADDLE_SLOW_ENEMY ||
+              this.effect === PowerUpEffects.PADDLE_SPEED_BUFF))
+      return ;
     this.powerUpEnabled = false;
     this.powerUpOnField = false;
     this.hitsSinceLastPowerUp = 0;
+    this.timeSinceLastReset = new Date().getTime();
     game.powerUpOnField = false;
     game.ball.radius = DefaultElementSize.BALLRADIUS;
-    // if (this.effect === PowerUpEffects.BALL_SPEED)
-    //   game.ball.acceleration -= 0.5;
-    game.players[0].paddle.acceleration = MoveSpeedPerTick.PADDLE;
-    game.players[1].paddle.acceleration = MoveSpeedPerTick.PADDLE;
-  }
-  
-  resetOnPaddleHit(game: GameData) {
-    console.log('reset because of a paddle hit!');
-    this.powerUpEnabled = false;
-    this.powerUpOnField = false;
-    this.hitsSinceLastPowerUp = 0;
-    game.ball.radius = DefaultElementSize.BALLRADIUS;
-    if (this.effect === PowerUpEffects.BALL_SPEED)
-      game.ball.acceleration -= 0.5;
+    game.players[PlayerDefinitions.PLAYER1].paddle.acceleration = 1;
+    game.players[PlayerDefinitions.PLAYER2].paddle.acceleration = 1;
+    game.ball.superSmash = false;
+    game.emit('DisablePowerUp', '');
   }
 
   private powerUpBallCollision(game: GameData) {
@@ -236,15 +228,15 @@ export class PowerUp { // extends Ball???
     this.y += this.yDirection;
 
     // check if it hits the top of the playing field
-    if (this.y + this.radius > MapSize.HEIGHT)
+    if (this.y + this.radius >= MapSize.HEIGHT)
       this.yDirection = Math.abs(this.yDirection) * -1;
-    else if (this.y - this.radius < 0)
+    else if (this.y - this.radius <= 0)
       this.yDirection = Math.abs(this.yDirection);
     
     // check if it hits the bottom of the playing field
-    if (this.x + this.radius > MapSize.WIDTH)
+    if (this.x + this.radius >= MapSize.WIDTH)
       this.xDirection = Math.abs(this.xDirection) * -1;
-    else if (this.x - this.radius < 0)
+    else if (this.x - this.radius <= 0)
       this.xDirection = Math.abs(this.xDirection);
   }
 }

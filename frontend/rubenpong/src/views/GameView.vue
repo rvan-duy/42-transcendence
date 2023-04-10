@@ -4,7 +4,7 @@
 <template>
   <div class="item">
     <div style="text-align: center">
-      <div v-if="!matched">
+      <div v-if="!inQueue && !inGame">
         <h1 class="text-4xl p-16">
           Wanna Match? ;)
         </h1>
@@ -70,6 +70,7 @@
 <script lang="ts">
 import io from 'socket.io-client';
 import { getBackend } from '@/utils/backend-requests';
+import { GameMode } from '../utils/game-definitions';
 import type { CurrentGameState } from '../utils/game-definitions';
 export default {
 
@@ -77,14 +78,20 @@ export default {
   {
     return {
       selectGameMode: false,
-      matched: false,
-      gameMode : '',
+      gameMode : GameMode.UNMATCHED,
+      inQueue: false,
+      inGame: false,
+      powerUp: '',
+      frame: 0,
       userId : -1,
+      gameId: -1,
       arrowUp: false,
       arrowDown: false,
       arrowLeft: false,
       arrowRight: false,
       socket: io(`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/game`),
+      namePlayer1: '',
+      namePlayer2: '',
     };
   },
   async created () {
@@ -102,49 +109,96 @@ export default {
         userId = -1;
         console.log(e);
       });
+
     this.userId = userId;
     console.log(`received userId: ${this.userId}`);
-  },
-  mounted() {
+
     var canvas: HTMLCanvasElement = document.getElementById('pixels') as HTMLCanvasElement;
     var ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
     this.socket.on('connect_error', (err) => {
       console.log(`connect_error due to ${err.message}`);
     });
     
-    document.addEventListener('keydown', this.keyDownEvent);
-    document.addEventListener('keyup', this.keyUpEvent);
-
-    this.socket.on('winner', (winningUser: string) => {
-      this.drawEndScreen(ctx, canvas, winningUser);
+    // ask the server to check if the user is already in a game or not
+    this.socket.emit('CheckGameStatus', this.userId);
+    
+    // retrieve if the user is already in a game or not
+    this.socket.on('GameStatus', (data) => {
+      if (data.alreadyInGame === true) {
+        this.namePlayer1 = data.namePlayer1;
+        this.namePlayer2 = data.namePlayer2;
+        this.inGame = true;
+        this.inQueue = false;
+        this.gameId = data.gameId;
+        this.gameMode = data.gameMode;
+        this.listenToGame(ctx, canvas);
+      }
+      else {
+        this.inQueue = false;
+        this.inGame = false;
+        this.gameMode = GameMode.UNMATCHED;
+      }
     });
 
-    let gameMode: string = '';
-    const waitForElement = () => {
-      if(this.gameMode !== '' && this.userId !== -1) {
-        gameMode = this.gameMode;
-        const packet = {gameMode: gameMode, userId: this.userId};
-        console.log(gameMode);
-        this.socket.emit('QueueForGame', packet);
-        this.socket.on('pos', (data: any) => {
-          const state: CurrentGameState = data;
-          this.drawGame(ctx, canvas, state);
-        });
+    // once a game is created with the user inside start listening to the game
+    this.socket.on('GameCreated', (data: any) => {
+      if (data.player1 === this.userId || data.player2 === this.userId) {
+        this.namePlayer1 = data.namePlayer1;
+        this.namePlayer2 = data.namePlayer2;
+        this.gameId = data.gameId;
+        this.inGame = true;
+        this.inQueue = false;
+        this.listenToGame(ctx, canvas);
       }
-      else{
-        setTimeout(waitForElement, 250);
-      }
-    };
-    setTimeout(waitForElement, 250);
+    });
 
   },
+  mounted() {
+    // set the functions for the movement handling
+    document.addEventListener('keydown', this.keyDownEvent);
+    document.addEventListener('keyup', this.keyUpEvent);
+  },
+  unmounted() {
+    document.removeEventListener('keydown', this.keyDownEvent);
+    document.removeEventListener('keyup', this.keyUpEvent);
+    if (this.inQueue)
+      this.socket.emit('ChangeGameTab', this.userId);
+  },
   methods: {
+    listenToGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+      // get the position and current gamestate back from the server
+      this.socket.on(`GameState_${this.gameId}`, (data: any) => {
+        const state: CurrentGameState = data;
+        this.drawGame(ctx, canvas, state);
+      });
+      
+      // Listen to the power up being enabled
+      this.socket.on(`EnablePowerUp_${this.gameId}`, (data: any) => {
+        const powerUpType: string = data;
+        this.frame = 0;
+        this.powerUp = `${powerUpType} enabled!`;
+      });
+      
+      // Listen to the power up being disabled after being enabled
+      this.socket.on(`DisablePowerUp_${this.gameId}`, (data: any) => {
+        const reset: string = data;
+        this.powerUp = reset;
+      });
+
+      // Listen to the game ending and the winner of that match
+      this.socket.on(`Winner_${this.gameId}`, (winningUser: string) => {
+        this.inGame = false;
+        this.drawEndScreen(ctx, canvas, winningUser);
+        this.socket.off(`GameState_${this.gameId}`);
+      });
+    },
+
     keyDownEvent(e: KeyboardEvent) {
-      if (this.userId === -1) {
+      if (this.userId === -1 || this.inGame === false) {
         return;
       }
 
-      const payload = {userId: this.userId};
+      const payload = {userId: this.userId, gameId: this.gameId};
       if (!this.arrowDown && e.key === 'ArrowDown')
       {
         this.socket.emit(e.key, payload);
@@ -166,11 +220,12 @@ export default {
         this.arrowLeft = true;
       }
     },
+
     keyUpEvent(e: KeyboardEvent) {
-      if (this.userId === -1)
+      if (this.userId === -1 || this.inGame === false)
         return;
 
-      const payload = {userId: this.userId};
+      const payload = {userId: this.userId, gameId: this.gameId};
       if (e.key === 'ArrowDown')
       {
         this.socket.emit(e.key, payload);
@@ -192,66 +247,80 @@ export default {
         this.arrowLeft = false;
       }
     },
-    queueForGame(game: string) {
-      this.gameMode = game;
-      this.matched = true;
+
+    queueForGame(gameMode: string) {
+      this.gameMode = gameMode as GameMode;
+      this.inQueue = true;
+
+      // Send the server a request to be queued in the given game-mode's queue
+      const packet = {gameMode: this.gameMode, userId: this.userId};
+      this.socket.emit('QueueForGame', packet);
     },
+
     drawGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: CurrentGameState) {
-      //draw background
+      // draw background
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
-      //draw paddle player 1
+      // draw net
+      for(let i = 0; i <= canvas.height; i+=15){
+        ctx.fillStyle = 'white';
+        ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
+      }
+
+      // draw paddle player 1
       ctx.fillStyle = 'white';
       ctx.fillRect(state.leftPaddleCoords[0], state.leftPaddleCoords[1], state.leftPaddleWidth, state.leftPaddleHeight);
 
-      //draw paddle player 2
+      // draw paddle player 2
       ctx.fillStyle = 'white';
       ctx.fillRect(state.rightPaddleCoords[0], state.rightPaddleCoords[1], state.rightPaddleWidth, state.rightPaddleHeight);
 
-      //draw ball
+      // draw ball
       ctx.fillStyle = 'red';
       ctx.beginPath();
       ctx.arc(state.ballCoords[0], state.ballCoords[1], state.ballRadius, 0, Math.PI * 2, false);
       ctx.closePath();
       ctx.fill();
 
-      //draw text player 1
+      // draw text player 1
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
-      ctx.fillText('Player 1', canvas.width / 4, canvas.height / 8);
+      ctx.fillText(this.namePlayer1, canvas.width / 4 - 100, canvas.height / 8);
 
-      //draw text score player 1
+      // draw text score player 1
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
       ctx.fillText(state.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
 
-      //draw text player 2
+      // draw text player 2
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
-      ctx.fillText('Player 2', canvas.width / 4 * 3 - 100, canvas.height / 8);
+      ctx.fillText(this.namePlayer2, canvas.width / 4 * 3 - 100, canvas.height / 8);
 
-      //draw text score player 2
+      // draw text score player 2
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
       ctx.fillText(state.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
 
-      //draw net
-      for(let i = 0; i <= canvas.height; i+=15){
-        ctx.fillStyle = 'white';
-        ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
-      }
-
-      //draw PowerUp is it is on the field
+      // draw PowerUp is it is on the field
       if (state.powerUpOnField) {
-        console.log('drawing powerup');
         ctx.fillStyle = 'blue';
         ctx.beginPath();
         ctx.arc(state.powerUpCoords[0], state.powerUpCoords[1], state.powerUpRadius, 0, Math.PI * 2, false);
         ctx.closePath();
         ctx.fill();
       }
+
+      // draw text power-up being enabled
+      if (this.powerUp !== '')
+      {
+        ctx.fillStyle = 'aqua';
+        ctx.font = '30px arial';
+        ctx.fillText(this.powerUp, canvas.width / 2 - 100, canvas.height - 100);
+      }
     },
+
     drawEndScreen(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, winningUser: string) {
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -259,9 +328,9 @@ export default {
       ctx.font = '50px arial';
       ctx.fillText(`${winningUser} won!`, canvas.width / 2 - 100, canvas.height / 2);
     },
+
   },
 };
-//powerups
 </script>
 
 <style scoped>

@@ -15,12 +15,18 @@ enum Access {
   PUBLIC
 }
 
+enum Status {
+  MUTED
+  BANNED
+}
+
 model UserTimestamp {
   id        Int      @id @default(autoincrement())
   room      Room     @relation(fields: [roomId], references: [id])
   roomId    Int
   userId    Int
   timestamp DateTime @default(now())
+  status    Status
 }
 
 model User {
@@ -47,7 +53,7 @@ model Room {
   ownerId     Int?
   admin       User[] @relation("admin")
   users       User[]
-  banned      UserTimestamp[]
+  banMute      UserTimestamp[]
   hashedCode  String?
   access      Access @default(PUBLIC)
   messages    Msg[]
