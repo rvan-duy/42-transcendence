@@ -1,6 +1,103 @@
 <script setup lang="ts">
 import SocketioService from '../services/socketio.service.js';
 import { getBackend } from '@/utils/backend-requests';
+import { Modal } from 'usemodal-vue3';
+// import { ref } from "vue";
+
+// var username;
+// var id;
+// var intraId;
+// async function getUserInfo(){
+//   if (typeof username !== 'undefined' & typeof id !== 'undefined' & typeof intraId !== 'undefined'){
+//     console.log('getUserInfo: User info already fetched');
+//     return {username, id, intraId};
+//   }
+//   else{
+//     console.log('getUserInfo: Fetching user info');
+//     await getBackend('user/me')
+//       .then((response => response.json()))
+//       .then((data) => {
+//         username = data.name;
+//         id = data.id;
+//         intraId = data.intraId;
+//         console.log(data);
+//       }).catch(error => console.log('getUserInfo: Failed to fetch user : ' + error.message));
+//   }
+//   return {username, id, intraId};
+// }
+// connection.setupSocketConnection('/chat');
+// connection.socket.emit('loadRequest', 1);
+
+// connection.socket.on('loadRoomUsers', async (usrs) => {
+//   console.log('loadRoomUsers: client received users for this room', usrs);
+//   usrs.forEach(usr => {
+//     displayUsers(usr.name);
+//   });
+// });
+
+// connection.socket.on('loadChatHistory', async (data) =>{
+//   console.log('loadChatHistory: client received chat history for this room');
+//   for (const msg of data)
+//   {
+//     var username = await getBackend(`user/id/${msg.authorId}`)
+//       .then(async function(res)
+//       {
+//         var data = await res.json();
+//         return data.name;
+//       })
+//       .catch(error => console.log(`loadChatHistory: Couldn't fetch username for userId ${msg.authorId}: ` + error.message));
+//     // const format_time = `${new Date(msg.timestamp).getHours()}:`+ `00${new Date(msg.timestamp).getMinutes()}`.slice(-2);
+//     const format_time = new Date(msg.timestamp).toLocaleTimeString('nl-NL');
+//     var packet = {username: username, time: format_time, body: msg.body};
+//     outputMessages(packet);
+//   }
+// });
+
+// connection.socket.on('receiveNewMsg', (msg) => {
+//   outputMessages(formatMessage(msg));
+// });
+// // const chatForm = document.getElementById('chat-form');
+// async function chatFormSubmit(e){
+//   const msg = e.target.elements.msg;
+//   const info_bundle = await getUserInfo();
+//   const packet = {id: info_bundle.id, username: info_bundle.username, msg: (msg.value)};
+//   connection.socket.emit('sendMsg', packet);
+//   msg.value = ''; //clears the message text you just entered
+//   msg.focus(); //focuses on the text input area again after sending
+// }
+// // Displays the messages that the frontend receives from the server.
+// function outputMessages(message)
+// {
+//   const div = document.createElement('div');
+//   div.classList.add('message');
+//   div.innerHTML =
+// 	`<p class="meta">${message.username} <span>${message.time}</span></p>
+// 	<p class="text">
+// 		${message.body}
+// 	</p>`;
+//   const chatMessages = document.querySelector('.chat-messages');
+//   if (chatMessages != null){
+//     chatMessages.appendChild(div);
+//     chatMessages.scrollTop = chatMessages.scrollHeight;
+//   }
+// }
+
+// function displayUsers(username)
+// {
+//   const list_item = document.createElement('li');
+//   list_item.innerHTML = `${username}`;
+//   // let usersList = ref(user[]);
+//   // usersList.value.appendChild(list_item);
+// }
+
+// function formatMessage(packet)
+// {
+//   return {
+//     username: packet.username,
+//     body: packet.msg,
+//     time: new Date().toLocaleTimeString('nl-NL'),
+//   };
+// }
 
 </script>
 
@@ -29,9 +126,10 @@ interface.
         <header class="chat-header">
           <!-- <p>This is the page that opens on <strong>/blog/{{ $route.params.id }}</strong> route</p> -->
           <h1 class="text-xl"> {{ $route.params.id }}</h1>
-          <!-- {{ $route.query.id}} -->
+
+          {{ $route.query.id}}
           <div style="text-align: right;">
-            <button @click="goTo('chat')"
+            <button @click="confirmAndGo('leave chat ' + $route.params.id, banUser)"
               class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs"
             >Leave Chat</button>
             <span v-if="chat.type === 'withPassword'" @click="goTo('chat')"
@@ -40,9 +138,23 @@ interface.
             <span v-if="chat.type === 'withPassword'" @click="goTo('chat')"
               class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
             >Delete Password</span>
-            <span v-if="chat.type === 'public'" @click="goTo('chat')"
+            <span v-if="chat.type === 'public'" @click="isVisible = true"
               class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
             > Set Password</span>
+            <Modal class="text-black" style="text-align: left;" v-model:visible="isVisible" :cancelButton="cancelBtn" :title="'Set Password'">
+              <div >
+                <label>This will make sure the channel cannot be entered without the correct password.</label>
+              <span class="text-black pr-4"><input
+                v-model="newPassword"
+                VALYE
+                type="text"
+                name="username"
+                placeholder="Enter password..."
+                required
+                style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+              > </span>
+            </div>
+            </Modal>
             <span @click="goTo('chat')"
               class="btn ml-3"
             >Leave Room</span>
@@ -74,14 +186,14 @@ interface.
         Admin
         </span>
         <span v-if="user.id !== chat.channelOwnerId && user.admin !== true && idUser === chat.channelOwnerId" class="text-green-200 text-xs p-1">
-          <button class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1" @click="goTo('game')">Make Admin</button>
+          <button class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('make ' + user.name + ' Admin', banUser)">Make Admin</button>
         </span>
         <button class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1" @click="goTo('game')">Invite to game</button>
 
         <div v-if="isAdmin && user.id !== idUser && user.id !== chat.channelOwnerId">
-          <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1" @click="goTo('game')">Ban</button>
-          <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1" @click="goTo('game')">Mute</button>
-          <button class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1" @click="goTo('game')">Kick</button>
+          <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('ban ' + user.name, banUser)">Ban</button>
+          <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('mute ' + user.name, banUser)">Mute</button>
+          <button class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('kick ' + user.name, banUser)">Kick</button>
         </div>
       </li>
      
@@ -132,7 +244,12 @@ export default {
           channelOwnerId: 1
       },
       idUser: null,
-      isAdmin: false
+      isAdmin: false,
+      isVisible: false,
+      newPassword: '',
+      cancelBtn: {text: 'cancel', onclick: () => {}, loading: false},
+      okBtn: {text: 'ok', onclick: () => {this.setPassword()}, loading: false}
+
     }
   },
   async created() {
@@ -146,6 +263,19 @@ export default {
 
           });
         });
+  },
+  mounted() {
+    const connection = SocketioService;
+    connection.setupSocketConnection('/chat');
+    connection.socket.emit('loadRequest', 1);
+
+    connection.socket.on('loadRoomUsers', async (usrs) => {
+      console.log(usrs);
+      // console.log('loadRoomUsers: client received users for this room', usrs);
+      // usrs.forEach(usr => {
+      //   displayUsers(usr.name);
+      // });
+    });
   },
   methods: {
     goTo(route: string) {
@@ -163,106 +293,26 @@ export default {
             return true; // stop searching
           }
         });
+    },
+    banUser()
+    {
+      console.log('ban');
+    },
+    confirmAndGo(message: string, f: any)
+    {
+      if (confirm('Are you sure you want to ' + message + '?') == true) {
+        console.log("You pressed OK!");
+        f();
+      } else {
+        console.log("You canceled!");
+      }
+    },
+    setPassword()
+    {
+
     }
   },
 };
-
-const connection = SocketioService;
-var username;
-var id;
-var intraId;
-async function getUserInfo(){
-  if (typeof username !== 'undefined' & typeof id !== 'undefined' & typeof intraId !== 'undefined'){
-    console.log('getUserInfo: User info already fetched');
-    return {username, id, intraId};
-  }
-  else{
-    console.log('getUserInfo: Fetching user info');
-    await getBackend('user/me')
-      .then((response => response.json()))
-      .then((data) => {
-        username = data.name;
-        id = data.id;
-        intraId = data.intraId;
-        console.log(data);
-      }).catch(error => console.log('getUserInfo: Failed to fetch user : ' + error.message));
-  }
-  return {username, id, intraId};
-}
-connection.setupSocketConnection('/chat');
-connection.socket.emit('loadRequest', 1);
-
-connection.socket.on('loadRoomUsers', async (usrs) => {
-  console.log('loadRoomUsers: client received users for this room', usrs);
-  usrs.forEach(usr => {
-    displayUsers(usr.name);
-  });
-});
-
-connection.socket.on('loadChatHistory', async (data) =>{
-  console.log('loadChatHistory: client received chat history for this room');
-  for (const msg of data)
-  {
-    var username = await getBackend(`user/id/${msg.authorId}`)
-      .then(async function(res)
-      {
-        var data = await res.json();
-        return data.name;
-      })
-      .catch(error => console.log(`loadChatHistory: Couldn't fetch username for userId ${msg.authorId}: ` + error.message));
-    // const format_time = `${new Date(msg.timestamp).getHours()}:`+ `00${new Date(msg.timestamp).getMinutes()}`.slice(-2);
-    const format_time = new Date(msg.timestamp).toLocaleTimeString('nl-NL');
-    var packet = {username: username, time: format_time, body: msg.body};
-    outputMessages(packet);
-  }
-});
-
-connection.socket.on('receiveNewMsg', (msg) => {
-  outputMessages(formatMessage(msg));
-});
-// const chatForm = document.getElementById('chat-form');
-async function chatFormSubmit(e){
-  const msg = e.target.elements.msg;
-  const info_bundle = await getUserInfo();
-  const packet = {id: info_bundle.id, username: info_bundle.username, msg: (msg.value)};
-  connection.socket.emit('sendMsg', packet);
-  msg.value = ''; //clears the message text you just entered
-  msg.focus(); //focuses on the text input area again after sending
-}
-// Displays the messages that the frontend receives from the server.
-function outputMessages(message)
-{
-  const div = document.createElement('div');
-  div.classList.add('message');
-  div.innerHTML =
-	`<p class="meta">${message.username} <span>${message.time}</span></p>
-	<p class="text">
-		${message.body}
-	</p>`;
-  const chatMessages = document.querySelector('.chat-messages');
-  if (chatMessages != null){
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
-}
-
-function displayUsers(username)
-{
-  const list_item = document.createElement('li');
-  list_item.innerHTML = `${username}`;
-  const usersList = document.querySelector('.users');
-  if (usersList != null)
-    usersList.appendChild(list_item);
-}
-
-function formatMessage(packet)
-{
-  return {
-    username: packet.username,
-    body: packet.msg,
-    time: new Date().toLocaleTimeString('nl-NL'),
-  };
-}
 
 </script>
 

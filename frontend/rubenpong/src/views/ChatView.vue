@@ -1,7 +1,14 @@
 
 <script setup lang="ts">
-import SearchBar from '@/components/SearchBarUsers.vue';
-
+import { ref } from "vue";
+let input = ref("");
+const users = [{name: 'Ruben1', pic: '', id: 1, admin: false}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '',  id: 3, admin: false}, {name: 'Oswin', pic: '',  id: 4, admin: false}, {name: 'Lindsay', pic: '', id: 5, admin: false}];
+function filteredList() {
+  if (input.value !== "")
+    return users.filter((user) =>
+      user.name.toLowerCase().includes(input.value.toLowerCase())
+    );
+}
 </script>
 
 <template>
@@ -51,7 +58,7 @@ import SearchBar from '@/components/SearchBarUsers.vue';
               Create Chat
           </button>
             <div  v-if="chatCreate === true" class="form-control">
-              <label for="room">Room</label>
+              <label for="room">Type</label>
               <select
                 id="room"
                 class="text-black"
@@ -71,7 +78,22 @@ import SearchBar from '@/components/SearchBarUsers.vue';
               </select>
               <div v-if="newChat.type === 'private'">
               <label for="name" class="pt-2">Add users</label>
-              <span class="text-black pr-4"><SearchBar /></span>
+              <span class="text-black pr-4">
+                <input
+    type="text" v-model="input" placeholder="Search users..."
+                VALYE
+                required
+                style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+              > 
+              <div class="item fruit" v-for="user in filteredList()" :key="user">
+                <span><button @click="goTo('otheruser/' + user.name, user.id)" class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1">{{ user.name }}</button></span>
+                <span><button v-if="!usersAdded.includes(user.id)" @click="addUser(user)" class="bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1" >Add</button></span>
+              </div>
+
+              <div class="item error" style="text-align: center;" v-if="input && !filteredList().length">
+                <p>No results found!</p>
+              </div>
+              </span>
               </div>
               <label for="name" class="pt-2">Chat name</label>
               <span class="text-black pr-4"><input
@@ -96,7 +118,6 @@ import SearchBar from '@/components/SearchBarUsers.vue';
                 required
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
               > </span></div>
-            {{ newChat }}
               <button :disabled="newChat.name === ''" @click="createChat(newChat.name)" 
               class="btn bg-blue-100"
             >
@@ -121,7 +142,7 @@ export default {
         {
           id: 1,
           name: 'Awesome Chat',
-          users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}],
+          users: [{name: 'Ruben1', pic: '', id: 1, admin: true}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '',  id: 3, admin: true}, {name: 'Oswin', pic: '',  id: 4, admin: true}, {name: 'Lindsay', pic: '', id: 5, admin: false}],
           type: 'withPassword',
           password: 'getIn',
           channelOwnerId: 3
@@ -129,7 +150,7 @@ export default {
         {
           id: 2,
           name: 'Less Awesome Chat',
-          users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}],
+          users: [{name: 'Ruben1', pic: '', id: 1, admin: true}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '',  id: 3, admin: true}, {name: 'Oswin', pic: '',  id: 4, admin: true}, {name: 'Lindsay', pic: '', id: 5, admin: false}],
           type: 'private',
           password: 'getIn',
           channelOwnerId: 3
@@ -146,7 +167,7 @@ export default {
       selectedChat: {
         id: null,
         name: '',
-        users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}],
+        users: [{name: 'Ruben1', pic: '', id: 1, admin: true}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '',  id: 3, admin: true}, {name: 'Oswin', pic: '',  id: 4, admin: true}, {name: 'Lindsay', pic: '', id: 5, admin: false}],
         type: '',
         password: '',
         channelOwnerId: 3
@@ -154,12 +175,13 @@ export default {
       newChat: {
         id: null,
         name: '',
-        users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}],
+        users: [],
         type: '',
         password: '',
         channelOwnerId: -1
       },
       id: -1,
+      usersAdded: [],
     }
   },
   async created() {
@@ -181,13 +203,18 @@ export default {
       //   this.$router.push('/login')
       console.log('/' + route + '?id=3');
       
-      this.$router.push('/' + route + '?id=3')
+      this.$router.push('/' + route + '?id=' + 3)
       },
     createChat(nameChat: string)
     {
      this.newChat.channelOwnerId = this.id;
      console.log('create chat');
      this.goTo('chatroom/' + nameChat);
+    },
+    addUser(user: any)
+    {
+      this.newChat.users.push(user);
+      this.usersAdded.push(user.id);
     }
   },
 }

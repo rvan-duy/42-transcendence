@@ -20,11 +20,12 @@
     "@nestjs/common": "^9.3.9",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.3.9",
-    "axios": "^1.3.4",
     "@tailwindcss/postcss7-compat": "^2.2.17",
+    "axios": "^1.3.4",
     "pinia": "^2.0.30",
     "postcss-loader": "^4.0.3",
     "socket.io-client": "^4.6.0",
+    "usemodal-vue3": "^0.3.7",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
   },

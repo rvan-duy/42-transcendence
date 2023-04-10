@@ -23,7 +23,10 @@ import { getBackend } from '@/utils/backend-requests';
         </div>
         </header>
         <main class="join-main">
+
         <button class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full" style="float: right">Block User</button>
+        <button @click="goTo('chatroom/AwesomeChat')" class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full mr-2" style="float: right" >Send message</button>
+
           <label for="status">Status</label>
           <p class="text-black">
             {{ status }}
