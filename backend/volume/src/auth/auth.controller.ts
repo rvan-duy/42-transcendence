@@ -12,7 +12,7 @@ export class AuthController {
 
   @Get('')
   @UseGuards(FortyTwoGuard)
-  @ApiOperation({ summary: 'Login with 42' })
+  @ApiOperation({ summary: 'Redirects to 42 login' })
   async login() {}
 
   @Get('callback')
