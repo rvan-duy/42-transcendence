@@ -6,12 +6,21 @@ import * as session from 'express-session';
 import * as passport from 'passport';
 import * as dotenv from 'dotenv';
 import * as cookieParser from 'cookie-parser';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 dotenv.config();
 console.log(process.env); // debug
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
+  const config = new DocumentBuilder()
+    .setTitle('Transcendence API')
+    .setDescription('API for Transcendence project')
+    .setVersion('1.0')
+    .addCookieAuth('JWT Token', { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' })
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
   const prismaService = app.get(PrismaService);
   await prismaService.enableShutdownHooks(app);
   const allowed_origins: string[] = ['*', 'https://api.intra.42.fr', 'http://localhost:8000', 'http://127.0.0.1:8000'];

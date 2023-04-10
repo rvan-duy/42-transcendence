@@ -15,7 +15,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
   // When changing names of the user, the jwt token still has the old name
   // So do not rely on the username in the jwt token, use the id instead
+
+  // The issue from above is presumably fixed, but I'm not sure
+
   async validate(payload: any) {
-    return { id: payload.sub, username: payload.username };
+    const user = await this.prismaUserService.user({ id: payload.sub });
+    if (!user) {
+      return null;
+    }
+
+    if (user.twoFactor === true && payload.isSecondFactorAuthenticated === false) {
+      return null;
+    }
+
+    return user;
   }
 }

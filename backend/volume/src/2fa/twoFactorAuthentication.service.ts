@@ -22,6 +22,11 @@ export class TwoFactorAuthenticationService {
     return isVerified;
   }
 
+  async getTwoFactorSecret(userId: any): Promise<string> {
+    const user = await this.prismaUserService.user({ id: Number(userId) });
+    return user.secret;
+  }
+
   async turnOnTwoFactorForUser(userId: any): Promise<void> {
     this.prismaUserService.updateUser({
       where: {

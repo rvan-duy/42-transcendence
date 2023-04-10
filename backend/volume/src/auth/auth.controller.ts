@@ -2,17 +2,22 @@ import { Controller, UseGuards, Request, Response, Get, HttpStatus } from '@nest
 import { FortyTwoGuard } from './forty-two-auth.guard';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
+import { ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-@Controller()
+@Controller('auth')
+@ApiCookieAuth()
+@ApiTags('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Get('')
   @UseGuards(FortyTwoGuard)
-  @Get('auth')
+  @ApiOperation({ summary: 'Login with 42' })
   async login() {}
 
+  @Get('callback')
   @UseGuards(FortyTwoGuard)
-  @Get('auth/callback')
+  @ApiOperation({ summary: 'Callback for 42 login, redirects to frontend' })
   async callback(@Request() req: any, @Response() res: any) {
     const loggedUser = this.authService.login(req.user);
 
@@ -24,14 +29,18 @@ export class AuthController {
     res.redirect(`http://${process.env.CODAM_PC}:${process.env.FRONTEND_PORT}`);
   }
 
+  @Get('validate')
   @UseGuards(JwtAuthGuard)
-  @Get('auth/validate')
+  @ApiOperation({ summary: 'Validate JWT' })
+  @ApiResponse({ status: HttpStatus.OK, description: 'JWT is valid' })
+  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'JWT is invalid' })
   async check(@Request() req: any, @Response() res: any) {
     res.status(HttpStatus.OK).send();
   }
 
   @UseGuards(JwtAuthGuard)
-  @Get('auth/logout')
+  @Get('logout')
+  @ApiOperation({ summary: 'Logout, redirects to frontend' })
   async logout(@Request() req: any, @Response() res: any) {
     res.clearCookie('jwt');
     res.redirect(`http://${process.env.CODAM_PC}:${process.env.FRONTEND_PORT}`);
