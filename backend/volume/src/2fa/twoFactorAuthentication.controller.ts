@@ -3,6 +3,9 @@ import { TwoFactorAuthenticationService } from './twoFactorAuthentication.servic
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AuthService } from 'src/auth/auth.service';
 
+/**
+* Controller for managing two-factor authentication.
+*/
 @Controller()
 export class TwoFactorAuthenticationController {
   constructor(
@@ -10,6 +13,11 @@ export class TwoFactorAuthenticationController {
       private readonly authService: AuthService,
   ) {}
 
+  /**
+  * Endpoint to generate a two-factor authentication secret for a user.
+  * Requires a valid JWT token.
+  * Generates a QR code with the OTP authentication URL and sends it in the response.
+  */
   @UseGuards(JwtAuthGuard)
   @Get('2fa/generate')
   async generateTwoFactorSecret(@Request() req: any, @Response() res: any) {
@@ -17,6 +25,13 @@ export class TwoFactorAuthenticationController {
     return this.twoFactorAuthenticationService.pipeQrCode(res, otpauthUrl);
   }
 
+  /**
+  * Endpoint to turn on two-factor authentication for a user.
+  * Requires a valid JWT token.
+  * Verifies the two-factor code provided by the user against the generated secret.
+  * If the code is verified, turns on two-factor authentication for the user.
+  * Otherwise, sends a "FORBIDDEN" response with an error message.
+  */
   @UseGuards(JwtAuthGuard)
   @Get('2fa/turn-on')
   async turnOnTwoFactorAuthentication(@Request() req: any, @Response() res: any) {
@@ -28,6 +43,13 @@ export class TwoFactorAuthenticationController {
     return res.status(HttpStatus.OK).send('2FA turned on');
   }
 
+  /**
+  * Endpoint to turn off two-factor authentication for a user.
+  * Requires a valid JWT token.
+  * Verifies the two-factor code provided by the user against the generated secret.
+  * If the code is verified, turns off two-factor authentication for the user.
+  * Otherwise, sends a "FORBIDDEN" response with an error message.
+  */
   @UseGuards(JwtAuthGuard)
   @Get('2fa/turn-off')
   async turnOffTwoFactorAuthentication(@Request() req: any, @Response() res: any) {
@@ -39,6 +61,13 @@ export class TwoFactorAuthenticationController {
     return res.status(HttpStatus.OK).send('2FA turned off');
   }
 
+  /**
+  * Endpoint to verify a two-factor authentication code for a user.
+  * Requires a valid JWT token.
+  * Verifies the two-factor code provided by the user against the generated secret.
+  * If the code is verified, generates a new JWT token and sends it in a cookie in the response.
+  * Otherwise, sends a "FORBIDDEN" response with an error message.
+  */
   @UseGuards(JwtAuthGuard)
   @Get('2fa/verify')
   async verifyTwoFactorCode(@Request() req: any, @Response() res: any) {
