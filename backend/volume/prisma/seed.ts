@@ -78,7 +78,7 @@ async function main() {
 
       name: 'Cluster',
 
-	  access: Access.PUBLIC,
+      access: Access.PUBLIC,
 
       owner: {
         connect: {
