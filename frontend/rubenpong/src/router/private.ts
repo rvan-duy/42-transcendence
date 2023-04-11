@@ -36,6 +36,11 @@ const routes = [
     name: 'user',
     component: UserView,
   },
+  {
+    path: '/backend',
+    name: 'backend',
+    beforeEnter() { location.href = 'http://localhost:3000/api'; }
+  }
 ];
 
 export default routes.map(route => {

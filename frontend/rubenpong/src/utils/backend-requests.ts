@@ -16,11 +16,11 @@ export function getBackend(endpoint: string): Promise<Response> {
   return res;
 }
 
-export async function putBackend(endpoint: string, body: any): Promise<Response> {
+export async function postBackend(endpoint: string, body: any): Promise<Response> {
   const endpointUrl = `${BACKEND_URL}/${endpoint}`;
   const token = getJwtFromCookies();
   const res = await fetch(endpointUrl, {
-    method: 'PUT',
+    method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
