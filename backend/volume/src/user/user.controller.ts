@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Put, Request, Response, UseGuards, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, Param, Put, Post, Request, Response, UseGuards, HttpStatus, Query } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
@@ -92,5 +92,34 @@ export class UserController {
     }
 
     res.status(HttpStatus.OK).send(users);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('befriend')
+  async handleFriendRequest(@Request() req: any, @Query('id') userId: number) {
+    // is this user blocked by other user?
+      // do not do anything maybe return a negative response
+    // did the other user already send a friend request?
+      // add as friends on both sides
+    // set pending on this side
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('unfriend')
+  async handleUnfriend(@Request() req: any, @Query('id') userId: number) {
+    // remove as friends from both sides
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('block')
+  async handleBlock(@Request() req: any, @Query('id') userId: number) {
+    // add to block on this side
+    // unfriend in case they where friends
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('unblock')
+  async handleUnBlock(@Request() req: any, @Query('id') userId: number) {
+    // unblock on this users side
   }
 }
