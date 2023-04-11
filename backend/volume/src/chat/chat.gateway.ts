@@ -32,7 +32,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private jwtService: JwtService,
   ){}
   private server: Server;
-  // private gateService: GateService;
 
   @WebSocketServer() all_clients: Server; //all clients
   
