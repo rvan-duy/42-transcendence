@@ -2,11 +2,12 @@ import { Controller, Get, UseGuards, Request, Response, HttpStatus, Post } from 
 import { TwoFactorAuthenticationService } from './twoFactorAuthentication.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AuthService } from 'src/auth/auth.service';
-import { ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiForbiddenResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 
 @Controller('2fa')
 @ApiCookieAuth()
 @ApiTags('2fa')
+@ApiUnauthorizedResponse({ description: 'Unauthorized', type: Object })
 export class TwoFactorAuthenticationController {
   constructor(
       private readonly twoFactorAuthenticationService: TwoFactorAuthenticationService,
@@ -16,7 +17,7 @@ export class TwoFactorAuthenticationController {
   @Get('generate')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Generate a two-factor authentication secret' })
-  @ApiResponse({ status: 200, description: 'Two-factor authentication secret generated' })
+  @ApiOkResponse({ description: 'Two-factor authentication secret generated', type: String })
   async generateTwoFactorSecret(@Request() req: any, @Response() res: any) {
     const { otpauthUrl } = await this.twoFactorAuthenticationService.generateTwoFactorSecret(req.user);
     return this.twoFactorAuthenticationService.pipeQrCode(res, otpauthUrl);
@@ -25,8 +26,8 @@ export class TwoFactorAuthenticationController {
   @Get('secret')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get the two-factor authentication secret of the current user' })
-  @ApiResponse({ status: 200, description: 'Two-factor authentication secret of current user', type: String })
-  @ApiResponse({ status: 404, description: 'Two-factor authentication secret not found', type: String })
+  @ApiOkResponse({ description: 'Two-factor authentication secret of current user', type: String })
+  @ApiNotFoundResponse({ description: 'Two-factor authentication secret not found', type: String })
   async getTwoFactorSecret(@Request() req: any, @Response() res: any) {
     const secret = await this.twoFactorAuthenticationService.getTwoFactorSecret(req.user.id);
     if (secret === null) {
@@ -41,12 +42,13 @@ export class TwoFactorAuthenticationController {
     summary: 'Turn on two-factor authentication for current user', 
     description: 'Verifies the two-factor code provided by the user against the generated secret. If the code is verified, turns on two-factor authentication for the user.'
   })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Two-factor authentication turned on', type: String })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Two-factor authentication verification failed', type: String })
+  @ApiBody({ description: 'The two-factor code to verify (code)', type: Object })
+  @ApiOkResponse({ description: 'Two-factor authentication turned on', type: String })
+  @ApiBadRequestResponse({ description: 'Two-factor authentication verification failed', type: String })
   async turnOnTwoFactorAuthentication(@Request() req: any, @Response() res: any) {
     const isVerified = await this.twoFactorAuthenticationService.verifyTwoFactorCode(req.user.id, req.body.code);
     if (isVerified === false) {
-      return res.status(HttpStatus.FORBIDDEN).send('Two-factor authentication verification failed');
+      return res.status(HttpStatus.BAD_REQUEST).send('Two-factor authentication verification failed');
     }
     this.twoFactorAuthenticationService.turnOnTwoFactorForUser(req.user.id);
     return res.status(HttpStatus.OK).send('Two-factor authentication turned on');
@@ -58,12 +60,12 @@ export class TwoFactorAuthenticationController {
     summary: 'Turn off two-factor authentication for current user',
     description: 'Verifies the two-factor code provided by the user against the generated secret. If the code is verified, turns off two-factor authentication for the user.'
   })
-  @ApiResponse({ status: HttpStatus.OK, description: 'Two-factor authentication turned off', type: String })
-  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Two-factor authentication verification failed', type: String })
+  @ApiOkResponse({ description: 'Two-factor authentication turned on', type: String })
+  @ApiBadRequestResponse({ description: 'Two-factor authentication verification failed', type: String })
   async turnOffTwoFactorAuthentication(@Request() req: any, @Response() res: any) {
     const isVerified = await this.twoFactorAuthenticationService.verifyTwoFactorCode(req.user.id, req.body.code);
     if (isVerified === false) {
-      return res.status(HttpStatus.FORBIDDEN).send('Two-factor authentication verification failed');
+      return res.status(HttpStatus.BAD_REQUEST).send('Two-factor authentication verification failed');
     }
     this.twoFactorAuthenticationService.turnOffTwoFactorForUser(req.user.id);
     return res.status(HttpStatus.OK).send('Two-factor authentication turned off');
