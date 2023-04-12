@@ -152,11 +152,6 @@ interface.
                 </p>
               </div>
             </div>
-            <!-- </template> -->
-
-            <!-- <div class="chat-messages">
-                                                                  CHAT MESSAGES APPEAR HERE
-                                                              </div> -->
           </main>
           <div class="chat-form-container">
             <form
@@ -224,7 +219,7 @@ export default {
           .then((data) => {
             this.idUser = data.id;
             console.log(data.id);
-            this.determineAdmin();
+            this.determineAdmin();  // is this needed?
 
           });
       });
@@ -245,6 +240,13 @@ export default {
       this.messages = room.history;
       console.log(this.messages);
     });
+
+    // accept new messages from the backend
+    connection.socket.on('receiveNewMsg', (msg: any) => {
+      console.log('msg: ', msg);
+      msg.username = msg.author.name;
+      this.addMessage(msg);
+    });
   },
   methods: {
     goTo(route: string) {
@@ -260,7 +262,8 @@ export default {
       return new Date(timestamp).toLocaleTimeString('nl-NL');
     },
     determineAdmin() {
-      return (true); // TODO: chat.adminId === user.id
+      return (this.chat?.ownerId === this.idUser); // checks if is owner admin is harder to check
+      // maybe easier to alow a backend call for this? let me know if that is needed
 
       //   users.find((user) => {
       //     if (user.id === this.idUser) {
@@ -273,12 +276,7 @@ export default {
   },
 };
 
-connection.socket.on('receiveNewMsg', (msg: any) => {
-  console.log('msg: ', msg);
-  msg.username = msg.author.name;
-  msg.time = new Date().toLocaleTimeString('nl-NL'),
-  outputMessages(msg);
-});
+// I am pretty sure this is used to send the chat messages to the server
 // const chatForm = document.getElementById('chat-form');
 async function chatFormSubmit(e: any, chatId: number) {
   const msg = e.target.elements.msg;
@@ -286,21 +284,6 @@ async function chatFormSubmit(e: any, chatId: number) {
   connection.socket.emit('sendMsg', packet);
   msg.value = ''; //clears the message text you just entered
   msg.focus(); //focuses on the text input area again after sending
-}
-// Displays the messages that the frontend receives from the server.
-function outputMessages(message: any) {
-  const div = document.createElement('div');
-  div.classList.add('message');
-  div.innerHTML =
-    `<p class="meta">${message.username} <span>${message.time}</span></p>
-	<p class="text">
-		${message.body}
-	</p>`;
-  const chatMessages = document.querySelector('.chat-messages');
-  if (chatMessages != null) {
-    chatMessages.appendChild(div);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-  }
 }
 
 </script>
