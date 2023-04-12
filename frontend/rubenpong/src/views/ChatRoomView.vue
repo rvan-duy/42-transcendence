@@ -22,7 +22,6 @@ interface.
 
 <template>
   <div class="chat">
-
     <body>
       <div id="app">
         <div class="chat-container p-8">
@@ -33,21 +32,35 @@ interface.
             </h1>
             <!-- {{ $route.query.id}} -->
             <div style="text-align: right;">
-              <button class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs"
-                @click="goTo('chat')">
+              <button
+                class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs"
+                @click="goTo('chat')"
+              >
                 Leave Chat
               </button>
               <!-- below is double is needed === '?' -->
-              <span v-if="chat?.access === 'PROTECTED'"
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white" @click="goTo('chat')">Change
+              <span
+                v-if="chat?.access === 'PROTECTED'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                @click="goTo('chat')"
+              >Change
                 Password</span>
-              <span v-if="chat?.access === 'PROTECTED'"
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white" @click="goTo('chat')">Delete
+              <span
+                v-if="chat?.access === 'PROTECTED'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                @click="goTo('chat')"
+              >Delete
                 Password</span>
-              <span v-if="chat?.access === 'PUBLIC'"
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white" @click="goTo('chat')"> Set
+              <span
+                v-if="chat?.access === 'PUBLIC'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                @click="goTo('chat')"
+              > Set
                 Password</span>
-              <span class="btn ml-3" @click="goTo('chat')">Leave Room</span>
+              <span
+                class="btn ml-3"
+                @click="goTo('chat')"
+              >Leave Room</span>
             </div>
             <div style="text-align: right;" />
           </header>
@@ -55,42 +68,69 @@ interface.
             <div class="chat-sidebar">
               <h3><i class="fas fa-users" /> Users</h3>
               <ul id="users">
-                <li v-for="user in users" :key="user.id" :value="user">
+                <li
+                  v-for="user in users"
+                  :key="user.id"
+                  :value="user"
+                >
                   <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
-                    <img src="../assets/dagmar.jpeg" width="30" height="30"
-                      style="border-radius: 50%; vertical-align: center; float: left;">
+                    <img
+                      src="../assets/dagmar.jpeg"
+                      width="30"
+                      height="30"
+                      style="border-radius: 50%; vertical-align: center; float: left;"
+                    >
                     <span class="text-white text-xs p-1">
                       {{ user.name }}
                     </span>
                   </span>
 
-                  <span v-if="user.id === chat?.ownerId" class="text-green-800 text-xs p-1 font-bold">
+                  <span
+                    v-if="user.id === chat?.ownerId"
+                    class="text-green-800 text-xs p-1 font-bold"
+                  >
                     Channel Owner
                   </span>
-                  <span v-if="user.id !== chat?.ownerId" class="text-green-200 text-xs p-1">
+                  <span
+                    v-if="user.id !== chat?.ownerId"
+                    class="text-green-200 text-xs p-1"
+                  >
                     Admin
                   </span>
-                  <span v-if="user.id !== chat?.ownerId && idUser === chat?.ownerId" class="text-green-200 text-xs p-1">
-                    <button class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="goTo('game')">Make Admin</button>
+                  <span
+                    v-if="user.id !== chat?.ownerId && idUser === chat?.ownerId"
+                    class="text-green-200 text-xs p-1"
+                  >
+                    <button
+                      class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')"
+                    >Make Admin</button>
                   </span>
-                  <button class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                    @click="goTo('game')">
+                  <button
+                    class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                    @click="goTo('game')"
+                  >
                     Invite to game
                   </button>
 
                   <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
                   <div v-if="isAdmin && user.id !== idUser && user.id !== chat?.ownerId">
-                    <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="goTo('game')">
+                    <button
+                      class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')"
+                    >
                       Ban
                     </button>
-                    <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="goTo('game')">
+                    <button
+                      class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')"
+                    >
                       Mute
                     </button>
-                    <button class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="goTo('game')">
+                    <button
+                      class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="goTo('game')"
+                    >
                       Kick
                     </button>
                   </div>
@@ -102,9 +142,18 @@ interface.
             </div>
           </main>
           <div class="chat-form-container">
-            <form id="chat-form" @submit.prevent="chatFormSubmit($event, chatId)">
-              <input id="msg" style="border-radius: 20px" type="text" placeholder="Enter Message" required
-                autocomplete="off">
+            <form
+              id="chat-form"
+              @submit.prevent="chatFormSubmit($event, chatId)"
+            >
+              <input
+                id="msg"
+                style="border-radius: 20px"
+                type="text"
+                placeholder="Enter Message"
+                required
+                autocomplete="off"
+              >
 
               <div class="px-2">
                 <button class="btn">
@@ -209,7 +258,7 @@ connection.socket.on('receiveNewMsg', (msg: any) => {
   console.log('msg: ', msg);
   msg.username = msg.author.name;
   msg.time = new Date().toLocaleTimeString('nl-NL'),
-    outputMessages(msg);
+  outputMessages(msg);
 });
 // const chatForm = document.getElementById('chat-form');
 async function chatFormSubmit(e: any, chatId: number) {
