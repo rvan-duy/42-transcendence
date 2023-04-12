@@ -2,11 +2,12 @@ import { Controller, UseGuards, Request, Response, Get, HttpStatus } from '@nest
 import { FortyTwoGuard } from './forty-two-auth.guard';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { ApiCookieAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiCookieAuth, ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 
 @Controller('auth')
 @ApiCookieAuth()
 @ApiTags('auth')
+@ApiUnauthorizedResponse({ description: 'Unauthorized', type: Object })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -26,16 +27,15 @@ export class AuthController {
       httpOnly: false, // we will access the cookie from the frontend, so we need to set this to false
       secure: false, // we are not using https, leave this off
     });
-    res.redirect(`http://${process.env.CODAM_PC}:${process.env.FRONTEND_PORT}`);
+    return res.redirect(`http://${process.env.CODAM_PC}:${process.env.FRONTEND_PORT}`);
   }
 
   @Get('validate')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Validate JWT' })
-  @ApiResponse({ status: HttpStatus.OK, description: 'JWT is valid' })
-  @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'JWT is invalid' })
+  @ApiOkResponse({ description: 'JWT is valid', type: String })
   async check(@Request() req: any, @Response() res: any) {
-    res.status(HttpStatus.OK).send();
+    return res.status(HttpStatus.OK).send('JWT is valid');
   }
 
   @UseGuards(JwtAuthGuard)
@@ -43,6 +43,6 @@ export class AuthController {
   @ApiOperation({ summary: 'Logout, redirects to frontend' })
   async logout(@Request() req: any, @Response() res: any) {
     res.clearCookie('jwt');
-    res.redirect(`http://${process.env.CODAM_PC}:${process.env.FRONTEND_PORT}`);
+    return res.redirect(`http://${process.env.CODAM_PC}:${process.env.FRONTEND_PORT}`);
   }
 }
