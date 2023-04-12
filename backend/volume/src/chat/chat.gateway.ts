@@ -9,7 +9,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { MsgDto, MsgService } from '../msg/msg.service';
 import { GateService } from 'src/gate/gate.service';
-import { roomDto, RoomService } from 'src/room/room.service';
+import { RoomService } from 'src/room/room.service';
 import { Room } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
@@ -126,98 +126,4 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       // delete the message
       this.msgService.handleDeleteMsg(payload);
     }
-  
-  @SubscribeMessage('createRoom')
-  async createNewRoom(client: Socket, payload: roomDto) {
-    // client extraction
-    const userId = await this.gate.getUserBySocket(client);
-
-    // force room-creating user to be owner
-    payload.ownerId = userId;
-
-    // use the roomService to create a new chatroom and return the room object
-    return (this.roomService.createChat(payload));
-  }
-
-  @SubscribeMessage('destroyRoom')
-  async destroyRoom(client: Socket, payload: number) {
-    const roomId: number = payload;
-
-    // client verification
-    const userId = await this.gate.getUserBySocket(client);
-
-    // is the sender is not the chat owner leave it intact and return and error
-    if (await this.chatService.isOwner(roomId, userId) === false)
-      return ;  // add error return later
-
-    // destroy with fire
-    this.roomService.removeChat(roomId);
-  }
-
-  // check if this needs to be an invite according to pdf || think adding is enough
-  @SubscribeMessage('addUserToRoom')
-  async addUserToRoom(client: Socket, payload: any) {
-    const {roomId, userId} = payload;
-
-    // client verification
-    const clientId = await this.gate.getUserBySocket(client);
-
-    // only alow the chat owner and admins to add members to the chat
-    if (await this.chatService.isOwner(roomId, clientId) === false && await this.chatService.isAdmin(roomId, clientId))
-      return ;  // add error return later
-
-    // add the user to the chat
-    this.roomService.addToChat(userId, roomId);
-  }
-
-  @SubscribeMessage('makeUserAdmin')
-  async makeUserAdmin(client: Socket, payload: any) {
-    const {roomId, userId} = payload;
-
-    // client verification
-    const clientId = await this.gate.getUserBySocket(client);
-
-    // is the sender is not the chat owner leave it intact and return and error
-    if (await this.chatService.isOwner(roomId, clientId) === false)
-      return ;  // add error return later
-
-    // make the user admin in this chat
-    this.roomService.makeAdmin(roomId, userId);
-  }
-
-  @SubscribeMessage('banUserFromRoom')
-  async banUserFromRoom(client: Socket, payload: any) {
-    const {roomId, banUserId} = payload;
-
-    const clientId = await this.gate.getUserBySocket(client);
-
-    // only alow the chat owner and admins to ban members from the chat
-    if (await this.chatService.isOwner(roomId, clientId) === false && await this.chatService.isAdmin(roomId, clientId))
-      return ;  // add error return later
-
-    // check if the muted user is not the owner
-    if (this.chatService.isOwner(roomId, banUserId))
-      return ;
-
-    // add user to the banned list in this chat
-    this.roomService.banUser(roomId, banUserId);
-  }
-
-  @SubscribeMessage('muteUserInRoom')
-  async muteUserInRoom(client: Socket, payload: any) { // client verification? / extraction
-    const {roomId, muteUserId} = payload;
-
-    const clientId = await this.gate.getUserBySocket(client);
-
-    // only alow the chat owner and admins to ban members from the chat
-    if (await this.chatService.IsAdminOrOwner(roomId, clientId) === false)
-      return ;  // add error return later
-
-    // check if the muted user is not the owner
-    if (this.chatService.isOwner(roomId, muteUserId))
-      return ;
-
-    // add user to the muted list in this chat
-    this.roomService.muteUser(roomId, muteUserId);
-  }
 }

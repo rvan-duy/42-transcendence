@@ -95,9 +95,9 @@ export class UserController {
   }
   
   // is this user blocked by other user?
-    // do not do anything maybe return a negative response
+  // do not do anything maybe return a negative response
   // did the other user already send a friend request?
-    // add as friends on both sides
+  // add as friends on both sides
   // set pending on this side
   @UseGuards(JwtAuthGuard)
   @Post('befriend')
@@ -117,13 +117,13 @@ export class UserController {
       meAsUser.pending.splice(meAsUser.pending.indexOf(userId), 1); // removes the pending request
       otherAsUser.friends.push(myId);
       this.userService.updateUser({
-      where: {
-        id: myId,
+        where: {
+          id: myId,
         },
-      data: {
-        friends: meAsUser.friends,
+        data: {
+          friends: meAsUser.friends,
         }
-      })
+      });
       return ; // well done you are now friends
     }
     otherAsUser.pending.push(myId);
@@ -134,7 +134,7 @@ export class UserController {
       data: {
         pending: otherAsUser.pending,
       }
-    })
+    });
     return ; // wait till they accept your request (spannend!)
   }
 
@@ -165,7 +165,7 @@ export class UserController {
       data: {
         friends: otherAsUser.friends,
       }
-    })
+    });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -182,7 +182,7 @@ export class UserController {
       data: {
         blocked: meAsUser.blocked,
       },
-    })
+    });
     // unfriend in case they where friends
     this.handleUnfriend(req, userId);
   }
@@ -203,6 +203,6 @@ export class UserController {
       data: {
         blocked: meAsUser.blocked,
       },
-    })
+    });
   }
 }

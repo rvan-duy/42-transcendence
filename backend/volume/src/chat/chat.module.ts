@@ -8,6 +8,7 @@ import { AuthModule } from 'src/auth/auth.module';
 import { UserModule } from 'src/user/user.module';
 import { PrismaRoomModule } from 'src/room/prisma/prismaRoom.module';
 import { JwtModule } from '@nestjs/jwt';
+import { CryptModule } from 'src/crypt/crypt.module';
 @Module({
   imports: [MsgModule,
     RoomModule,
@@ -15,7 +16,8 @@ import { JwtModule } from '@nestjs/jwt';
     AuthModule,
     UserModule,
     PrismaRoomModule,
-    JwtModule
+    JwtModule,
+    CryptModule,
   ],
   controllers: [],
   providers: [ChatGateway, ChatService],
