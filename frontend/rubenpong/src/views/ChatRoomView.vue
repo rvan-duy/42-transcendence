@@ -137,9 +137,26 @@ interface.
                 </li>
               </ul>
             </div>
+            <!-- <template> -->
             <div class="chat-messages">
-              <!-- CHAT MESSAGES APPEAR HERE -->
+              <div
+                v-for="message in messages"
+                :key="message.id"
+                class="message"
+              >
+                <p class="meta">
+                  {{ message.username }} <span>{{ toLocale(message.timestamp) }}</span>
+                </p>
+                <p class="text">
+                  {{ message.body }}
+                </p>
+              </div>
             </div>
+            <!-- </template> -->
+
+            <!-- <div class="chat-messages">
+                                                                  CHAT MESSAGES APPEAR HERE
+                                                              </div> -->
           </main>
           <div class="chat-form-container">
             <form
@@ -190,6 +207,7 @@ connection.setupSocketConnection('/chat');
 export default {
   data() {
     return {
+      messages: [] as any,
       chat: null as Chat | null,
       users: [] as User[],
       idUser: null,
@@ -214,8 +232,18 @@ export default {
       console.log('loadRoom: ', room);
       this.users = room.users;
       this.chat = room.chat;
-      const history = room.history;
-      putHistory(history);
+
+      // Wait for all the getBackend calls to finish
+      const promises = room.history.map((msg: any) => {
+        return getBackend('user/id/' + msg.authorId)
+          .then(res => res.json())
+          .then(user => {
+            msg.username = user.name;
+          });
+      });
+      await Promise.all(promises);
+      this.messages = room.history;
+      console.log(this.messages);
     });
   },
   methods: {
@@ -224,6 +252,12 @@ export default {
     },
     getChatId() {
       return this.$route.query.id;
+    },
+    addMessage(msg: any) {
+      this.messages.push(msg);
+    },
+    toLocale(timestamp: any) {
+      return new Date(timestamp).toLocaleTimeString('nl-NL');
     },
     determineAdmin() {
       return (true); // TODO: chat.adminId === user.id
@@ -238,21 +272,6 @@ export default {
     }
   },
 };
-
-async function putHistory(data: any) {
-  console.log('chat history : ', data);
-  for (const msg of data) {
-    var username = await getBackend(`user/id/${msg.authorId}`)
-      .then(async function (res) {
-        var data = await res.json();
-        return data.name;
-      })
-      .catch(error => console.log(`loadChatHistory: Couldn't fetch username for userId ${msg.authorId}: ` + error.message));
-    const format_time = new Date(msg.timestamp).toLocaleTimeString('nl-NL');
-    var packet = { username: username, time: format_time, body: msg.body };
-    outputMessages(packet);
-  }
-}
 
 connection.socket.on('receiveNewMsg', (msg: any) => {
   console.log('msg: ', msg);
