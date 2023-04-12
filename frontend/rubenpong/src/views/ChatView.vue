@@ -1,13 +1,12 @@
 
 <script setup lang="ts">
-import SocketioService from '../services/socketio.service.js';
-// import { chat_socket } from '../main.ts';
 import SearchBar from '@/components/SearchBarUsers.vue';
 
 </script>
 
 <template>
   <div class="chat">
+
     <body>
       <div class="join-container">
         <header class="join-header">
@@ -17,119 +16,60 @@ import SearchBar from '@/components/SearchBarUsers.vue';
           <div v-if="chatCreate === false">
             <div class="form-control">
               <label for="room">Room</label>
-              <select
-                id="room"
-                v-model="selectedChat"
-                class="text-black"
-                name="room"
-                style="border-radius: 20px"
-              >
-                <option
-                  v-for="chat in chats"
-                  :key="chat.id"
-                  :value="chat"
-                >
+              <select id="room" v-model="selectedChat" class="text-black" name="room" style="border-radius: 20px">
+                <option v-for="chat in chats" :key="chat.id" :value="chat">
                   {{ chat.name }}
                 </option>
               </select>
             </div>
             <div v-if="selectedChat?.access === 'PROTECTED'">
               <label for="name">Password</label>
-              <span class="text-black pr-4"><input
-                id="username"
-                v-model="enteredPW"
-                VALYE
-                type="text"
-                name="username"
-                placeholder="Enter username..."
-                required
-                style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-              > </span>
+              <span class="text-black pr-4"><input id="username" v-model="enteredPW" VALYE type="text" name="username"
+                  placeholder="Enter username..." required
+                  style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"> </span>
             </div>
-            <button
-              v-if="selectedChat?.access === 'PUBLIC' || selectedChat?.access === 'PRIVATE'"
-              :disabled="selectedChat?.name === ''"
-              class="btn bg-blue-100"
-              @click="goTo('chatroom/' + selectedChat?.name)"
-            >
+            <button v-if="selectedChat?.access === 'PUBLIC' || selectedChat?.access === 'PRIVATE'"
+              :disabled="selectedChat?.name === ''" class="btn bg-blue-100"
+              @click="goTo('chatroom/' + selectedChat?.name + '?id=' + selectedChat?.id)">
               Join Chat
             </button>
           </div>
-          <button
-            v-if="chatCreate === false"
-            class="btn bg-blue-500 text-white"
-            @click="chatCreate = true"
-          >
+          <button v-if="chatCreate === false" class="btn bg-blue-500 text-white" @click="chatCreate = true">
             Create Chat
           </button>
-          <div
-            v-if="chatCreate === true"
-            class="form-control"
-          >
+          <div v-if="chatCreate === true" class="form-control">
             <label for="room">Room</label>
-            <select
-              id="chat_type"
-              v-model="newChat.type"
-              class="text-black"
-              name="room"
-              style="border-radius: 20px"
-              required
-            >
-              <option value="private">
+            <!-- this needs to change -->
+            <select id="chat_type" v-model="newChat.access" class="text-black" name="room" style="border-radius: 20px"
+              required>
+              <option value="PRIVATE">
                 Private
               </option>
-              <option value="public">
+              <option value="PUBLIC">
                 Public
               </option>
-              <option value="withPassword">
+              <option value="PROTECTED">
                 With Password
               </option>
             </select>
-            <div v-if="newChat.type === 'private'">
-              <label
-                for="name"
-                class="pt-2"
-              >Add users</label>
+            <div v-if="newChat.access === 'PRIVATE'">
+              <label for="name" class="pt-2">Add users</label>
               <span class="text-black pr-4">
                 <SearchBar />
               </span>
             </div>
-            <label
-              for="name"
-              class="pt-2"
-            >Chat name</label>
-            <span class="text-black pr-4"><input
-              id="username"
-              v-model="newChat.name"
-              VALYE
-              type="text"
-              name="username"
-              placeholder="Enter username..."
-              required
-              style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-            > </span>
-            <div v-if="newChat.type === 'withPassword'">
-              <label
-                for="name"
-                class="pt-2"
-              >Password</label>
-              <span class="text-black pr-4"><input
-                id="username"
-                v-model="newChat.password"
-                VALYE
-                type="text"
-                name="username"
-                placeholder="Enter username..."
-                required
-                style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-              > </span>
+            <label for="name" class="pt-2">Chat name</label>
+            <span class="text-black pr-4"><input id="username" v-model="newChat.name" VALYE type="text" name="username"
+                placeholder="Enter username..." required
+                style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"> </span>
+            <div v-if="newChat.access === 'PROTECTED'">
+              <label for="name" class="pt-2">Password</label>
+              <span class="text-black pr-4"><input id="username" v-model="newChat.password" VALYE type="text"
+                  name="username" placeholder="Enter username..." required
+                  style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"> </span>
             </div>
             {{ newChat }}
-            <button
-              :disabled="newChat.name === ''"
-              class="btn bg-blue-100"
-              @click="createChat(newChat.name)"
-            >
+            <button :disabled="newChat.name === ''" class="btn bg-blue-100" @click="createChat(newChat)">
               Create Chat
             </button>
           </div>
@@ -140,9 +80,7 @@ import SearchBar from '@/components/SearchBarUsers.vue';
 </template>
 
 <script lang="ts">
-import { getBackend } from '../utils/backend-requests';
-const connection = SocketioService;
-connection.setupSocketConnection('/chat');
+import { getBackend, postBackend } from '../utils/backend-requests';
 
 interface Chat {
   id: number;
@@ -150,57 +88,39 @@ interface Chat {
   ownerId: number;
   access: string;
   lastId: number;
+  password: string;
 }
-
-let chats: Chat[] = [];
-
-connection.socket.on('loadAllChats', async (allChats: any) => {
-  chats = allChats;
-});
 
 export default {
   data() {
     return {
-      chats: [],
+      chats: [] as Chat[],
       selectedChat: null as Chat | null,
       chatCreate: false,
       enteredPW: '',
-      newChat: {
-        id: null,
-        name: '',
-        users: [{ name: 'Ruben1', pic: '', id: 1 }, { name: 'Ruben2', pic: '', id: 2 }, { name: 'Dagmar', pic: '', id: 3 }, { name: 'Oswin', pic: '', id: 4 }, { name: 'Lindsay', pic: '', id: 5 }],
-        type: '',
-        password: '',
-        channelOwnerId: -1
-      },
       id: -1,
+      newChat: {} as Chat,
     };
   },
   async created() {
+    const res = await getBackend('chat/myRooms')
+    this.chats = await res.json() as Chat[];
     await getBackend('user/me')
       .then((response => response.json()))
       .then((data) => {
-        // this.name = data.name;
-        // this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/${this.name}.jpg`;
         this.id = data.id;
         console.log(this.id);
-        // this.status = 'Online';
       });
   },
   methods: {
     goTo(route: string) {
-      // if (isAuthenticated) {
-      //   this.$router.push('/dashboard')
-      // } else {
-      //   this.$router.push('/login')
-      console.log('/' + route + '?id=3');
-
-      this.$router.push('/' + route + '?id=3');
+      console.log('/' + route);
+      this.$router.push('/' + route);
     },
-    createChat(nameChat: string) {
-      this.newChat.channelOwnerId = this.id;
+    async createChat(newChat: Chat) {
+      const createdChat = await postBackend('chat/createRoom', undefined, { name: newChat.name, access: newChat.access, password: newChat.password }) as Chat;
       console.log('create chat');
-      this.goTo('chatroom/' + nameChat);
+      this.goTo('chatroom/' + newChat.name + '?id=' + createdChat.id);
     }
   },
 };

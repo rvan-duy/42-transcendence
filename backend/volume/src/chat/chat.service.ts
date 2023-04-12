@@ -41,10 +41,8 @@ export class ChatService {
       return true;
     if (room.ownerId === userId)
       return true;
-    for (let i = 0; i++; i < room.users.length) {
-      if (room.users[i].id === userId)
-        return true;
-    }
+    if (room.users.includes(userId))
+      return true;
     return false;
   }
   

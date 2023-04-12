@@ -101,6 +101,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       if (false === await this.chatService.isChatter(roomId, user))
         return ;  // maybe add error msg for frontend
       
+      console.log('got loadrequest from: ', user);
       const users = await this.roomService.getRoomUsers(roomId);
       const chatHistory = await this.msgService.getChatHistory(roomId);
       const chatData = await this.roomService.getRoomById(roomId);
