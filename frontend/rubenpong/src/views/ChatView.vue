@@ -64,10 +64,10 @@ import SearchBar from '@/components/SearchBarUsers.vue';
             v-if="chatCreate === true"
             class="form-control"
           >
-            <label for="room">Room</label>
+            <label for="room">Select a Chat Type</label>
             <!-- this needs to change -->
             <select
-              id="chat_type"
+              id="chat_access"
               v-model="newChat.access"
               class="text-black"
               name="room"
@@ -98,12 +98,12 @@ import SearchBar from '@/components/SearchBarUsers.vue';
               class="pt-2"
             >Chat name</label>
             <span class="text-black pr-4"><input
-              id="username"
+              id="chatName"
               v-model="newChat.name"
               VALYE
               type="text"
               name="username"
-              placeholder="Enter username..."
+              placeholder="Enter a name for the chat"
               required
               style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
             > </span>
@@ -113,12 +113,12 @@ import SearchBar from '@/components/SearchBarUsers.vue';
                 class="pt-2"
               >Password</label>
               <span class="text-black pr-4"><input
-                id="username"
+                id="password"
                 v-model="newChat.password"
                 VALYE
                 type="text"
                 name="username"
-                placeholder="Enter username..."
+                placeholder="Enter a password for the chat"
                 required
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
               > </span>

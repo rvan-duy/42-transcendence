@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { getBackend } from '@/utils/backend-requests';
-
+import SocketioService from '../services/socketio.service.js';
 </script>
 
 <!-- • The user should be able to create channels (chat rooms) that can be either public,
@@ -179,8 +179,8 @@ interface.
     </body>
   </div>
 </template>
+
 <script lang="ts">
-import SocketioService from '../services/socketio.service.js';
 
 interface Chat {
   id: number;
