@@ -149,9 +149,6 @@ interface User {
 
 }
 
-const connection = SocketioService;
-connection.setupSocketConnection('/chat');
-
 export default {
   data() {
     return {
@@ -165,22 +162,17 @@ export default {
       cancelBtn: { text: 'cancel', onclick: () => { }, loading: false },
       okBtn: { text: 'ok', onclick: () => { this.setPassword(); }, loading: false },
       chatId: Number(this.$route.query.id),
+      connection: SocketioService,
+      setup: false,
     };
   },
   async created() {
-    connection.socket.emit('loadRequest', Number(this.$route.query.id));  // limartin en ossie moeten kijken waar dit heen mag
-    console.log('id from chat', this.$route.query.id);
-    await getBackend('user/me')
-      .then((res) => {
-        res.json()
-          .then((data) => {
-            this.idUser = data.id;
-            console.log(data.id);
-            this.determineAdmin();  // is this needed?
+    this.connection.setupSocketConnection('/chat');
 
-          });
-      });
-    connection.socket.on('loadChatBase', async (room: any) => {
+
+  },
+  async mounted() {
+    this.connection.socket.on('loadChatBase', async (room: any) => {
       console.log('loadRoom: ', room);
       this.users = room.users;
       this.chat = room.chat;
@@ -197,27 +189,20 @@ export default {
       this.messages = room.history;
       console.log(this.messages);
     });
+    this.connection.socket.emit('loadRequest', Number(this.$route.query.id));  // limartin en ossie moeten kijken waar dit heen mag
+    console.log('id from chat', this.$route.query.id);
+    await getBackend('user/me')
+      .then((res) => {
+        res.json()
+          .then((data) => {
+            this.idUser = data.id;
+            console.log(data.id);
+            this.determineAdmin();  // is this needed?
 
+          });
+      });
     // accept new messages from the backend
-    connection.socket.on('receiveNewMsg', (msg: any) => {
-      console.log('msg: ', msg);
-      msg.username = msg.author.name;
-      this.addMessage(msg);
-    });
-
-  },
-  mounted() {
-    const connection = SocketioService;
-    connection.setupSocketConnection('/chat');
-    connection.socket.emit('loadRequest', 1);
-
-    connection.socket.on('loadRoomUsers', async (usrs) => {
-      console.log(usrs);
-      // console.log('loadRoomUsers: client received users for this room', usrs);
-      // usrs.forEach(usr => {
-      //   displayUsers(usr.name);
-      // });
-    });
+    this.setupMessageReceiver();
   },
   methods: {
     goTo(route: string) {
@@ -236,15 +221,16 @@ export default {
       return (this.chat?.ownerId === this.idUser); // checks if is owner, admin is harder to check
       // maybe easier to alow a backend call for this? let me know if that is needed
     },
-    // determineAdmin() {
-    //   this.chat.users.find((o) => {
-    //     if (o.id === this.idUser) {
-    //       if (o.admin === true)
-    //         this.isAdmin = true;
-    //       return true; // stop searching
-    //     }
-    //   });
-    // },
+    setupMessageReceiver() {
+      if (this.setup)
+        return;
+      this.setup = true;
+      this.connection.socket.on('receiveNewMsg', (msg: any) => {
+        console.log('msg: ', msg);
+        msg.username = msg.author.name;
+        this.addMessage(msg);
+      })
+    },
     banUser(bannedUserId: number) {
       console.log('ban');
       const connection = SocketioService;
@@ -280,7 +266,7 @@ export default {
 async function chatFormSubmit(e: any, chatId: number) {
   const msg = e.target.elements.msg;
   const packet = { roomId: chatId, body: (msg.value) };
-  connection.socket.emit('sendMsg', packet);
+  SocketioService.socket.emit('sendMsg', packet);
   msg.value = ''; //clears the message text you just entered
   msg.focus(); //focuses on the text input area again after sending
 }
