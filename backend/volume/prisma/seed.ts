@@ -38,7 +38,7 @@ async function main() {
 
   const chad = await prisma.room.upsert({
 
-    where: { id: 2 },
+    where: { id: 1 },
 
     update: {},
 
@@ -70,7 +70,7 @@ async function main() {
 
   const daveroom = await prisma.room.upsert({
 
-    where: { id: 1 },
+    where: { id: 2 },
 
     update: {},
 
