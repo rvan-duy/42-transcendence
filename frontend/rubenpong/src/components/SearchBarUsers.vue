@@ -11,14 +11,32 @@ function filteredList() {
 </script>
 
 <template>
-  <input v-model="input" type="text" placeholder="Search users..." VALYE required
-    style="border-radius: 20px; width:300px; font-size: 12px; height: 35px; margin-left: auto; margin-right: auto;">
-  <div v-for="user in filteredList()" :key="user" class="item fruit" style="text-align: center;">
-    <button class="btn m-1 p-0" @click="goTo('otheruser/' + user.name, user.id)">
+  <input
+    v-model="input"
+    type="text"
+    placeholder="Search users..."
+    VALYE
+    required
+    style="border-radius: 20px; width:300px; font-size: 12px; height: 35px; margin-left: auto; margin-right: auto;"
+  >
+  <div
+    v-for="user in filteredList()"
+    :key="user"
+    class="item fruit"
+    style="text-align: center;"
+  >
+    <button
+      class="btn m-1 p-0"
+      @click="goTo('otheruser/' + user.name, user.id)"
+    >
       {{ user.name }}
     </button>
   </div>
-  <div v-if="input && !filteredList()?.length" class="item error" style="text-align: center;">
+  <div
+    v-if="input && !filteredList()?.length"
+    class="item error"
+    style="text-align: center;"
+  >
     <p>No results found!</p>
   </div>
 </template>
