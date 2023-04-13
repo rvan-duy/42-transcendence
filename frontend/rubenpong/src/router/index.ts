@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import privateRoutes from './private';
 import LoginView from '@/views/LoginView.vue';
 import { isLoggedIn } from './auth';
+import ChatRoomViewVue from '@/views/ChatRoomView.vue';
 
 // usefull link: https://itnext.io/vue-router-99e334094362
 
@@ -19,6 +20,14 @@ const router = createRouter({
       meta: {
         public: true,
         loginPage: true
+      }
+    },
+    {
+      path: '/chatroom/:chatname',
+      name: 'chatroom',
+      component: ChatRoomViewVue,
+      meta: {
+        keepAlive: false,
       }
     }
   ].concat(privateRoutes), // private routes are in a separate file for readability

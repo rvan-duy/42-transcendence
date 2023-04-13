@@ -168,10 +168,10 @@ export default {
   },
   async created() {
     this.connection.setupSocketConnection('/chat');
-
-
+    console.log('componenet created');
   },
   async mounted() {
+    console.log('componenet mounted');
     this.connection.socket.on('loadChatBase', async (room: any) => {
       console.log('loadRoom: ', room);
       this.users = room.users;
@@ -202,7 +202,18 @@ export default {
           });
       });
     // accept new messages from the backend
-    this.setupMessageReceiver();
+    this.connection.socket.on('receiveNewMsg', (msg: any) => {
+      console.log('msg: ', msg);
+      msg.username = msg.author.name;
+      this.addMessage(msg);
+    })
+  },
+  unmounted() {
+    this.connection.socket.off('loadChatBase');
+    this.connection.socket.off('loadRequest');
+    this.connection.socket.off('receiveNewMsg');
+    this.connection.socket.disconnect();
+    console.log('unmounted');
   },
   methods: {
     goTo(route: string) {
@@ -220,16 +231,6 @@ export default {
     determineAdmin() {
       return (this.chat?.ownerId === this.idUser); // checks if is owner, admin is harder to check
       // maybe easier to alow a backend call for this? let me know if that is needed
-    },
-    setupMessageReceiver() {
-      if (this.setup)
-        return;
-      this.setup = true;
-      this.connection.socket.on('receiveNewMsg', (msg: any) => {
-        console.log('msg: ', msg);
-        msg.username = msg.author.name;
-        this.addMessage(msg);
-      })
     },
     banUser(bannedUserId: number) {
       console.log('ban');
