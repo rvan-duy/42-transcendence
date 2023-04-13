@@ -22,7 +22,6 @@ interface.
 
 <template>
   <div class="chat">
-
     <body>
       <div id="app">
         <div class="chat-container p-8">
@@ -33,71 +32,122 @@ interface.
             </h1>
             {{ $route.query.id }}
             <div style="text-align: right;">
-              <button class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs"
-                @click="confirmAndGo('leave chat ' + $route.params.id, banUser, 1)">
+              <button
+                class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs"
+                @click="confirmAndGo('leave chat ' + $route.params.id, banUser, 1)"
+              >
                 Leave Chat
               </button>
-              <span v-if="chat?.access === 'PROTECTED'"
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white" @click="goTo('chat')">Change
+              <span
+                v-if="chat?.access === 'PROTECTED'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                @click="goTo('chat')"
+              >Change
                 Password</span>
-              <span v-if="chat?.access === 'PROTECTED'"
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white" @click="goTo('chat')">Delete
+              <span
+                v-if="chat?.access === 'PROTECTED'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                @click="goTo('chat')"
+              >Delete
                 Password</span>
-              <span v-if="chat?.access === 'PUBLIC'"
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white" @click="isVisible = true"> Set
+              <span
+                v-if="chat?.access === 'PUBLIC'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                @click="isVisible = true"
+              > Set
                 Password</span>
-              <Modal v-model:visible="isVisible" class="text-black" style="text-align: left;" :cancel-button="cancelBtn"
-                :title="'Set Password'">
+              <Modal
+                v-model:visible="isVisible"
+                class="text-black"
+                style="text-align: left;"
+                :cancel-button="cancelBtn"
+                :title="'Set Password'"
+              >
                 <div>
                   <label>This will make sure the channel cannot be entered without the correct password.</label>
-                  <span class="text-black pr-4"><input v-model="newPassword" VALYE type="text" name="username"
-                      placeholder="Enter password..." required
-                      style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"> </span>
+                  <span class="text-black pr-4"><input
+                    v-model="newPassword"
+                    VALYE
+                    type="text"
+                    name="username"
+                    placeholder="Enter password..."
+                    required
+                    style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+                  > </span>
                 </div>
               </Modal>
-              <span class="btn ml-3" @click="goTo('chat')">Leave Room</span>
+              <span
+                class="btn ml-3"
+                @click="goTo('chat')"
+              >Leave Room</span>
             </div>
           </header>
           <main class="chat-main">
             <div class="chat-sidebar">
               <h3><i class="fas fa-users" /> Users</h3>
               <ul id="users">
-                <li v-for="user in users" :key="user.id">
+                <li
+                  v-for="user in users"
+                  :key="user.id"
+                >
                   <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
-                    <img src="../assets/dagmar.jpeg" width="30" height="30"
-                      style="border-radius: 50%; vertical-align: center; float: left;">
+                    <img
+                      src="../assets/dagmar.jpeg"
+                      width="30"
+                      height="30"
+                      style="border-radius: 50%; vertical-align: center; float: left;"
+                    >
                     <span class="text-white text-xs p-1">
                       {{ user.name }}
                     </span>
                   </span>
 
-                  <span v-if="user.id === chat?.ownerId" class="text-green-800 text-xs p-1 font-bold">
+                  <span
+                    v-if="user.id === chat?.ownerId"
+                    class="text-green-800 text-xs p-1 font-bold"
+                  >
                     Channel Owner
                   </span>
-                  <span v-if="user.id !== chat?.ownerId" class="text-green-200 text-xs p-1">
+                  <span
+                    v-if="user.id !== chat?.ownerId"
+                    class="text-green-200 text-xs p-1"
+                  >
                     Admin
                   </span>
-                  <span v-if="user.id !== chat?.ownerId && idUser === chat?.ownerId" class="text-green-200 text-xs p-1">
-                    <button class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="confirmAndGo('make ' + user.name + ' Admin', banUser, user.id)">Make Admin</button>
+                  <span
+                    v-if="user.id !== chat?.ownerId && idUser === chat?.ownerId"
+                    class="text-green-200 text-xs p-1"
+                  >
+                    <button
+                      class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="confirmAndGo('make ' + user.name + ' Admin', banUser, user.id)"
+                    >Make Admin</button>
                   </span>
-                  <button class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                    @click="goTo('game')">
+                  <button
+                    class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                    @click="goTo('game')"
+                  >
                     Invite to game
                   </button>
 
                   <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
                   <div v-if="isAdmin && user.id !== idUser && user.id !== chat?.ownerId">
-                    <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="confirmAndGo('ban ' + user.name, banUser, user.id)">
+                    <button
+                      class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="confirmAndGo('ban ' + user.name, banUser, user.id)"
+                    >
                       Ban
                     </button>
-                    <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="confirmAndGo('mute ' + user.name, banUser, user.id)">
+                    <button
+                      class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="confirmAndGo('mute ' + user.name, banUser, user.id)"
+                    >
                       Mute
                     </button>
-                    <button class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="confirmAndGo('kick ' + user.name, banUser, user.id)">
+                    <button
+                      class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="confirmAndGo('kick ' + user.name, banUser, user.id)"
+                    >
                       Kick
                     </button>
                   </div>
@@ -105,7 +155,13 @@ interface.
               </ul>
             </div>
             <div class="chat-messages">
-              <div ref="messageContainer" id="message-list" v-for="message in messages" :key="message.id" class="message">
+              <div
+                v-for="message in messages"
+                id="message-list"
+                ref="messageContainer"
+                :key="message.id"
+                class="message"
+              >
                 <p class="meta">
                   {{ message.username }} <span>{{ toLocale(message.timestamp) }}</span>
                 </p>
@@ -116,9 +172,18 @@ interface.
             </div>
           </main>
           <div class="chat-form-container">
-            <form id="chat-form" @submit.prevent="chatFormSubmit($event, chatId)">
-              <input id="msg" style="border-radius: 20px" type="text" placeholder="Enter Message" required
-                autocomplete="off">
+            <form
+              id="chat-form"
+              @submit.prevent="chatFormSubmit($event, chatId)"
+            >
+              <input
+                id="msg"
+                style="border-radius: 20px"
+                type="text"
+                placeholder="Enter Message"
+                required
+                autocomplete="off"
+              >
 
               <div class="px-2">
                 <button class="btn">
@@ -191,7 +256,7 @@ export default {
       return this.$route.query.id;
     },
     addMessage(msg: any) {
-      const chatMessages = document.querySelector('.chat-messages'); //This is how we used to scroll to end but it no longer works
+      // const chatMessages = document.querySelector('.chat-messages'); //This is how we used to scroll to end but it no longer works
       this.messages.push(msg);
     },
     toLocale(timestamp: any) {
@@ -256,7 +321,7 @@ export default {
 
     scrollChatToBottom() {
       const messageContainer = this.$refs.messageContainer as HTMLElement;
-      console.log("current: ", messageContainer.scrollTop, " next: ", messageContainer.scrollHeight);
+      console.log('current: ', messageContainer.scrollTop, ' next: ', messageContainer.scrollHeight);
       messageContainer.scrollTop = messageContainer.scrollHeight;
     },
 
