@@ -104,7 +104,7 @@ export class UserController {
   @ApiOperation({ summary: 'TODO: Add friend for current user' })
   async addMeFriend(@Request() req: any, @Param('id') id: string, @Response() res: any) {
     //TODO
-    res.status(HttpStatus.OK).send('TODO')
+    return res.status(HttpStatus.OK).send('TODO')
   }
 
   @Get('id/:id')
@@ -116,10 +116,10 @@ export class UserController {
     const user = await this.userService.user({ id: Number(id) });
     
     if (!user) {
-      res.status(HttpStatus.NOT_FOUND).send(`User with id ${id} not found`);
+      return res.status(HttpStatus.NOT_FOUND).send(`User with id ${id} not found`);
     }
 
-    res.status(HttpStatus.OK).send(user);
+    return res.status(HttpStatus.OK).send(user);
   }
 
   @Get('all')
@@ -128,6 +128,6 @@ export class UserController {
   @ApiOkResponse({ description: 'Users found', type: [Object] })
   async getUsers(@Response() res: any) {
     const users = await this.userService.users({});
-    res.status(HttpStatus.OK).send(users);
+    return res.status(HttpStatus.OK).send(users);
   }
 }
