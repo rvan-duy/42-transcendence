@@ -18,11 +18,6 @@ const routes = [
     name: 'chat',
     component: ChatView,
   },
-  // {
-  //   path: '/chatroom',
-  //   name: 'chatroom',
-  //   component: ChatRoomView,
-  // },
   {
     path: '/game',
     name: 'game',
