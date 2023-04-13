@@ -58,7 +58,6 @@
             width="50"
             height="50"
             class="w-11 h-11 shrink-0 grow-0 rounded-full"
-
           >
           <figcaption class="text-white text-xs">
             {{ name }}
@@ -69,16 +68,15 @@
   </nav>
   <br>
   <main><RouterView /></main>
-  </template>
+</template>
 
 <script lang="ts">
 
 import { isLoggedIn } from '@/router/auth';
 import { getBackend } from './utils/backend-requests';
 import { RouterLink, RouterView } from 'vue-router';
- export default {
-
-   components: {RouterView, RouterLink},
+export default {
+  components: {RouterView, RouterLink},
   data()
   {
     return {

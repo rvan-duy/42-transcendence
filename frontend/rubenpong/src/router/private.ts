@@ -7,7 +7,6 @@ import UserView from '@/views/UserView.vue';
 import OtherUserView from '@/views/OtherUserView.vue';
 import SearchUserView from '@/views/SearchUserView.vue';
 
-
 const routes = [
   {
     path: '/',

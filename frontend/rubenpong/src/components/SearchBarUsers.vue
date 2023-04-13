@@ -1,9 +1,9 @@
-<script setup lang="ts">
-import { ref } from "vue";
-let input = ref("");
-const users = [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}];
+<script setup lang='ts'>
+import { ref } from 'vue';
+const input = ref('');
+const users = [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '', id: 3}, {name: 'Oswin', pic: '', id: 4}, {name: 'Lindsay', pic: '', id: 5}];
 function filteredList() {
-  if (input.value !== "")
+  if (input.value !== '')
     return users.filter((user) =>
       user.name.toLowerCase().includes(input.value.toLowerCase())
     );
@@ -11,36 +11,49 @@ function filteredList() {
 </script>
 
 <template>
-<input
-    type="text" v-model="input" placeholder="Search users..." 
-                VALYE
-                required
-                style="border-radius: 20px; width:300px; font-size: 12px; height: 35px; margin-left: auto; margin-right: auto;"
-              > 
-    <div class="item fruit" style="text-align: center;" v-for="user in filteredList()" :key="user">
-    <button class="btn m-1 p-0" @click="goTo('otheruser/' + user.name, user.id)">{{ user.name }}</button>
+  <input
+    v-model="input"
+    type="text"
+    placeholder="Search users..."
+    VALYE
+    required
+    style="border-radius: 20px; width:300px; font-size: 12px; height: 35px; margin-left: auto; margin-right: auto;"
+  >
+  <div
+    v-for="user in filteredList()"
+    :key="user"
+    class="item fruit"
+    style="text-align: center;"
+  >
+    <button
+      class="btn m-1 p-0"
+      @click="goTo('otheruser/' + user.name, user.id)"
+    >
+      {{ user.name }}
+    </button>
   </div>
-  <div class="item error" style="text-align: center;" v-if="input && !filteredList().length">
+  <div
+    v-if="input && !filteredList().length"
+    class="item error"
+    style="text-align: center;"
+  >
     <p>No results found!</p>
   </div>
 </template>
 
-
 <script lang="ts">
 export default {
-    methods: {
-        goTo(route: string, id: number) {
+  methods: {
+    goTo(route: string, id: number) {
       // if (isAuthenticated) {
       //   this.$router.push('/dashboard')
       // } else {
       //   this.$router.push('/login')
       console.log('/' + route + '?id=' + id);
-      
       this.$router.push('/' + route + '?id=' + id);
-      },
     },
-    }
-
+  },
+};
 </script>
 
 <style>

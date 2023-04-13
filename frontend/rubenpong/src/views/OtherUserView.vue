@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { getBackend } from '@/utils/backend-requests';
-
 </script>
 
 <template>
@@ -8,25 +7,34 @@ import { getBackend } from '@/utils/backend-requests';
     <body>
       <div class="join-container">
         <header class="join-header">
-          <div    style="text-align: center;">
-          <span>
+          <div style="text-align: center;">
+            <span>
               <img
                 src="../assets/dagmar.jpeg"
                 width="50"
                 height="50"
                 style="border-radius: 50%; display:block;margin-left: auto; margin-right: auto"
               >
-            <figcaption class="text-white text-m">
-              {{ name }}
-            </figcaption>
-          </span>
-        </div>
+              <figcaption class="text-white text-m">
+                {{ name }}
+              </figcaption>
+            </span>
+          </div>
         </header>
         <main class="join-main">
-
-        <button class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full" style="float: right">Block User</button>
-        <button @click="goTo('chatroom/AwesomeChat')" class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full mr-2" style="float: right" >Send message</button>
-
+          <button
+            class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
+            style="float: right"
+          >
+            Block User
+          </button>
+          <button
+            class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full mr-2"
+            style="float: right"
+            @click="goTo('chatroom/AwesomeChat')"
+          >
+            Send message
+          </button>
           <label for="status">Status</label>
           <p class="text-black">
             {{ status }}
@@ -91,6 +99,7 @@ import { getBackend } from '@/utils/backend-requests';
     </body>
   </div>
 </template>
+
 <script lang="ts">
 export default {
   data()
@@ -129,11 +138,12 @@ export default {
       //   this.$router.push('/dashboard')
       // } else {
       //   this.$router.push('/login')
-      this.$router.push('/' + route)
-      }
+      this.$router.push('/' + route);
+    }
   }
 };
 </script>
+
 <style src="../assets/chat.css">
 @media (min-width: 1024px) {
   .chat {

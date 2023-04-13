@@ -122,113 +122,158 @@ interface.
   <div class="chat">
     <body>
       <div id="app">
-      <div class="chat-container p-8">
-        <header class="chat-header">
-          <!-- <p>This is the page that opens on <strong>/blog/{{ $route.params.id }}</strong> route</p> -->
-          <h1 class="text-xl"> {{ $route.params.id }}</h1>
-
-          {{ $route.query.id}}
-          <div style="text-align: right;">
-            <button @click="confirmAndGo('leave chat ' + $route.params.id, banUser)"
-              class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs"
-            >Leave Chat</button>
-            <span v-if="chat.type === 'withPassword'" @click="goTo('chat')"
-            class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-            >Change Password</span>
-            <span v-if="chat.type === 'withPassword'" @click="goTo('chat')"
-              class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-            >Delete Password</span>
-            <span v-if="chat.type === 'public'" @click="isVisible = true"
-              class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-            > Set Password</span>
-            <Modal class="text-black" style="text-align: left;" v-model:visible="isVisible" :cancelButton="cancelBtn" :title="'Set Password'">
-              <div >
-                <label>This will make sure the channel cannot be entered without the correct password.</label>
-              <span class="text-black pr-4"><input
-                v-model="newPassword"
-                VALYE
-                type="text"
-                name="username"
-                placeholder="Enter password..."
-                required
-                style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-              > </span>
-            </div>
-            </Modal>
-            <span @click="goTo('chat')"
-              class="btn ml-3"
-            >Leave Room</span>
-          </div>
-          <div style="text-align: right;">
-         </div>
-        </header>
-        <main class="chat-main">
-          <div class="chat-sidebar">
-         
-            <h3><i class="fas fa-users" /> Users</h3>
-            <ul id="users">
-      <li v-for="user in chat.users"><span
-        @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
-      <img
-            src="../assets/dagmar.jpeg"
-            width="30"
-            height="30"
-            style="border-radius: 50%; vertical-align: center; float: left;">
-          <span class="text-white text-xs p-1">
-            {{ user.name }}
-          </span>
-        </span>
-
-        <span v-if="user.id === chat.channelOwnerId" class="text-green-800 text-xs p-1 font-bold">
-        Channel Owner
-        </span>
-        <span v-if="user.id !== chat.channelOwnerId && user.admin === true" class="text-green-200 text-xs p-1">
-        Admin
-        </span>
-        <span v-if="user.id !== chat.channelOwnerId && user.admin !== true && idUser === chat.channelOwnerId" class="text-green-200 text-xs p-1">
-          <button class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('make ' + user.name + ' Admin', banUser, user.id)">Make Admin</button>
-        </span>
-        <button class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1" @click="goTo('game')">Invite to game</button>
-
-        <div v-if="isAdmin && user.id !== idUser && user.id !== chat.channelOwnerId">
-          <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('ban ' + user.name, banUser, user.id)">Ban</button>
-          <button class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('mute ' + user.name, banUser, user.id)">Mute</button>
-          <button class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1" @click="confirmAndGo('kick ' + user.name, banUser, user.id)">Kick</button>
-        </div>
-      </li>
-     
-            </ul>
-          </div>
-          <div class="chat-messages">
-            <!-- CHAT MESSAGES APPEAR HERE -->
-          </div>
-        </main>
-        <div class="chat-form-container">
-          <form
-            id="chat-form"
-            @submit.prevent="chatFormSubmit($event)"
-          >
-            <input
-              id="msg"
-              style="border-radius: 20px"
-              type="text"
-              placeholder="Enter Message"
-              required
-              autocomplete="off"
-            >
-
-            <div class="px-2">
-              <button class="btn">
-                <font-awesome-icon icon="paper-plane" /> Send
+        <div class="chat-container p-8">
+          <header class="chat-header">
+            <!-- <p>This is the page that opens on <strong>/blog/{{ $route.params.id }}</strong> route</p> -->
+            <h1 class="text-xl">
+              {{ $route.params.id }}
+            </h1>
+            {{ $route.query.id }}
+            <div style="text-align: right;">
+              <button
+                class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs"
+                @click="confirmAndGo('leave chat ' + $route.params.id, banUser)"
+              >
+                Leave Chat
               </button>
+              <span
+                v-if="chat.type === 'withPassword'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                @click="goTo('chat')"
+              >Change Password</span>
+              <span
+                v-if="chat.type === 'withPassword'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                @click="goTo('chat')"
+              >Delete Password</span>
+              <span
+                v-if="chat.type === 'public'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                @click="isVisible = true"
+              > Set Password</span>
+              <Modal
+                v-model:visible="isVisible"
+                class="text-black"
+                style="text-align: left;"
+                :cancel-button="cancelBtn"
+                :title="'Set Password'"
+              >
+                <div>
+                  <label>This will make sure the channel cannot be entered without the correct password.</label>
+                  <span class="text-black pr-4"><input
+                    v-model="newPassword"
+                    VALYE
+                    type="text"
+                    name="username"
+                    placeholder="Enter password..."
+                    required
+                    style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+                  > </span>
+                </div>
+              </Modal>
+              <span
+                class="btn ml-3"
+                @click="goTo('chat')"
+              >Leave Room</span>
             </div>
-          </form>
+          </header>
+          <main class="chat-main">
+            <div class="chat-sidebar">
+              <h3><i class="fas fa-users" /> Users</h3>
+              <ul id="users">
+                <li
+                  v-for="user in chat.users"
+                  :key="user"
+                >
+                  <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
+                    <img
+                      src="../assets/dagmar.jpeg"
+                      width="30"
+                      height="30"
+                      style="border-radius: 50%; vertical-align: center; float: left;"
+                    >
+                    <span class="text-white text-xs p-1">
+                      {{ user.name }}
+                    </span>
+                  </span>
+                  <span
+                    v-if="user.id === chat.channelOwnerId"
+                    class="text-green-800 text-xs p-1 font-bold"
+                  >
+                    Channel Owner
+                  </span>
+                  <span
+                    v-if="user.id !== chat.channelOwnerId && user.admin === true"
+                    class="text-green-200 text-xs p-1"
+                  >
+                    Admin
+                  </span>
+                  <span
+                    v-if="user.id !== chat.channelOwnerId && user.admin !== true && idUser === chat.channelOwnerId"
+                    class="text-green-200 text-xs p-1"
+                  >
+                    <button
+                      class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="confirmAndGo('make ' + user.name + ' Admin', banUser, user.id)"
+                    >Make Admin</button>
+                  </span>
+                  <button
+                    class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                    @click="goTo('game')"
+                  >
+                    Invite to game
+                  </button>
+
+                  <div v-if="isAdmin && user.id !== idUser && user.id !== chat.channelOwnerId">
+                    <button
+                      class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="confirmAndGo('ban ' + user.name, banUser, user.id)"
+                    >
+                      Ban
+                    </button>
+                    <button
+                      class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="confirmAndGo('mute ' + user.name, banUser, user.id)"
+                    >
+                      Mute
+                    </button>
+                    <button
+                      class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="confirmAndGo('kick ' + user.name, banUser, user.id)"
+                    >
+                      Kick
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          </main>
+          <div class="chat-form-container">
+            <form
+              id="chat-form"
+              @submit.prevent="chatFormSubmit($event)"
+            >
+              <input
+                id="msg"
+                style="border-radius: 20px"
+                type="text"
+                placeholder="Enter Message"
+                required
+                autocomplete="off"
+              >
+              <div class="px-2">
+                <button class="btn">
+                  <font-awesome-icon icon="paper-plane" /> Send
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
-    </div>
     </body>
   </div>
 </template>
+
 <script lang="ts">
 export default {
   data() {
@@ -236,33 +281,32 @@ export default {
       // users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}]
       
       chat: {
-          id: 1,
-          name: 'Awesome Chat',
-          users: [{name: 'Ruben1', pic: '', id: 1, admin: true}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '',  id: 3, admin: true}, {name: 'Oswin', pic: '',  id: 4, admin: true}, {name: 'Lindsay', pic: '', id: 5, admin: false}],
-          type: 'public',
-          password: 'getIn',
-          channelOwnerId: 1
+        id: 1,
+        name: 'Awesome Chat',
+        users: [{name: 'Ruben1', pic: '', id: 1, admin: true}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '', id: 3, admin: true}, {name: 'Oswin', pic: '', id: 4, admin: true}, {name: 'Lindsay', pic: '', id: 5, admin: false}],
+        type: 'public',
+        password: 'getIn',
+        channelOwnerId: 1
       },
       idUser: null,
       isAdmin: false,
       isVisible: false,
       newPassword: '',
       cancelBtn: {text: 'cancel', onclick: () => {}, loading: false},
-      okBtn: {text: 'ok', onclick: () => {this.setPassword()}, loading: false}
+      okBtn: {text: 'ok', onclick: () => {this.setPassword();}, loading: false}
 
-    }
+    };
   },
   async created() {
-    let idUser: number = -1;
     await getBackend('user/me')
-        .then((res) => { res.json()
-          .then((data) => {
-            this.idUser = data.id;
-            console.log(data.id);
-            this.determineAdmin();
+      .then((res) => { res.json()
+        .then((data) => {
+          this.idUser = data.id;
+          console.log(data.id);
+          this.determineAdmin();
 
-          });
         });
+      });
   },
   mounted() {
     const connection = SocketioService;
@@ -283,16 +327,16 @@ export default {
       //   this.$router.push('/dashboard')
       // } else {
       //   this.$router.push('/login')
-      this.$router.push('/' + route)
+      this.$router.push('/' + route);
     },
     determineAdmin() {
-      this.chat.users.find((o, i) => {
-          if (o.id === this.idUser) {
-            if (o.admin === true)
-              this.isAdmin = true;
-            return true; // stop searching
-          }
-        });
+      this.chat.users.find((o) => {
+        if (o.id === this.idUser) {
+          if (o.admin === true)
+            this.isAdmin = true;
+          return true; // stop searching
+        }
+      });
     },
     banUser(bannedUserId: number)
     {
@@ -304,7 +348,7 @@ export default {
       // $route.query.id
     // //   chat_socket.$socket.emit('createRoom', dto);
     },
-      // createChat(chatObject: any) {
+    // createChat(chatObject: any) {
     //   var dto = {name: chatObject.name, ownerId: chatObject.channelOwnerId, access: chatObject.type};
     //   console.log(`Creating chat (frontend): ${dto.name}`);
     //   const connection = SocketioService;
@@ -314,11 +358,11 @@ export default {
     // },
     confirmAndGo(message: string, f: any, param: number)
     {
-      if (confirm('Are you sure you want to ' + message + '?') == true) {
-        console.log("You pressed OK!");
+      if (confirm('Are you sure you want to ' + message + '?') === true) {
+        console.log('You pressed OK!');
         f(param);
       } else {
-        console.log("You canceled!");
+        console.log('You canceled!');
       }
     },
     setPassword()

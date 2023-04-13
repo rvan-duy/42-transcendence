@@ -124,7 +124,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // delete the message
     this.msgService.handleDeleteMsg(payload);
   }
-  
 
   @SubscribeMessage('createRoom')
   async createNewRoom(client: Socket, payload: roomDto) {

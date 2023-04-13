@@ -17,10 +17,8 @@
                 width="50"
                 height="50"
                 style="border-radius: 50%; display:block; margin-left: auto; margin-right: auto;"
-            class="w-11 h-11 shrink-0 grow-0 rounded-full"
-              
-                >
-             
+                class="w-11 h-11 shrink-0 grow-0 rounded-full"
+              >
             </p>
             <figcaption class="text-white text-m">
               {{ name }}
