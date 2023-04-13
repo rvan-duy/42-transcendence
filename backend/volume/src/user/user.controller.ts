@@ -96,7 +96,7 @@ export class UserController {
   async getMeFriends(@Request() req: any, @Response() res: any) {
     const user = await this.userService.user({ id: Number(req.user.id) });
     const friends = user.friends;
-    res.status(HttpStatus.OK).send(friends);
+    return res.status(HttpStatus.OK).send(friends);
   }
 
   @Post('me/friends/add/:id')
