@@ -42,13 +42,16 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleConnection(client: Socket) {
     if (client.handshake.auth.token === '')
       return;
-    const user = await this.jwtService.verify(
-      client.handshake.auth.token, { secret: process.env.JWT_SECRET }
-    );
-      // if error maybe we need to recover or exit or something!!!
-      
-    // Oswin vraagt: waarom is id 'sub' ???
-    // Ruben legt uit: .verify() returns a payload object, not a user object. This is also why sub contains the user id. As it is the Subject of the payload.
+    let user;
+    try {
+      user = await this.jwtService.verify(
+        client.handshake.auth.token, { secret: process.env.JWT_SECRET }
+      );
+    } catch(err) {
+      // implement the jwt failure code
+      // maybe close the socket?
+    }
+
     const userId = user.sub;
     this.gate.addSocket(userId, client);
       
