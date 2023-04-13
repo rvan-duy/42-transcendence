@@ -1,6 +1,5 @@
 
 <script setup lang="ts">
-import SocketioService from '../services/socketio.service.js';
 import { ref } from 'vue';
 const input = ref('');
 const users = [{name: 'Ruben1', pic: '', id: 1, admin: false}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '', id: 3, admin: false}, {name: 'Oswin', pic: '', id: 4, admin: false}, {name: 'Lindsay', pic: '', id: 5, admin: false}];
@@ -179,39 +178,47 @@ function filteredList() {
 </template>
 
 <script lang="ts">
-import { getBackend } from '../utils/backend-requests';
-
+import { getBackend, postBackend} from '../utils/backend-requests';
+interface Chat {
+  id: number;
+  name: string;
+  ownerId: number;
+  access: string;
+  lastId: number;
+  password: string;
+}
 export default {
   data() {
     return {
       chatCreate: false,
       enteredPW: '',
-      chats: [
-        {
-          id: 1,
-          name: 'Awesome Chat',
-          users: [{name: 'Ruben1', pic: '', id: 1, admin: true}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '', id: 3, admin: true}, {name: 'Oswin', pic: '', id: 4, admin: true}, {name: 'Lindsay', pic: '', id: 5, admin: false}],
-          type: 'withPassword',
-          password: 'getIn',
-          channelOwnerId: 3
-        },
-        {
-          id: 2,
-          name: 'Less Awesome Chat',
-          users: [{name: 'Ruben1', pic: '', id: 1, admin: true}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '', id: 3, admin: true}, {name: 'Oswin', pic: '', id: 4, admin: true}, {name: 'Lindsay', pic: '', id: 5, admin: false}],
-          type: 'private',
-          password: 'getIn',
-          channelOwnerId: 3
-        },
-        {
-          id: 3,
-          name: 'Least Awesome Chat',
-          users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '', id: 3}, {name: 'Oswin', pic: '', id: 4}, {name: 'Lindsay', pic: '', id: 5}],
-          type: 'public',
-          password: 'getIn',
-          channelOwnerId: 3
-        },
-      ],
+      // chats: [
+      // {
+      //   id: 1,
+      //   name: 'Awesome Chat',
+      //   users: [{name: 'Ruben1', pic: '', id: 1, admin: true}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '', id: 3, admin: true}, {name: 'Oswin', pic: '', id: 4, admin: true}, {name: 'Lindsay', pic: '', id: 5, admin: false}],
+      //   type: 'withPassword',
+      //   password: 'getIn',
+      //   channelOwnerId: 3
+      // },
+      // {
+      //   id: 2,
+      //   name: 'Less Awesome Chat',
+      //   users: [{name: 'Ruben1', pic: '', id: 1, admin: true}, {name: 'Ruben2', pic: '', id: 2, admin: false}, {name: 'Dagmar', pic: '', id: 3, admin: true}, {name: 'Oswin', pic: '', id: 4, admin: true}, {name: 'Lindsay', pic: '', id: 5, admin: false}],
+      //   type: 'private',
+      //   password: 'getIn',
+      //   channelOwnerId: 3
+      // },
+      // {
+      //   id: 3,
+      //   name: 'Least Awesome Chat',
+      //   users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '', id: 3}, {name: 'Oswin', pic: '', id: 4}, {name: 'Lindsay', pic: '', id: 5}],
+      //   type: 'public',
+      //   password: 'getIn',
+      //   channelOwnerId: 3
+      // },
+      // ],
+      chats: [] as Chat[],
       selectedChat: {
         id: null,
         name: '',
@@ -233,6 +240,8 @@ export default {
     };
   },
   async created() {
+    const res = await getBackend('chat/myRooms');
+    this.chats = await res.json() as Chat[];
     await getBackend('user/me')
       .then((response => response.json()))
       .then((data) => {
@@ -259,18 +268,19 @@ export default {
     //  console.log('create chat');
     //  this.goTo('chatroom/' + nameChat);
     // },
-    createChat(nameChat: string) {
+    async createChat(nameChat: string) {
       var dto = {name: this.newChat.name, ownerId: this.id, access: this.newChat.type};
       console.log(`Creating chat (frontend): ${dto.name}`);
-      const connection = SocketioService;
-      connection.setupSocketConnection('/chat');
-      connection.socket.emit('createRoom', dto); //make this a global socket like the example below
-      connection.socket.on('createRoomResponse', (data: any) => {
-        console.log(data.id);
-      });
+      // const connection = SocketioService;
+      // connection.setupSocketConnection('/chat');
+      // connection.socket.emit('createRoom', dto); //make this a global socket like the example below
+      // connection.socket.on('createRoomResponse', (data: any) => {
+      //   console.log(data.id);
+      // });
+      await postBackend('chat/createRoom', undefined, { name: this.newChat.name, access: this.newChat.type, password: this.newChat.password }) as Chat;
       //   chat_socket.$socket.emit('createRoom', dto);
       console.log('create chat');
-      this.goTo('chatroom/' + nameChat);
+      this.goTo('chatroom/' + nameChat + '?id=' + 2);//createdChat.id
     },
     addUser(user: any)
     {

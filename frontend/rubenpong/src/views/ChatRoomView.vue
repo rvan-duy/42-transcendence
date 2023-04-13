@@ -247,8 +247,22 @@ interface.
                 </li>
               </ul>
             </div>
+            <div class="chat-messages">
+              <div
+                v-for="message in messages"
+                :key="message.id"
+                class="message"
+              >
+                <p class="meta">
+                  {{ message.username }} <span>{{ toLocale(message.timestamp) }}</span>
+                </p>
+                <p class="text">
+                  {{ message.body }}
+                </p>
+              </div>
+            </div>
           </main>
-          <div class="chat-form-container">
+          <!-- <div class="chat-form-container">
             <form
               id="chat-form"
               @submit.prevent="chatFormSubmit($event)"
@@ -267,6 +281,27 @@ interface.
                 </button>
               </div>
             </form>
+          </div> -->
+          <div class="chat-form-container">
+            <form
+              id="chat-form"
+              @submit.prevent="chatFormSubmit($event, chatId)"
+            >
+              <input
+                id="msg"
+                style="border-radius: 20px"
+                type="text"
+                placeholder="Enter Message"
+                required
+                autocomplete="off"
+              >
+
+              <div class="px-2">
+                <button class="btn">
+                  <font-awesome-icon icon="paper-plane" /> Send
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -275,11 +310,24 @@ interface.
 </template>
 
 <script lang="ts">
+// interface Chat {
+//   id: number;
+//   name: string;
+//   ownerId: number;
+//   access: string;
+//   lastId: number;
+// }
+// interface User {
+//   id: number;
+//   name: string;
+// }
+const connection = SocketioService;
+connection.setupSocketConnection('/chat');
 export default {
   data() {
     return {
       // users: [{name: 'Ruben1', pic: '', id: 1}, {name: 'Ruben2', pic: '', id: 2}, {name: 'Dagmar', pic: '',  id: 3}, {name: 'Oswin', pic: '',  id: 4}, {name: 'Lindsay', pic: '', id: 5}]
-      
+      messages: [] as any,
       chat: {
         id: 1,
         name: 'Awesome Chat',
@@ -293,8 +341,8 @@ export default {
       isVisible: false,
       newPassword: '',
       cancelBtn: {text: 'cancel', onclick: () => {}, loading: false},
-      okBtn: {text: 'ok', onclick: () => {this.setPassword();}, loading: false}
-
+      okBtn: {text: 'ok', onclick: () => {this.setPassword();}, loading: false},
+      chatId: Number(this.$route.query.id),
     };
   },
   async created() {
@@ -307,6 +355,22 @@ export default {
 
         });
       });
+    connection.socket.on('loadChatBase', async (room: any) => {
+      console.log('loadRoom: ', room);
+      this.users = room.users;
+      this.chat = room.chat;
+      // Wait for all the getBackend calls to finish
+      const promises = room.history.map((msg: any) => {
+        return getBackend('user/id/' + msg.authorId)
+          .then(res => res.json())
+          .then(user => {
+            msg.username = user.name;
+          });
+      });
+      await Promise.all(promises);
+      this.messages = room.history;
+      console.log(this.messages);
+    });
   },
   mounted() {
     const connection = SocketioService;
@@ -368,10 +432,24 @@ export default {
     setPassword()
     {
 
-    }
+    },
+    addMessage(msg: any) {
+      this.messages.push(msg);
+    },
+    toLocale(timestamp: any) {
+      return new Date(timestamp).toLocaleTimeString('nl-NL');
+    },
   },
 };
-
+// I am pretty sure this is used to send the chat messages to the server
+// const chatForm = document.getElementById('chat-form');
+async function chatFormSubmit(e: any, chatId: number) {
+  const msg = e.target.elements.msg;
+  const packet = { roomId: chatId, body: (msg.value) };
+  connection.socket.emit('sendMsg', packet);
+  msg.value = ''; //clears the message text you just entered
+  msg.focus(); //focuses on the text input area again after sending
+}
 </script>
 
 <style src="../assets/chat.css">

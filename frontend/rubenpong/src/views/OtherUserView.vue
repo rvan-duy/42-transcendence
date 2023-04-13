@@ -18,6 +18,12 @@ import { getBackend } from '@/utils/backend-requests';
               <figcaption class="text-white text-m">
                 {{ name }}
               </figcaption>
+              <button
+                class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
+                @click="goTo('chatroom/AwesomeChat')"
+              >
+                Add as friend
+              </button>
             </span>
           </div>
         </header>
