@@ -44,6 +44,11 @@ export class ChatController {
       owner: {
         connect: {
           id: userId,
+        },
+      },
+      users: {
+        connect: {
+          id: userId,
         }
       },
       name: roomName,

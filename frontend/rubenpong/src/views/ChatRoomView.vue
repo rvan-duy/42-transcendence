@@ -105,7 +105,7 @@ interface.
               </ul>
             </div>
             <div class="chat-messages">
-              <div v-for="message in messages" :key="message.id" class="message">
+              <div ref="messageContainer" v-for="message in messages" :key="message.id" class="message">
                 <p class="meta">
                   {{ message.username }} <span>{{ toLocale(message.timestamp) }}</span>
                 </p>
@@ -182,6 +182,10 @@ export default {
   unmounted() {
     this.dropSocketListeners();
   },
+  // very carefull, updated componenets might cause recursion into Infinity
+  // updated() {
+  //   chat-messages.scrollTop = (chatMessages.scrollHeight);
+  // },
 
   methods: {
     goTo(route: string) {
@@ -191,6 +195,7 @@ export default {
       return this.$route.query.id;
     },
     addMessage(msg: any) {
+      const chatMessages = document.querySelector('.chat-messages'); //This is how we used to scroll to end but it no longer works
       this.messages.push(msg);
     },
     toLocale(timestamp: any) {
@@ -222,6 +227,7 @@ export default {
       console.log('msg: ', msg);
       msg.username = msg.author.name;
       this.addMessage(msg);
+      this.scrollChatToBottom();
     },
 
     async setupSocketListeners() {
@@ -240,7 +246,7 @@ export default {
       console.log('ban');
       const connection = SocketioService;
       connection.setupSocketConnection('/chat');
-      connection.socket.emit('banUserFromRoom', { roomId: 1, banUserId: bannedUserId }); //make this a global socket like the example below
+      connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
 
     confirmAndGo(message: string, f: any, param: number) {
@@ -250,6 +256,11 @@ export default {
       } else {
         console.log('You canceled!');
       }
+    },
+
+    scrollChatToBottom() {
+      const messageContainer = this.$refs.messageContainer as any;
+      messageContainer.scrollTop = messageContainer.scrollHeight;
     },
 
     setPassword() {
