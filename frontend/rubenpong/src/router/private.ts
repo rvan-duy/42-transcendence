@@ -48,7 +48,7 @@ const routes = [
     path: '/chatroom/:id',
     name: 'chatroom',
     component: ChatRoomView,
-    props: { id: null }
+    props: { id: null}
   },
   {
     path: '/searchuser',
