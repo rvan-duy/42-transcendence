@@ -212,6 +212,8 @@ export default {
       return this.$route.query.id;
     },
     addMessage(msg: any) {
+      const chatMessages = document.querySelector('.chat-messages'); //This is how we used to scroll to end but it no longer works
+      chatMessages.scrollTop = (chatMessages.scrollHeight);
       this.messages.push(msg);
     },
     toLocale(timestamp: any) {
@@ -235,7 +237,7 @@ export default {
       console.log('ban');
       const connection = SocketioService;
       connection.setupSocketConnection('/chat');
-      connection.socket.emit('banUserFromRoom', { roomId: 1, banUserId: bannedUserId }); //make this a global socket like the example below
+      connection.socket.emit('banUserFromRoom', { roomId: this.room.id, banUserId: bannedUserId }); //make this a global socket like the example below
 
       // $route.query.id
       // //   chat_socket.$socket.emit('createRoom', dto);
