@@ -34,7 +34,7 @@ interface.
             {{ $route.query.id }}
             <div style="text-align: right;">
               <button class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs"
-                @click="confirmAndGo('leave chat ' + $route.params.id, banUser)">
+                @click="confirmAndGo('leave chat ' + $route.params.id, banUser, 1)">
                 Leave Chat
               </button>
               <span v-if="chat?.access === 'PROTECTED'"
@@ -105,7 +105,7 @@ interface.
               </ul>
             </div>
             <div class="chat-messages">
-              <div ref="messageContainer" v-for="message in messages" :key="message.id" class="message">
+              <div ref="messageContainer" id="message-list" v-for="message in messages" :key="message.id" class="message">
                 <p class="meta">
                   {{ message.username }} <span>{{ toLocale(message.timestamp) }}</span>
                 </p>
@@ -182,10 +182,6 @@ export default {
   unmounted() {
     this.dropSocketListeners();
   },
-  // very carefull, updated componenets might cause recursion into Infinity
-  // updated() {
-  //   chat-messages.scrollTop = (chatMessages.scrollHeight);
-  // },
 
   methods: {
     goTo(route: string) {
@@ -227,7 +223,7 @@ export default {
       console.log('msg: ', msg);
       msg.username = msg.author.name;
       this.addMessage(msg);
-      this.scrollChatToBottom();
+      // this.scrollChatToBottom();
     },
 
     async setupSocketListeners() {
@@ -259,24 +255,25 @@ export default {
     },
 
     scrollChatToBottom() {
-      const messageContainer = this.$refs.messageContainer as any;
+      const messageContainer = this.$refs.messageContainer as HTMLElement;
+      console.log("current: ", messageContainer.scrollTop, " next: ", messageContainer.scrollHeight);
       messageContainer.scrollTop = messageContainer.scrollHeight;
     },
 
     setPassword() {
 
     },
+    async chatFormSubmit(e: any, chatId: number) {
+      const msg = e.target.elements.msg;
+      const packet = { roomId: chatId, body: (msg.value) };
+      SocketioService.socket.emit('sendMsg', packet);
+      msg.value = ''; //clears the message text you just entered
+      msg.focus(); //focuses on the text input area again after sending
+      this.scrollChatToBottom();
+    }
   },
 };
-// I am pretty sure this is used to send the chat messages to the server
-// const chatForm = document.getElementById('chat-form');
-async function chatFormSubmit(e: any, chatId: number) {
-  const msg = e.target.elements.msg;
-  const packet = { roomId: chatId, body: (msg.value) };
-  SocketioService.socket.emit('sendMsg', packet);
-  msg.value = ''; //clears the message text you just entered
-  msg.focus(); //focuses on the text input area again after sending
-}
+
 </script>
 
 <style src="../assets/chat.css">
