@@ -44,9 +44,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return;
     let user;
     try {
-    user = await this.jwtService.verify(
-      client.handshake.auth.token, { secret: process.env.JWT_SECRET }
-    );
+      user = await this.jwtService.verify(
+        client.handshake.auth.token, { secret: process.env.JWT_SECRET }
+      );
     } catch(err) {
     // implement the jwt failure code
     // maybe close the socket?
