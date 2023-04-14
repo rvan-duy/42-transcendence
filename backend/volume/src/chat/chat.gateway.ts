@@ -10,7 +10,7 @@ import { Server, Socket } from 'socket.io';
 import { MsgDto, MsgService } from '../msg/msg.service';
 import { GateService } from 'src/gate/gate.service';
 import { RoomService } from 'src/room/room.service';
-import { Room } from '@prisma/client';
+// import { Room } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
 import { ChatService } from './chat.service';
@@ -44,9 +44,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return;
     let user: any;
     try {
-      const user = await this.jwtService.verify(
-        client.handshake.auth.token, { secret: process.env.JWT_SECRET }
-      );
+    //   const user = await this.jwtService.verify(
+    //     client.handshake.auth.token, { secret: process.env.JWT_SECRET }
+    //   );
     } catch(err) {
       // implement the jwt failure code
       // maybe close the socket?
