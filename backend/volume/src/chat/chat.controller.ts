@@ -39,12 +39,10 @@ export class ChatController {
     else
       password = undefined;
 
-	const userId = req.user.id;
-
-	if (access === Access.PUBLIC) // If the chat is public, don't add user to list of room's users, or the chat will show up twice for them.
-		var roomUser: number = 1;
-	else
-		var roomUser: number = userId; 
+    const userId = req.user.id;
+    let roomUser: number = userId;
+    if (access === Access.PUBLIC) // If the chat is public, don't add user to list of room's users, or the chat will show up twice for them
+      roomUser = 1;
 
     return this.prismaRoomService.createRoom({
       owner: {
