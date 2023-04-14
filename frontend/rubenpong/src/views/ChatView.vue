@@ -115,7 +115,7 @@
             </div>
             {{ newChat }}
             <button
-              :disabled="newChat.name === ''"
+              :disabled="newChat.name == NULL || newChat.access === undefined || ( newChat.access === 'PROTECTED'&& newChat.password == NULL)"
               class="btn bg-blue-100"
               @click="createChat(newChat)"
             >
