@@ -10,6 +10,7 @@
           <h1><i class="fas fa-smile" /> RubenSpeak</h1>
         </header>
         <main class="join-main">
+
           <div v-if="chatCreate === false">
             <div class="form-control">
               <label for="room">Room</label>
@@ -37,14 +38,14 @@
                 VALYE
                 type="text"
                 name="username"
-                placeholder="Enter username..."
+                placeholder="Enter password..."
                 required
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
               > </span>
             </div>
+            <!-- We need a backend check to see if password is valid, but I implemented a frontend check to make user check whether they typed a password if one is required -->
             <button
-              v-if="selectedChat?.access === 'PUBLIC' || selectedChat?.access === 'PRIVATE'"
-              :disabled="selectedChat?.name === ''"
+              :disabled="selectedChat?.name === '' || (selectedChat?.access === 'PROTECTED' && enteredPW == '' )"
               class="btn bg-blue-100"
               @click="goTo('chatroom/' + selectedChat?.name + '?id=' + selectedChat?.id)"
             >
@@ -122,6 +123,7 @@
               Create Chat
             </button>
           </div>
+
         </main>
       </div>
     </body>
