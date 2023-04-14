@@ -42,30 +42,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleConnection(client: Socket) {
     if (client.handshake.auth.token === '')
       return;
-    // let user: any;
-    // try {
+    let user: any;
+    try {
       const user = await this.jwtService.verify(
         client.handshake.auth.token, { secret: process.env.JWT_SECRET }
       );
-    // } catch(err) {
+    } catch(err) {
       // implement the jwt failure code
       // maybe close the socket?
-    // }
+    }
 
     const userId = user.sub;
     this.gate.addSocket(userId, client);
-      
-    // // get all chats from the user here and add them to loadAllChats
-    // const userWithChats = await this.userService.userChats({id: userId});
-    // const chatsFromUser = userWithChats.rooms as Room[];
-      
-    // // get public chats and add them to the list
-    // const publicChats = await this.roomService.getPublicRooms();
-    // const combinedChats = chatsFromUser.concat(publicChats);
-      
-    // // send the loadAllChats socket-msg with the chats you are activel in!
-    // client.emit('loadAllChats', combinedChats);
-    // console.log(combinedChats);
   }
     
   handleDisconnect(client: Socket) {
