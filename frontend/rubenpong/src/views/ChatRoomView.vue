@@ -352,9 +352,7 @@ export default {
     },
     async loadChatBaseListener(room: any) {
       console.log('loadRoom: ', room);
-      this.users = room.users;
       this.chat = room.chat;
-      // Wait for all the getBackend calls to finish
       const promises = room.history.map((msg: any) => {
         return getBackend('user/id/' + msg.authorId)
           .then(res => res.json())
@@ -362,9 +360,10 @@ export default {
             msg.username = user.name;
           });
       });
+      console.log('history messages: ', this.messages);
       await Promise.all(promises);
       this.messages = room.history;
-      console.log(this.messages);
+      //   this.users = room.users;
     },
 
     receiveNewMsgListener(msg: any) {
