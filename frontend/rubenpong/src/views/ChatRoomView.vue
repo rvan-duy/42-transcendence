@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getBackend, putBackend} from '@/utils/backend-requests';
+import { getBackend } from '@/utils/backend-requests';
 import SocketioService from '../services/socketio.service.js';
 import { ref } from 'vue';
 const input = ref('');
@@ -7,20 +7,19 @@ let users: User[] = [];
 
 async function getUsers() {
   await getBackend('user/all').then(res => res.json())
-        .then((data: User[]) => {
-        users = data;
-      });
+    .then((data: User[]) => {
+      users = data;
+    });
 
 }
 getUsers();
 function filteredList() {
-      if (input.value !== '')
-      {
-        console.log(users);
-        return users.filter((user) =>
-          user.name.toLowerCase().includes(input.value.toLowerCase())
-        );
-        }
+  if (input.value !== '') {
+    console.log(users);
+    return users.filter((user) =>
+      user.name.toLowerCase().includes(input.value.toLowerCase())
+    );
+  }
 }
 //temporary function
 // async function addUsers() {
@@ -150,9 +149,11 @@ interface.
                     @click="goTo('otheruser/' + user.name + '?id=' + user.id)"
                   >{{ user.name }}</button></span>
                   <span>
-                    <button v-if="!usersAdded.includes(user)"
-                            class="bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                            @click="addUser(user)">Add</button></span>
+                    <button
+                      v-if="!usersAdded.includes(user)"
+                      class="bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="addUser(user)"
+                    >Add</button></span>
                 </div>
 
                 <div
@@ -163,7 +164,7 @@ interface.
                   <p>No results found!</p>
                 </div>
               </span>
-            <!-- </div> -->
+              <!-- </div> -->
               <h3><i class="fas fa-users" /> Users</h3>
               <ul id="users">
                 <li
@@ -417,8 +418,7 @@ export default {
       msg.focus(); //focuses on the text input area again after sending
       this.scrollChatToBottom();
     },
-    addUser(user: User)
-    {
+    addUser(user: User) {
       this.usersAdded.push(user);
     }
   },
