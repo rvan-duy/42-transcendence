@@ -1,6 +1,35 @@
 <script setup lang="ts">
-import { getBackend } from '@/utils/backend-requests';
+import { getBackend, putBackend} from '@/utils/backend-requests';
 import SocketioService from '../services/socketio.service.js';
+// import { ref } from 'vue';
+// const input = ref('');
+// const users = [{ name: 'Ruben1', pic: '', id: 1, admin: false }, { name: 'Ruben2', pic: '', id: 2, admin: false }, { name: 'Dagmar', pic: '', id: 3, admin: false }, { name: 'Oswin', pic: '', id: 4, admin: false }, { name: 'Lindsay', pic: '', id: 5, admin: false }];
+// function filteredList() {
+//   if (input.value !== '')
+//     return users.filter((user) =>
+//       user.name.toLowerCase().includes(input.value.toLowerCase())
+//     );
+// }
+
+//temporary function
+async function addUsers() {
+    await putBackend('chat/addUserToRoom', { id: 1 })
+      .then((response => response.json()))
+      .then((data) => {
+        // this.name = data.name;
+      });
+      await putBackend('chat/addUserToRoom', { id: 2 })
+      .then((response => response.json()))
+      .then((data) => {
+        // this.name = data.name;
+      });
+      await putBackend('chat/addUserToRoom', { id: 3 })
+      .then((response => response.json()))
+      .then((data) => {
+        // this.name = data.name;
+      });
+  }
+  addUsers();
 </script>
 
 <!-- • The user should be able to create channels (chat rooms) that can be either public,
@@ -84,6 +113,48 @@ interface.
           </header>
           <main class="chat-main">
             <div class="chat-sidebar">
+              <!-- <div v-if="chat?.access === 'PRIVATE'">
+              <label
+                for="name"
+                class="pt-2"
+              >Add users</label>
+              <span class="text-black pr-4">
+                <input
+                  v-model="input"
+                  type="text"
+                  placeholder="Search users..."
+                  VALYE
+                  required
+                  style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+                >
+                <div
+                  v-for="user in allUsers"
+                  :key="user.id"
+                  :value="user"
+                  class="item fruit"
+                >
+                     :key="user.id"
+                  :value="user"
+                  class="item fruit"
+                {{ user }}
+                  <span><button
+                    class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                    @click="goTo('otheruser/' + user.name + '?id=' + user.id)"
+                  >{{ user.valueOf }}</button></span>
+                  <span><button v-if="!usersAdded.includes(user.id)"
+                            class="bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                            @click="addUser(user)">Add</button></span>
+                </div>
+
+                <div
+                  v-if="input && !allUsers.length"
+                  class="item error"
+                  style="text-align: center;"
+                >
+                  <p>No results found!</p>
+                </div>
+              </span>
+            </div> -->
               <h3><i class="fas fa-users" /> Users</h3>
               <ul id="users">
                 <li
@@ -220,6 +291,7 @@ export default {
       messages: [] as any,
       chat: null as Chat | null,
       users: [] as User[],
+      allUsers: [] as User[],
       idUser: null,
       isAdmin: false,
       isVisible: false,
@@ -229,6 +301,7 @@ export default {
       chatId: Number(this.$route.query.id),
       connection: SocketioService,
       setup: false,
+      input: ''
     };
   },
   async created() {
@@ -244,11 +317,121 @@ export default {
     this.connection.setupSocketConnection('/chat');
     this.setupSocketListeners();
   },
+  async mounted()
+  {
+    // async filteredList(): Promise<User[]> {
+      await getBackend('user/all').then(res => res.json())
+        .then((data: User[]) => {
+          console.log(data);
+          this.allUsers = data;
+          console.log(this.allUsers);
+          console.log(this.input);
+          // return this.allUsers;
+          if(this.input!=='') {
+            console.log(this.allUsers.filter((user) => user.name.toLowerCase().includes(this.input.toLowerCase())));
+            return this.allUsers.filter((user) => user.name.toLowerCase().includes(this.input.toLowerCase())
+            );
+
+          }
+          else {
+            const emptyUsers: User[]=[] as User[];
+            return (emptyUsers);
+          }
+        });
+  
+     
+    // };
+    // await getBackend('user/all').then(res => res.json())
+    //     .then((data: User[]) => {
+    //       console.log(data);
+    //       let allUsers: User[]=data;
+    //       console.log(allUsers);
+    //       console.log(this.input);
+    //       // return allUsers;
+    //       if(this.input!=='') {
+    //         allUsers = allUsers.filter((user) => user.name.toLowerCase().includes(this.input.toLowerCase()));
+    //         // return allUsers.filter((user) => user.name.toLowerCase().includes(this.input.toLowerCase())
+    //         // );
+
+    //       }
+    //       // else {
+    //       //   const emptyUsers: User[]=[] as User[];
+    //       //   return (emptyUsers);
+    //       // }
+    //     });
+  },
   unmounted() {
     this.dropSocketListeners();
   },
+  computed: {
+    // async filteredList(): Promise<User[]> {
+    //   return await getBackend('user/all').then(res => res.json())
+    //     .then((data: User[]) => {
+    //       console.log(data);
+    //       const allUsers: User[]=data;
+    //       console.log(allUsers);
+    //       console.log(this.input);
+    //       // return allUsers;
+    //       if(this.input!=='') {
+    //         console.log(allUsers.filter((user) => user.name.toLowerCase().includes(this.input.toLowerCase())));
+    //         return allUsers.filter((user) => user.name.toLowerCase().includes(this.input.toLowerCase())
+    //         );
 
+    //       }
+    //       else {
+    //         const emptyUsers: User[]=[] as User[];
+    //         return (emptyUsers);
+    //       }
+    //     });
+  
+     
+    // },
+  },
   methods: {
+    async filteredList(): Promise<User[]> {
+      return await getBackend('user/all').then(res => res.json())
+        .then((data: User[]) => {
+          console.log(data);
+          this.allUsers = data;
+          console.log(this.allUsers);
+          console.log(this.input);
+          // return this.allUsers;
+          if(this.input!=='') {
+            console.log(this.allUsers.filter((user) => user.name.toLowerCase().includes(this.input.toLowerCase())));
+            return this.allUsers.filter((user) => user.name.toLowerCase().includes(this.input.toLowerCase())
+            );
+
+          }
+          else {
+            const emptyUsers: User[]=[] as User[];
+            return (emptyUsers);
+          }
+        });
+  
+     
+    },
+    // async filteredList(): Promise<User[]> {
+    //   return await getBackend('user/all').then(res => res.json())
+    //     .then((data: User[]) => {
+    //       console.log(data);
+    //       const this.allUsers: User[]=data;
+    //       console.log(allUsers);
+    //       console.log(this.input);
+    //       // return allUsers;
+    //       if(this.input!=='') {
+    //         console.log(allUsers.filter((user) => user.name.toLowerCase().includes(this.input.toLowerCase())));
+    //         return allUsers.filter((user) => user.name.toLowerCase().includes(this.input.toLowerCase())
+    //         );
+
+    //       }
+    //       else {
+    //         const emptyUsers: User[]=[] as User[];
+    //         return (emptyUsers);
+    //       }
+    //     });
+  
+     
+    // },
     goTo(route: string) {
       this.$router.push('/' + route);
     },
@@ -270,7 +453,6 @@ export default {
       console.log('loadRoom: ', room);
       this.users = room.users;
       this.chat = room.chat;
-
       // Wait for all the getBackend calls to finish
       const promises = room.history.map((msg: any) => {
         return getBackend('user/id/' + msg.authorId)

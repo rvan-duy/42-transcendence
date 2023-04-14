@@ -1,14 +1,5 @@
 
 <script setup lang="ts">
-import { ref } from 'vue';
-const input = ref('');
-const users = [{ name: 'Ruben1', pic: '', id: 1, admin: false }, { name: 'Ruben2', pic: '', id: 2, admin: false }, { name: 'Dagmar', pic: '', id: 3, admin: false }, { name: 'Oswin', pic: '', id: 4, admin: false }, { name: 'Lindsay', pic: '', id: 5, admin: false }];
-function filteredList() {
-  if (input.value !== '')
-    return users.filter((user) =>
-      user.name.toLowerCase().includes(input.value.toLowerCase())
-    );
-}
 </script>
 
 <template>
@@ -91,44 +82,7 @@ function filteredList() {
                 With Password
               </option>
             </select>
-            <div v-if="newChat.access === 'PRIVATE'">
-              <label
-                for="name"
-                class="pt-2"
-              >Add users</label>
-              <span class="text-black pr-4">
-                <input
-                  v-model="input"
-                  type="text"
-                  placeholder="Search users..."
-                  VALYE
-                  required
-                  style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-                >
-                <div
-                  v-for="user in filteredList()"
-                  :key="user.id"
-                  :value="user"
-                  class="item fruit"
-                >
-                  <span><button
-                    class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                    @click="goTo('otheruser/' + user.name + '?id=' + user.id)"
-                  >{{ user.name }}</button></span>
-                  <!-- <span><button v-if="!usersAdded.includes(user.id)"
-                            class="bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                            @click="addUser(user)">Add</button></span> -->
-                </div>
-
-                <div
-                  v-if="input && !filteredList()?.length"
-                  class="item error"
-                  style="text-align: center;"
-                >
-                  <p>No results found!</p>
-                </div>
-              </span>
-            </div>
+           
             <label
               for="name"
               class="pt-2"
