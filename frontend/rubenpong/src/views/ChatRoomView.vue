@@ -339,8 +339,9 @@ export default {
       return this.$route.query.id;
     },
     addMessage(msg: any) {
-      // const chatMessages = document.querySelector('.chat-messages'); //This is how we used to scroll to end but it no longer works
       this.messages.push(msg);
+      const chatMessages = document.querySelector('.chat-messages'); //This is how we used to scroll to end but it no longer works
+      chatMessages.scrollTop = (chatMessages.scrollHeight);
     },
     toLocale(timestamp: any) {
       return new Date(timestamp).toLocaleTimeString('nl-NL');
