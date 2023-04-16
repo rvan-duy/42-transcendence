@@ -40,14 +40,17 @@ export class ChatService {
   }
 
   async isChatter(roomId: number, userId: number) {
-    const room = await this.prismaRoomService.RoomWithUsers({id: roomId});
-    if (room.access === Access.PUBLIC)
-      return true;
-    if (room.ownerId === userId)
-      return true;
-    if (room.users.includes(userId))
-      return true;
+    try {
+      const room = await this.prismaRoomService.RoomWithUsers({id: roomId});
+      if (room.access === Access.PUBLIC)
+        return true;
+      if (room.ownerId === userId)
+        return true;
+      if (room.users.includes(userId))
+        return true;
+    } catch (error) {
+      console.error('isChatter(): ', error);
+    }
     return false;
   }
-  
 }

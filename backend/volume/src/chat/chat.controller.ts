@@ -112,7 +112,8 @@ export class ChatController {
     @Request() req: any,
     @Query('roomId') roomId: number,
   ) {
-    const clientId = req.user.id;
+    // const clientId = req.user.id;
+    // check if client is in room or not needed?
 
     try {
       const roomIncludingUsers = await this.roomService.getRoomUsers(roomId);
@@ -128,7 +129,8 @@ export class ChatController {
     @Request() req: any,
     @Query('roomId') roomId: number,
   ) {
-    const clientId = req.user.id;
+    // const clientId = req.user.id;
+    // check if client is in room or not needed?
 
     try {
       const roomIncludingAdmins = await this.roomService.getRoomAdmins(roomId);

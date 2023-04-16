@@ -213,7 +213,7 @@ interface.
 
                   <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
                   <div v-if="isAdmin && user.id !== idUser">
-                    <button 
+                    <button
                       class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
                       @click="confirmAndGo('ban ' + user.name, banUser, user.id)"
                     >
@@ -396,7 +396,7 @@ export default {
 
     async makeAdmin(newAdminId: number) {
       console.log('ban');
-      await putBackend('chat/makeUserAdmin', { roomId: this.chatId, userId: newAdminId})
+      await putBackend('chat/makeUserAdmin', { roomId: this.chatId, userId: newAdminId});
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
@@ -404,7 +404,7 @@ export default {
 
     async banUser(bannedUserId: number) {
       console.log('ban');
-      await putBackend('chat/banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId})
+      await putBackend('chat/banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId});
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
@@ -412,7 +412,7 @@ export default {
 
     async muteUser(mutedUserId: number) {
       console.log('mute');
-      await putBackend('chat/muteUserInRoom', { roomId: this.chatId, muteUserId: mutedUserId})
+      await putBackend('chat/muteUserInRoom', { roomId: this.chatId, muteUserId: mutedUserId});
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
@@ -444,15 +444,15 @@ export default {
       msg.focus(); //focuses on the text input area again after sending
       this.scrollChatToBottom();
     },
-   async addUser(user: User) {
+    async addUser(user: User) {
       this.usersAdded.push(user);
       // await putBackend('chat/addUserToRoom', { roomId: this.chatId, userToAdd: user.id})
-      await postBackend('chat/addUserToRoom', { roomId: this.chatId, userId: user.id})
-        // .then((response => response.json()))
-        // .then((data) => {
-        //   console.log(data);
-        // }
-        // );
+      await postBackend('chat/addUserToRoom', { roomId: this.chatId, userId: user.id});
+      // .then((response => response.json()))
+      // .then((data) => {
+      //   console.log(data);
+      // }
+      // );
     }
   },
 };
