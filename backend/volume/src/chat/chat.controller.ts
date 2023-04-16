@@ -1,5 +1,6 @@
 import {
   Controller,
+  ForbiddenException,
   Get,
   InternalServerErrorException,
   Post,
@@ -89,16 +90,20 @@ export class ChatController {
   async getMyRooms(
     @Request() req: any,
   ) {
-    const userId = req.user.id;
-    const userWithChats = await this.userService.userChats({id: userId});
-    const chatsFromUser = userWithChats.rooms as Room[];
+    try {
+      const userId = req.user.id;
+      const userWithChats = await this.userService.userChats({id: userId});
+      const chatsFromUser = userWithChats.rooms as Room[];
       
-    // get public chats and add them to the list
-    const publicChats = await this.roomService.getPublicRooms();
-    const combinedChats = chatsFromUser.concat(publicChats);
-      
-    // return all available chat for users to sender
-    return combinedChats;
+      // get public chats and add them to the list
+      const publicChats = await this.roomService.getPublicRooms();
+      const combinedChats = chatsFromUser.concat(publicChats);
+
+      // return all available chat for users to sender
+      return combinedChats;
+    } catch {
+      throw new InternalServerErrorException('Failed to fetch Rooms');
+    }
   }
 
   @UseGuards(JwtAuthGuard)
@@ -129,7 +134,7 @@ export class ChatController {
       const roomIncludingAdmins = await this.roomService.getRoomAdmins(roomId);
       return roomIncludingAdmins.admin;
     } catch {
-      throw new InternalServerErrorException('Failed to fetch users for room');
+      throw new InternalServerErrorException('Failed to fetch admins for room');
     }
   }
 
@@ -143,7 +148,7 @@ export class ChatController {
 
     // is the sender is not the chat owner leave it intact and return and error
     if (await this.chatService.isOwner(roomId, userId) === false)
-      return ;  // add error return later
+      throw new ForbiddenException('Only chat owner is alowed to destroy room');
 
     // destroy with fire
     this.roomService.removeChat(roomId);
@@ -160,7 +165,7 @@ export class ChatController {
 
     // is the sender is not the chat owner leave it intact and return and error
     if (await this.chatService.isOwner(roomId, clientId) === false)
-      return ;  // add error return later
+      throw new ForbiddenException('Only chat owner is alowed to promote to admin');
 
     // make the user admin in this chat
     this.roomService.makeAdmin(roomId, userId);
@@ -177,8 +182,8 @@ export class ChatController {
     const clientId = req.user.id;
 
     // only alow the chat owner and admins to add members to the chat
-    if (await this.chatService.IsAdminOrOwner(roomId, clientId) === false)
-      return ;  // add error return later
+    if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
+      throw new ForbiddenException('Only chat owner or admin is alowed to add users to chat');
 
     // add the user to the chat
     this.roomService.addToChat(userId, roomId);
@@ -194,12 +199,12 @@ export class ChatController {
     const clientId = req.user.id;
 
     // only alow the chat owner and admins to ban members from the chat
-    if (await this.chatService.IsAdminOrOwner(roomId, clientId) === false)
-      return ;  // add error return later
+    if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
+      throw new ForbiddenException('Only chat owner or admin is alowed to ban users from chat');
 
-    // check if the muted user is not the owner
+    // check if the banned user is not the owner
     if (this.chatService.isOwner(roomId, banUserId))
-      return ;
+      throw new ForbiddenException('The chat owner cannot be banned');
 
     // add user to the banned list in this chat
     this.roomService.banUser(roomId, banUserId);
@@ -215,12 +220,12 @@ export class ChatController {
     const clientId = req.user.id;
 
     // only alow the chat owner and admins to ban members from the chat
-    if (await this.chatService.IsAdminOrOwner(roomId, clientId) === false)
-      return ;  // add error return later
+    if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
+      throw new ForbiddenException('Only chat owner or admin is alowed to mute users from chat');
 
     // check if the muted user is not the owner
     if (this.chatService.isOwner(roomId, muteUserId))
-      return ;
+      throw new ForbiddenException('The chat owner cannot be muted');
 
     // add user to the muted list in this chat
     this.roomService.muteUser(roomId, muteUserId);

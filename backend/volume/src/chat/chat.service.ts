@@ -11,26 +11,30 @@ export class ChatService {
 
   ){}
 
-  async IsAdminOrOwner(roomId: number, userId: number) {
-    return (this.isAdmin(roomId, userId) || this.isOwner(roomId, userId));
-  }
-
   async isOwner(roomId: number, userId: number) {
-    const room = await this.prismaRoomService.Room({id: roomId});
-    if (room.ownerId === userId)
-      return true;
+    try {
+      const room = await this.prismaRoomService.Room({id: roomId});
+      if (room.ownerId === userId)
+        return true;
+    } catch (error) {
+      console.error('isOwner(): prisma.Room(): ', error);
+    }
     return false;
   }
 
-  async isAdmin(roomId: number, userId: number) {
-    const room = await this.prismaRoomService.RoomWithUsers({id: roomId});
-    if (room.access === Access.PUBLIC)
-      return true;
-    if (room.ownerId === userId)
-      return true;
-    for (let i = 0; i++; i < room.admin.length) {
-      if (room.admin[i].id === userId)
+  async isAdminOrOwner(roomId: number, userId: number) {
+    try {
+      const room = await this.prismaRoomService.RoomWithUsers({id: roomId});
+      if (room.access === Access.PUBLIC)
         return true;
+      if (room.ownerId === userId)
+        return true;
+      for (let i = 0; i++; i < room.admin.length) {
+        if (room.admin[i].id === userId)
+          return true;
+      }
+    } catch (error) {
+      console.error('isAdmin(): prisma.RoomWithUsers(): ', error);
     }
     return false;
   }
