@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getBackend } from '@/utils/backend-requests';
+import { getBackend, putBackend, postBackend } from '@/utils/backend-requests';
 import SocketioService from '../services/socketio.service.js';
 import { ref } from 'vue';
 const input = ref('');
@@ -201,7 +201,7 @@ interface.
                   >
                     <button
                       class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="confirmAndGo('make ' + user.name + ' Admin', banUser, user.id)"
+                      @click="confirmAndGo('make ' + user.name + ' Admin', makeAdmin, user.id)"
                     >Make Admin</button>
                   </span>
                   <button
@@ -212,8 +212,8 @@ interface.
                   </button>
 
                   <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
-                  <div v-if="isAdmin && user.id !== idUser && user.id !== chat?.ownerId">
-                    <button
+                  <div v-if="isAdmin && user.id !== idUser">
+                    <button 
                       class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
                       @click="confirmAndGo('ban ' + user.name, banUser, user.id)"
                     >
@@ -221,7 +221,7 @@ interface.
                     </button>
                     <button
                       class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="confirmAndGo('mute ' + user.name, banUser, user.id)"
+                      @click="confirmAndGo('mute ' + user.name, muteUser, user.id)"
                     >
                       Mute
                     </button>
@@ -299,7 +299,7 @@ export default {
   data() {
     return {
       messages: [] as any,
-      chat: null as Chat | null,
+      chat: {} as Chat | null,
       users: [] as User[],
       allUsers: [] as User[],
       idUser: null,
@@ -322,11 +322,14 @@ export default {
           .then((data) => {
             this.idUser = data.id;
             console.log(data.id);
-            this.determineAdmin();
+            this.connection.setupSocketConnection('/chat');
+            this.setupSocketListeners();
+            setTimeout(() => {
+              this.determineAdmin();
+            }, 100);
+            
           });
       });
-    this.connection.setupSocketConnection('/chat');
-    this.setupSocketListeners();
   },
   unmounted() {
     this.dropSocketListeners();
@@ -347,14 +350,18 @@ export default {
       return new Date(timestamp).toLocaleTimeString('nl-NL');
     },
     determineAdmin() {
-      return (this.chat?.ownerId === this.idUser); // checks if is owner, admin is harder to check
+      //temporary code
+      console.log('ownerid' + this.chat?.ownerId);
+      if (this.chat?.ownerId === this.idUser)
+        this.isAdmin = true;
+      // return (this.chat?.ownerId === this.idUser); // checks if is owner, admin is harder to check
       // maybe easier to alow a backend call for this? let me know if that is needed
     },
     async loadChatBaseListener(room: any) {
       console.log('loadRoom: ', room);
-      this.users = room.users;
       this.chat = room.chat;
-      // Wait for all the getBackend calls to finish
+      // this.chat?.ownerId = room.chat.ownerId;
+      console.log('chat: ', this.chat?.ownerId);
       const promises = room.history.map((msg: any) => {
         return getBackend('user/id/' + msg.authorId)
           .then(res => res.json())
@@ -362,9 +369,10 @@ export default {
             msg.username = user.name;
           });
       });
+      console.log('history messages: ', this.messages);
       await Promise.all(promises);
       this.messages = room.history;
-      console.log(this.messages);
+      //   this.users = room.users;
     },
 
     receiveNewMsgListener(msg: any) {
@@ -386,11 +394,28 @@ export default {
       this.connection.socket.off('receiveNewMsg', this.receiveNewMsgListener);
     },
 
-    banUser(bannedUserId: number) {
+    async makeAdmin(newAdminId: number) {
       console.log('ban');
-      const connection = SocketioService;
-      connection.setupSocketConnection('/chat');
-      connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
+      await putBackend('chat/makeUserAdmin', { roomId: this.chatId, userId: newAdminId})
+      // const connection = SocketioService;
+      // connection.setupSocketConnection('/chat');
+      // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
+    },
+
+    async banUser(bannedUserId: number) {
+      console.log('ban');
+      await putBackend('chat/banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId})
+      // const connection = SocketioService;
+      // connection.setupSocketConnection('/chat');
+      // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
+    },
+
+    async muteUser(mutedUserId: number) {
+      console.log('mute');
+      await putBackend('chat/muteUserInRoom', { roomId: this.chatId, muteUserId: mutedUserId})
+      // const connection = SocketioService;
+      // connection.setupSocketConnection('/chat');
+      // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
 
     confirmAndGo(message: string, f: any, param: number) {
@@ -419,8 +444,15 @@ export default {
       msg.focus(); //focuses on the text input area again after sending
       this.scrollChatToBottom();
     },
-    addUser(user: User) {
+   async addUser(user: User) {
       this.usersAdded.push(user);
+      // await putBackend('chat/addUserToRoom', { roomId: this.chatId, userToAdd: user.id})
+      await postBackend('chat/addUserToRoom', { roomId: this.chatId, userId: user.id})
+        // .then((response => response.json()))
+        // .then((data) => {
+        //   console.log(data);
+        // }
+        // );
     }
   },
 };
