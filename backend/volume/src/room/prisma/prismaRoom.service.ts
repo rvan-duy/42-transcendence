@@ -25,6 +25,17 @@ export class PrismaRoomService {
     });
   }
 
+  async RoomWithAdmins(
+    RoomWhereUniqueInput: Prisma.RoomWhereUniqueInput,
+  ): Promise<any | null> {
+    return this.prisma.room.findUnique({
+      where: RoomWhereUniqueInput,
+      include: {
+        admin: true,
+      }
+    });
+  }
+
   async Rooms(params: {
     skip?: number;
     take?: number;

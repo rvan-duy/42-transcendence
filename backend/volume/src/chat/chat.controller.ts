@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  InternalServerErrorException,
   Post,
   Query,
   Request,
@@ -94,6 +95,38 @@ export class ChatController {
       
     // return all available chat for users to sender
     return combinedChats;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('roomUsers')
+  async getUsersInRoom(
+    @Request() req: any,
+    @Query('roomId') roomId: number,
+  ) {
+    const clientId = req.user.id;
+
+    try {
+      const roomIncludingUsers = await this.roomService.getRoomUsers(roomId);
+      return roomIncludingUsers.users;
+    } catch {
+      throw new InternalServerErrorException('Failed to fetch users for room');
+    }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('roomAdmins')
+  async getRoomAdmins(
+    @Request() req: any,
+    @Query('roomId') roomId: number,
+  ) {
+    const clientId = req.user.id;
+
+    try {
+      const roomIncludingAdmins = await this.roomService.getRoomAdmins(roomId);
+      return roomIncludingAdmins.admin;
+    } catch {
+      throw new InternalServerErrorException('Failed to fetch users for room');
+    }
   }
 
   @UseGuards(JwtAuthGuard)

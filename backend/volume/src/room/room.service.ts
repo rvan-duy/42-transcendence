@@ -55,6 +55,11 @@ export class RoomService {
     return(roomAndUsers.users);
   }
 
+  async getRoomAdmins(roomId: number){
+    const roomAndUsers = await this.prismaRoom.RoomWithAdmins({id: roomId});
+    return(roomAndUsers.users);
+  }
+
   async getRoomById(roomId: number) {
     const room = await this.prismaRoom.Room({id: roomId});
     const roomWithoutPasscode = exclude(room, ['hashedCode']);
