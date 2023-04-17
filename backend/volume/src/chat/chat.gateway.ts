@@ -122,7 +122,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       const userId = await this.gate.getUserBySocket(client);
       // verify that it is either an admin or the client self?
     
-      if (await this.chatService.IsAdminOrOwner(roomId, userId) === false
+      if (await this.chatService.isAdminOrOwner(roomId, userId) === false
       && await this.msgService.verifyAuthor(roomId, id, userId) === false
       )
         return ;
