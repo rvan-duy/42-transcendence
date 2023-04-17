@@ -61,7 +61,7 @@ export class RoomService {
   }
 
   async getRoomAdmins(roomId: number){
-    const roomAndUsers = await this.prismaRoom.RoomWithAdmins({id: roomId});
+    const roomAndUsers = await this.prismaRoom.roomWithAdmins({id: roomId});
     return(roomAndUsers.users);
   }
 
