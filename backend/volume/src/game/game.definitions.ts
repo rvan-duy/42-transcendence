@@ -27,6 +27,7 @@ export enum MoveSpeedPerTick {
   PADDLE = 2.5,
   BALL = 4,
   POWERUP = 5,
+  MAX_BALL_SPEED = 15,
   }
 
 export enum DefaultElementSize {
