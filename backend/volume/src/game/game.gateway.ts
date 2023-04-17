@@ -62,31 +62,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // console.warn(`client ${client} unused`);
   }
 
-  @SubscribeMessage('ArrowDown')
+  @SubscribeMessage('UpdateInput')
   handleKeyDown(client: any, payload: any) {
-    this.gameService.UpdatePlayerInput(payload.userId, payload.gameId, PaddleInput.DOWN); // input validation / auth
+    this.gameService.UpdatePlayerInput(payload.userId, payload.gameId, payload.key, payload.enabled); // input validation / auth
     // client = null; // linter
     // console.warn(`client ${client} unused`);
   }
-
-@SubscribeMessage('ArrowUp')
-  handleKeyUp(client: any, payload: any) {
-    this.gameService.UpdatePlayerInput(payload.userId, payload.gameId, PaddleInput.UP); // input validation / auth
-    // client = null; // linter
-    // console.warn(`client ${client} unused`);
-  }
-
-@SubscribeMessage('ArrowLeft')
-handleKeyLeft(client: any, payload: any) {
-//   client = null; // linter
-  this.gameService.UpdatePlayerInput(payload.userId, payload.gameId, PaddleInput.LEFT); // input validation / auth
-  // console.warn(`client ${client} unused`);
-}
-
-@SubscribeMessage('ArrowRight')
-handleKeyRight(client: any, payload: any) {
-  this.gameService.UpdatePlayerInput(payload.userId, payload.gameId, PaddleInput.RIGHT); // input validation / auth
-//   client = null; // linter
-  // console.warn(`client ${client} unused`);
-}
 }

@@ -7,10 +7,10 @@ export enum GameMode {
   }
 
 export enum PaddleInput {
-  UP = 'KeyUp',
-  DOWN = 'KeyDown',
-  LEFT = 'KeyLeft',
-  RIGHT = 'KeyRight',
+  UP = 'ArrowUp',
+  DOWN = 'ArrowDown',
+  LEFT = 'ArrowLeft',
+  RIGHT = 'ArrowRight',
   }
 
 export enum PlayerDefinitions {

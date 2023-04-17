@@ -168,7 +168,6 @@ export default {
   unmounted() {
     document.removeEventListener('keydown', this.keyDownEvent);
     document.removeEventListener('keyup', this.keyUpEvent);
-    this.resetInput();
     if (this.inQueue)
       this.socket.emit('ChangeGameTab', this.userId);
   },
@@ -199,15 +198,7 @@ export default {
         this.inGame = false;
         this.drawEndScreen(ctx, canvas, winningUser);
         this.socket.off(`GameState_${this.gameId}`);
-        this.resetInput();
       });
-    },
-
-    resetInput() {
-      this.arrowDown = false;
-      this.arrowUp = false;
-      this.arrowLeft = false;
-      this.arrowRight = false;
     },
 
     keyDownEvent(e: KeyboardEvent) {
@@ -215,25 +206,25 @@ export default {
         return;
       }
 
-      const payload = {userId: this.userId, gameId: this.gameId};
+      const payload = {userId: this.userId, gameId: this.gameId, enabled: true, key: e.key};
       if (!this.arrowDown && e.key === 'ArrowDown')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowDown = true;
       }
       else if (!this.arrowUp && e.key === 'ArrowUp')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowUp = true;
       }
       else if (!this.arrowRight && e.key === 'ArrowRight')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowRight = true;
       }
       else if (!this.arrowLeft && e.key === 'ArrowLeft')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowLeft = true;
       }
     },
@@ -242,25 +233,25 @@ export default {
       if (this.userId === -1 || this.inGame === false)
         return;
 
-      const payload = {userId: this.userId, gameId: this.gameId};
+      const payload = {userId: this.userId, gameId: this.gameId, enabled: false, key: e.key};
       if (e.key === 'ArrowDown')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowDown = false;
       }
       else if (e.key === 'ArrowUp')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowUp = false;
       }
       else if (e.key === 'ArrowRight')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowRight = false;
       }
       else if (e.key === 'ArrowLeft')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowLeft = false;
       }
     },

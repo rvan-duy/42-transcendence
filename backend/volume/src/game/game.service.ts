@@ -238,7 +238,7 @@ export class GameService {
     // console.log(toSend);
   }
   
-  UpdatePlayerInput(playerId: number, gameId: number, input: PaddleInput) {
+  UpdatePlayerInput(playerId: number, gameId: number, input: PaddleInput, enabled: Boolean) {
     const game: GameData = this.getGameByGameId(gameId);
 
     if (game === null)
@@ -248,7 +248,10 @@ export class GameService {
       const player = game.players[index];
 
       if (player.userId === playerId) {
-        player.updateInput(input);
+		if (enabled)
+        	player.enableInput(input);
+		else
+			player.disableInput(input);
         return;
       }
     }

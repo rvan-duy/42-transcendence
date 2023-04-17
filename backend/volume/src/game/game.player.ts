@@ -25,14 +25,25 @@ export class Player {
   moveLeft: boolean = false;
   moveRight: boolean = false;
 
-  updateInput(input: PaddleInput) {
-    if (input === PaddleInput.DOWN)
-      this.moveDown = this.moveDown ? false : true;
-    else if (input === PaddleInput.UP)
-      this.moveUp = this.moveUp ? false : true;
-    else if (input === PaddleInput.LEFT)
-      this.moveLeft = this.moveLeft ? false : true;
-    else if (input === PaddleInput.RIGHT)
-      this.moveRight = this.moveRight ? false : true;
+  enableInput(input: PaddleInput) {
+    if (input == PaddleInput.DOWN)
+      this.moveDown = true;
+    else if (input == PaddleInput.UP)
+      this.moveUp = true;
+    else if (input == PaddleInput.LEFT)
+      this.moveLeft = true;
+    else if (input == PaddleInput.RIGHT)
+    this.moveRight = true;
+  }
+
+disableInput(input: PaddleInput) {
+  if (input == PaddleInput.DOWN)
+    this.moveDown = false;
+  else if (input == PaddleInput.UP)
+    this.moveUp = false;
+  else if (input == PaddleInput.LEFT)
+    this.moveLeft = false;
+  else if (input == PaddleInput.RIGHT)
+    this.moveRight = false;
   }
 }
