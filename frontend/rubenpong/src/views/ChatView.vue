@@ -46,7 +46,7 @@
               </div>
               <!-- We need a backend check to see if password is valid, but I implemented a frontend check to make user check whether they typed a password if one is required -->
               <button
-                v-if="selectedChat == NULL || (selectedChat?.access === 'PROTECTED' && enteredPW == '' )"
+                v-if="selectedChat == NULL || (selectedChat?.access === 'PROTECTED' && enteredPW === '')"
                 type="submit"
                 class="btn bg-blue-100"
               >
@@ -175,6 +175,7 @@ export default {
   async created() {
     const res = await getBackend('chat/myRooms');
     this.chats = await res.json() as Chat[];
+    console.log(this.chats);
     await getBackend('user/me')
       .then((response => response.json()))
       .then((data) => {

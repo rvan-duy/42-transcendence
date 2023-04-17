@@ -3,43 +3,23 @@ import { getBackend, putBackend, postBackend } from '@/utils/backend-requests';
 import SocketioService from '../services/socketio.service.js';
 import { ref } from 'vue';
 const input = ref('');
-let users: User[] = [];
+let allUsers: User[] = [];
 
 async function getUsers() {
   await getBackend('user/all').then(res => res.json())
     .then((data: User[]) => {
-      users = data;
+      allUsers = data;
     });
 
 }
 getUsers();
 function filteredList() {
   if (input.value !== '') {
-    console.log(users);
-    return users.filter((user) =>
+    return allUsers.filter((user) =>
       user.name.toLowerCase().includes(input.value.toLowerCase())
     );
   }
 }
-//temporary function
-// async function addUsers() {
-//     await putBackend('chat/addUserToRoom', { id: 1 })
-//       .then((response => response.json()))
-//       .then((data) => {
-//         // this.name = data.name;
-//       });
-//       await putBackend('chat/addUserToRoom', { id: 2 })
-//       .then((response => response.json()))
-//       .then((data) => {
-//         // this.name = data.name;
-//       });
-//       await putBackend('chat/addUserToRoom', { id: 3 })
-//       .then((response => response.json()))
-//       .then((data) => {
-//         // this.name = data.name;
-//       });
-//   }
-//   addUsers();
 </script>
 
 <!-- • The user should be able to create channels (chat rooms) that can be either public,
@@ -150,7 +130,7 @@ interface.
                   >{{ user.name }}</button></span>
                   <span>
                     <button
-                      v-if="!usersAdded.includes(user)"
+                      v-if="!usersAdded.find(el => el.id === user.id)"
                       class="bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
                       @click="addUser(user)"
                     >Add</button></span>
@@ -301,7 +281,6 @@ export default {
       messages: [] as any,
       chat: {} as Chat | null,
       users: [] as User[],
-      allUsers: [] as User[],
       idUser: null,
       isAdmin: false,
       isVisible: false,
@@ -361,7 +340,7 @@ export default {
       console.log('loadRoom: ', room);
       this.chat = room.chat;
       // this.chat?.ownerId = room.chat.ownerId;
-      console.log('chat: ', this.chat?.ownerId);
+      console.log('chat: ', room);
       const promises = room.history.map((msg: any) => {
         return getBackend('user/id/' + msg.authorId)
           .then(res => res.json())
@@ -372,7 +351,10 @@ export default {
       console.log('history messages: ', this.messages);
       await Promise.all(promises);
       this.messages = room.history;
-      //   this.users = room.users;
+      this.users = room.users;
+      // this.usersAdded = this.usersAdded.concat(this.users);
+      Array.prototype.push.apply(this.usersAdded, this.users);
+      console.log(this.usersAdded);
     },
 
     receiveNewMsgListener(msg: any) {
@@ -446,6 +428,8 @@ export default {
     },
     async addUser(user: User) {
       this.usersAdded.push(user);
+      console.log('second');
+      console.log(this.usersAdded);
       // await putBackend('chat/addUserToRoom', { roomId: this.chatId, userToAdd: user.id})
       await postBackend('chat/addUserToRoom', { roomId: this.chatId, userId: user.id});
       // .then((response => response.json()))
