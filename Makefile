@@ -38,7 +38,7 @@ lfix:
 
 # add object from seed file to DB
 seed:
-		docker exec -it backend npx prisma db seed \
+		@docker exec -it backend npx prisma db seed \
 			|| echo "\033[1;31mCould it be the container is not running?"
 
 # view DB online
