@@ -1,15 +1,7 @@
 import { SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
-// import { Game } from '@prisma/client';
 import { Socket, Server } from 'socket.io';
 import { GameService } from './game.service';
 import { MatchmakingService } from './matchmaking.service';
-
-enum PaddleInput {
-  UP = 'KeyUp',
-  DOWN = 'KeyDown',
-  LEFT = 'KeyLeft',
-  RIGHT = 'KeyRight',
-}
 
 @WebSocketGateway({
   cors: {
@@ -22,7 +14,6 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   }
 
   private server: Server;
-  //   private currGameState: CurrentGameState;
 
   afterInit(server: Server) {
     console.log('Created server inside game gateway');
@@ -58,14 +49,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   handleMessage(client: Socket, payload: any) {
     console.log(`player: ${payload.userId} is queuing for gamemode: ${payload.gameMode}`);
     this.matchmakingService.addPlayerToQueue(payload.gameMode, payload.userId);
-    // client = null; // linter
-    // console.warn(`client ${client} unused`);
   }
 
   @SubscribeMessage('UpdateInput')
   handleKeyDown(client: any, payload: any) {
     this.gameService.UpdatePlayerInput(payload.userId, payload.gameId, payload.key, payload.enabled); // input validation / auth
-    // client = null; // linter
-    // console.warn(`client ${client} unused`);
   }
 }

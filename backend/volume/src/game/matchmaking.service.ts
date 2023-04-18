@@ -1,9 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { GameService } from './game.service';
 import { GameMode } from './game.definitions';
+import { Server } from 'socket.io';
+import { Game } from '@prisma/client';
+import { networkInterfaces } from 'os';
 
-enum Debug {
+enum Debug { // make sure to seed before
   ENABLED = 0,
+}
+
+class PrivateGameInvite {
+  creatorId: number;
+  mode: GameMode;
 }
 
 @Injectable()
@@ -15,6 +23,7 @@ export class MatchmakingService {
   queueFreeMove: number[] = [];
   queuePowerUp: number[] = [];
   queueFiesta: number[] = [];
+  privateGameInvites: PrivateGameInvite[] = [];
 
   addPlayerToQueue(mode: GameMode, userId: number) {
     this.removePlayerFromQueue(userId);
@@ -50,7 +59,7 @@ export class MatchmakingService {
   }
 
   private checkAndMatchPlayers(arr: number[], mode: GameMode) {
-    if (Debug.ENABLED && arr.length === 1) { // make sure to seed before
+    if (Debug.ENABLED && arr.length === 1) {
       this.gameService.createGame(arr.pop(), 2, mode);
       return ;
     }
@@ -72,13 +81,49 @@ export class MatchmakingService {
     this.checkAndMatchPlayers(this.queueFiesta, GameMode.FIESTA);
   }
 
-  sendInvite(creatorId: number, guestId: number) {
+  createPrivateGameInvite(creatorId: number, mode: GameMode) {
     // some logic stuff & things
-    console.log(`Inviting ${guestId} to a game with ${creatorId}`);
+    console.log(`${creatorId} created an invite to the gamemode ${mode}`);
+    let newInvite: PrivateGameInvite;
+
+    newInvite.creatorId = creatorId;
+    newInvite.mode = mode;
+    this.privateGameInvites.push(newInvite);
   }
 
-  acceptInvite(guestId: number) {
-    console.log(`${guestId} accepted a game invite`);
+  removePrivateGameInvite(inviteIndex: number) {
+
+
+
+
+    // make sure to set the boolean inside all other chat invites to false
+  
+  
+  
+  
+  
+    this.privateGameInvites.splice(inviteIndex, 1);
   }
 
+  // returns true if the invite was accepted successfully, else return false
+  acceptInvite(acceptingUserId: number, creatorId: number, mode: GameMode) {
+    console.log(`${acceptingUserId} accepted a game invite from ${creatorId}`);
+
+    if (this.gameService.isUserInGame(acceptingUserId) || this.gameService.isUserInGame(creatorId))
+      return (false)
+
+    for (let index = 0; index < this.privateGameInvites.length; index++) {
+      const invite = this.privateGameInvites[index];
+
+      if (invite.creatorId === creatorId && invite.mode === mode)
+      {
+        this.removePlayerFromQueue(creatorId);
+        this.removePlayerFromQueue(acceptingUserId);
+        this.removePrivateGameInvite(index);
+        this.gameService.createGame(creatorId, acceptingUserId, mode);
+        return (true);
+      }
+    }
+    return (false);
+  }
 }

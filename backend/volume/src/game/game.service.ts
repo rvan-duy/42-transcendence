@@ -240,13 +240,27 @@ export class GameService {
       const player = game.players[index];
 
       if (player.userId === playerId) {
-		if (enabled)
-        	player.enableInput(input);
-		else
-			player.disableInput(input);
+        if (enabled)
+          player.enableInput(input);
+        else
+          player.disableInput(input);
         return;
       }
     }
+  }
+
+  isUserInGame(userId: number) {
+    for (let index = 0; index < this.games.length; index++) {
+      const game = this.games[index];
+
+      for (let index = 0; index < game.players.length; index++) {
+        const player = game.players[index];
+
+        if (player.userId == userId)
+          return (true);
+      }
+    }
+    return (false);
   }
 
   checkIfPlaying(userId: number, client: Socket) {
