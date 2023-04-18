@@ -1,3 +1,4 @@
+import { type } from 'os';
 import { BallStatus, DefaultElementSize, GameMode, MapSize, MoveSpeedPerTick, PlayerDefinitions, PowerUpEffects } from './game.definitions';
 import { Paddle } from './game.paddle';
 import { GameData } from './game.service';
@@ -98,9 +99,6 @@ export class Ball {
     if (this.x - this.radius <= 0 || this.x + this.radius >= MapSize.WIDTH)
       return (BallStatus.SCORED);
     return (BallStatus.MOVING);
-  
-    // if (game.isFinished) // use this for temporary debugging
-    //   this.resetGame(game);
   }
 }
 

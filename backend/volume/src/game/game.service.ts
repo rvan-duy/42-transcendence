@@ -111,14 +111,6 @@ export class GameService {
     }
   }
 
-  private resetGame(game: GameData) {
-    game.ball.x = MapSize.WIDTH / 2;
-    game.ball.y = MapSize.HEIGHT / 2;
-    game.ball.radius = DefaultElementSize.BALLRADIUS;
-    game.score = [0, 0];
-    game.isFinished = false;
-  }
-
   private async scored(game: GameData) {
     const ball = game.ball;
     let scoringPlayer: PlayerDefinitions;
