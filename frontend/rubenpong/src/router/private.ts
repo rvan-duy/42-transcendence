@@ -36,7 +36,9 @@ const routes = [
   {
     path: '/backend',
     name: 'backend',
-    beforeEnter() { location.href = 'http://localhost:3000/api'; }
+    beforeEnter() {
+      location.href = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/api`;
+    },
   },
   {
     path: '/otheruser/:id',

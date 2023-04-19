@@ -2,7 +2,7 @@ import { Controller, Get, UseGuards, Request, Response, HttpStatus, Post } from 
 import { TwoFactorAuthenticationService } from './twoFactorAuthentication.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { AuthService } from 'src/auth/auth.service';
-import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiForbiddenResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 
 @Controller('2fa')
 @ApiCookieAuth()
@@ -38,8 +38,8 @@ export class TwoFactorAuthenticationController {
 
   @Post('turn-on')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ 
-    summary: 'Turn on two-factor authentication for current user', 
+  @ApiOperation({
+    summary: 'Turn on two-factor authentication for current user',
     description: 'Verifies the two-factor code provided by the user against the generated secret. If the code is verified, turns on two-factor authentication for the user.'
   })
   @ApiBody({ description: 'The two-factor code to verify (code)', type: Object })
