@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getBackend, putBackend, postBackend } from '@/utils/backend-requests';
+import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests';
 import SocketioService from '../services/socketio.service.js';
 import { ref } from 'vue';
 const input = ref('');
@@ -431,7 +431,7 @@ export default {
       console.log('second');
       console.log(this.usersAdded);
       // await putBackend('chat/addUserToRoom', { roomId: this.chatId, userToAdd: user.id})
-      await postBackend('chat/addUserToRoom', { roomId: this.chatId, userId: user.id});
+      await postBackendWithQueryParams('chat/addUserToRoom', { roomId: this.chatId, userId: user.id});
       // .then((response => response.json()))
       // .then((data) => {
       //   console.log(data);
