@@ -99,14 +99,6 @@ export class UserController {
     return res.status(HttpStatus.OK).send(friends);
   }
 
-  @Post('me/friends/add/:id')
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'TODO: Add friend for current user' })
-  async addMeFriend(@Request() req: any, @Param('id') id: string, @Response() res: any) {
-    //TODO
-    return res.status(HttpStatus.OK).send('TODO')
-  }
-
   @Get('id/:id')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get user information for user with id' })
