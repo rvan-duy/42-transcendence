@@ -4,6 +4,8 @@ import ChatRoomView from '@/views/ChatRoomView.vue';
 import GameView from '@/views/GameView.vue';
 import LogoutView from '@/views/LogoutView.vue';
 import UserView from '@/views/UserView.vue';
+import OtherUserView from '@/views/OtherUserView.vue';
+import SearchUserView from '@/views/SearchUserView.vue';
 
 const routes = [
   {
@@ -15,11 +17,6 @@ const routes = [
     path: '/chat',
     name: 'chat',
     component: ChatView,
-  },
-  {
-    path: '/chatroom',
-    name: 'chatroom',
-    component: ChatRoomView,
   },
   {
     path: '/game',
@@ -40,7 +37,24 @@ const routes = [
     path: '/backend',
     name: 'backend',
     beforeEnter() { location.href = 'http://localhost:3000/api'; }
-  }
+  },
+  {
+    path: '/otheruser/:id',
+    name: 'otheruser',
+    component: OtherUserView,
+    props: { id: null }
+  },
+  {
+    path: '/chatroom/:id',
+    name: 'chatroom',
+    component: ChatRoomView,
+    props: { id: null}
+  },
+  {
+    path: '/searchuser',
+    name: 'searchuser',
+    component: SearchUserView,
+  },
 ];
 
 export default routes.map(route => {

@@ -30,50 +30,52 @@ model UserTimestamp {
 }
 
 model User {
-  id        Int     @default(autoincrement()) @id
-  intraId   Int     @unique
-  name      String  @unique
-  status    String?
-  friends   Int[] // ids
-  blocked   Int[] // ids
-  elo       Int     @default(500)
-  rooms     Room[]
-  admin     Room[]  @relation("admin")
-  owns      Room[]  @relation("owns")
-  sendMsg   Msg[]
-  games     Game[]
+  id      Int     @id @default(autoincrement())
+  intraId Int     @unique
+  name    String  @unique
+  status  String?
+  pending Int[] // ids
+  friends Int[] // ids
+  blocked Int[] // ids
+  elo     Int     @default(500)
+  rooms   Room[]
+  admin   Room[]  @relation("admin")
+  owns    Room[]  @relation("owns")
+  sendMsg Msg[]
+  games   Game[]
   twoFactor Boolean @default(false)
   secret    String?
 }
 
 model Room {
-  id          Int @default(autoincrement()) @id
-  name        String?
-  owner       User? @relation("owns", fields: [ownerId], references: [id])
-  ownerId     Int?
-  admin       User[] @relation("admin")
-  users       User[]
-  banMute      UserTimestamp[]
-  hashedCode  String?
-  access      Access @default(PUBLIC)
-  messages    Msg[]
-  lastId      Int    @default(0)
+  id         Int             @id @default(autoincrement())
+  name       String?
+  owner      User?           @relation("owns", fields: [ownerId], references: [id])
+  ownerId    Int?
+  admin      User[]          @relation("admin")
+  users      User[]
+  banMute    UserTimestamp[]
+  hashedCode String?
+  access     Access          @default(PUBLIC)
+  messages   Msg[]
+  lastId     Int             @default(0)
 }
 
 model Msg {
-  @@id([roomId, id])
-  id        Int  // has to be set to last Id of Room + 1 and also increase the room->lastId by 1
-  room      Room? @relation(fields: [roomId], references: [id])
+  id        Int // has to be set to last Id of Room + 1 and also increase the room->lastId by 1
+  room      Room?    @relation(fields: [roomId], references: [id])
   roomId    Int
   body      String
-  author    User? @relation(fields: [authorId], references: [id])
+  author    User?    @relation(fields: [authorId], references: [id])
   authorId  Int
   invite    Boolean // ? how ?
   timestamp DateTime @default(now())
+
+  @@id([roomId, id])
 }
 
-model Game  {
-  id        Int @default(autoincrement()) @id
-  players   User[]
-  score     Int[]
+model Game {
+  id      Int    @id @default(autoincrement())
+  players User[]
+  score   Int[]
 }

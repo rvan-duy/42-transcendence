@@ -14,6 +14,19 @@ export class PrismaUserService {
     });
   }
 
+  async userWithGames(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {
+    return this.prisma.user.findUnique({
+      where: userWhereUniqueInput,
+      include: {
+        games: {
+          include: {
+            players: true
+          }
+        },
+      },
+    });
+  }
+
   async users(params: {
     skip?: number;
     take?: number;

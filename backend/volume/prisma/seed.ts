@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { Access, PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
@@ -68,7 +68,33 @@ async function main() {
 
   });
 
-  console.log({ alice, bob, chad });
+  const daveroom = await prisma.room.upsert({
+
+    where: { id: 2 },
+
+    update: {},
+
+    create: {
+
+      name: 'Cluster',
+
+      access: Access.PUBLIC,
+
+      owner: {
+        connect: {
+          id: 2,
+        }
+      },
+      admin: {
+        connect: {
+          id: 1,
+        }
+      },
+    },
+
+  });
+
+  console.log({ alice, bob, chad, daveroom });
 
 }
 

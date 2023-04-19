@@ -20,7 +20,7 @@ const router = createRouter({
         public: true,
         loginPage: true
       }
-    }
+    },
   ].concat(privateRoutes), // private routes are in a separate file for readability
 });
 
