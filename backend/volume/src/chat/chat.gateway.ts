@@ -10,9 +10,7 @@ import { Server, Socket } from 'socket.io';
 import { MsgDto, MsgService } from '../msg/msg.service';
 import { GateService } from 'src/gate/gate.service';
 import { RoomService } from 'src/room/room.service';
-import { Room } from '@prisma/client';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
 import { ChatService } from './chat.service';
 
 @WebSocketGateway({
@@ -26,7 +24,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   constructor(
     private msgService: MsgService,
     private roomService: RoomService,
-    private userService: PrismaUserService,
     private gate: GateService,
     private chatService: ChatService,
     private jwtService: JwtService,
@@ -52,7 +49,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       client.disconnect();
       return ;
     }
-  
+
     // link this socket to the user
     const userId = user.sub;
     this.gate.addSocket(userId, client);
@@ -61,6 +58,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   handleDisconnect(client: Socket) {
     // unlink this socket from user
     this.gate.removeSocket(client);
+
     // remove client from all the rooms its in
     client.rooms.forEach(room => {
       client.leave(room);
@@ -96,17 +94,27 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   // add to group here
   @SubscribeMessage('loadRequest')
   async handleLoad(client: Socket, roomId: number) {
+    // input protection
+    if (typeof roomId !== 'number') {
+      throw new Error('roomId must be a number');
+    }
+
     // client verification
     const user = await this.gate.getUserBySocket(client);
-    if (false === await this.chatService.isChatter(roomId, user)) // does is chatter verify if the room is real?
-      return ;  // maybe add error msg for frontend
+    if (false === await this.chatService.isChatter(roomId, user))
+      throw new Error('no access or invalid roomId'); // also catches non existing rooms
     
-    // add client to the roomId room for socketio
+    // wait for all the items for current chat
+    const [users, chatHistory, chatData] = await Promise.all([
+      this.roomService.getRoomUsers(roomId),
+      this.msgService.getChatHistory(roomId),
+      this.roomService.getRoomById(roomId),
+    ]);
+    
+    // add client to the socketio room based on roomId
     client.join(String(roomId));
 
-    const users = await this.roomService.getRoomUsers(roomId);
-    const chatHistory = await this.msgService.getChatHistory(roomId);
-    const chatData = await this.roomService.getRoomById(roomId);
+    // send the complete chat info to client
     client.emit('loadChatBase', {
       chat: chatData,
       users: users,
@@ -117,14 +125,17 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   @SubscribeMessage('deleteMsg')
   async handleDeleteMsg(client: Socket, payload: MsgDto) {
     const { roomId, id } = payload;
+    if (roomId === undefined || id === undefined)
+      throw Error('incomplete payload');
+
     // client extraction
     const userId = await this.gate.getUserBySocket(client);
-    // verify that it is either an admin or the client self?
   
+    // verify that it is either an admin or the client self?
     if (await this.chatService.isAdminOrOwner(roomId, userId) === false
     && await this.msgService.verifyAuthor(roomId, id, userId) === false
     )
-      return ;
+      throw Error('not allowed');
     
     // delete the message
     this.msgService.handleDeleteMsg(payload);
