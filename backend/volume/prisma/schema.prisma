@@ -43,6 +43,8 @@ model User {
   owns    Room[]  @relation("owns")
   sendMsg Msg[]
   games   Game[]
+  twoFactor Boolean @default(false)
+  secret    String?
 }
 
 model Room {

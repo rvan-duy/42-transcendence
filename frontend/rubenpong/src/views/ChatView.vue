@@ -151,7 +151,7 @@
 </template>
 
 <script lang="ts">
-import { getBackend, postBackend } from '../utils/backend-requests';
+import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests';
 
 interface Chat {
   id: number;
@@ -189,7 +189,7 @@ export default {
       this.$router.push('/' + route);
     },
     async createChat(newChat: Chat) {
-      const createdChat = await postBackend('chat/createRoom', undefined, { name: newChat.name, access: newChat.access, password: newChat.password }) as Chat;
+      const createdChat = await postBackendWithQueryParams('chat/createRoom', undefined, { name: newChat.name, access: newChat.access, password: newChat.password }) as Chat;
       console.log('create chat');
       this.goTo('chatroom/' + newChat.name + '?id=' + createdChat.id);
     },

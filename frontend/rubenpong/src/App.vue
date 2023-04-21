@@ -46,6 +46,13 @@
         >
           Log Out
         </RouterLink>
+        <RouterLink
+          v-if="userIsLoggedIn"
+          class="text-blue-100 p-2 text-lg hover:text-white"
+          to="/backend"
+        >
+          Backend
+        </RouterLink>
       </div>
       <div
         class="columns-1"

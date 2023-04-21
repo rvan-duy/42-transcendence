@@ -127,7 +127,7 @@
   </div>
 </template>
 <script lang="ts">
-import { getBackend, putBackend } from '@/utils/backend-requests';
+import { getBackend, postBackend } from '@/utils/backend-requests';
 export default {
   data()
   {
@@ -155,7 +155,7 @@ export default {
   },
   methods: {
     async changeName() {
-      await putBackend('user/me', { name: this.newUsername })
+      await postBackend('user/me/name', { name: this.newUsername })
         .then((response => response.json()))
         .then((data) => {
           this.name = data.name;
