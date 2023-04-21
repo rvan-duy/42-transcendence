@@ -48,38 +48,32 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
         client.handshake.auth.token, { secret: process.env.JWT_SECRET }
       );
     } catch(err) {
-    // implement the jwt failure code
-    // maybe close the socket?
+      // disconnect the unauthenticated client and return to skip adding socket as a user
+      client.disconnect();
+      return ;
     }
   
+    // link this socket to the user
     const userId = user.sub;
     this.gate.addSocket(userId, client);
-  
-    // get all chats from the user here and add them to loadAllChats
-    const userWithChats = await this.userService.userChats({id: userId});
-    const chatsFromUser = userWithChats.rooms as Room[];
-  
-    // get public chats and add them to the list
-    const publicChats = await this.roomService.getPublicRooms();
-    const combinedChats = chatsFromUser.concat(publicChats);
-  
-    // send the loadAllChats socket-msg with the chats you are activel in!
-    client.emit('loadAllChats', combinedChats);
-    console.log(combinedChats);
   }
     
   handleDisconnect(client: Socket) {
-    // removes this socket connection from the gate service when that socket goes offline
+    // unlink this socket from user
     this.gate.removeSocket(client);
+    // remove client from all the rooms its in
+    client.rooms.forEach(room => {
+      client.leave(room);
+    });
   }
     
   // send update to all ppl in chat who are online
-  // do we need to find out who is all online through gate service?
-  spreadMessage(msg: MsgDto) {
-    this.server.emit('receiveNewMsg', msg);
+  // keeping track of people in the room with socketio rooms
+  spreadMessage(msg: MsgDto, room: string) {
+    this.server.to(room).emit('receiveNewMsg', msg);
   }
     
-    @SubscribeMessage('sendMsg')
+  @SubscribeMessage('sendMsg')
   async handleMessage(client: Socket, packet: MsgDto) {
     // input protection
     if (packet.roomId === undefined || packet.body === undefined)
@@ -87,47 +81,52 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (packet.invite === undefined)
       packet.invite = false;
   
+    // retrieve the userId of sender
     const userId = await this.gate.getUserBySocket(client);
   
+    // force sender to be author
     packet.authorId = userId;
   
     const msgWithAuthor = await this.msgService.handleIncomingMsg(packet);  // handles db placement of the new msg based on sender id
   
     // send the message to the connected participants in chat
-    this.spreadMessage(msgWithAuthor);
+    this.spreadMessage(msgWithAuthor, String(packet.roomId));
   }
     
-    @SubscribeMessage('loadRequest')
-    async handleLoad(client: Socket, roomId: number) {
-      // client verification
-      const user = await this.gate.getUserBySocket(client);
-      if (false === await this.chatService.isChatter(roomId, user))
-        return ;  // maybe add error msg for frontend
-      
-      console.log('got loadrequest from: ', user);
-      const users = await this.roomService.getRoomUsers(roomId);
-      const chatHistory = await this.msgService.getChatHistory(roomId);
-      const chatData = await this.roomService.getRoomById(roomId);
-      client.emit('loadChatBase', {
-        chat: chatData,
-        users: users,
-        history: chatHistory,
-      });
-    }
+  // add to group here
+  @SubscribeMessage('loadRequest')
+  async handleLoad(client: Socket, roomId: number) {
+    // client verification
+    const user = await this.gate.getUserBySocket(client);
+    if (false === await this.chatService.isChatter(roomId, user)) // does is chatter verify if the room is real?
+      return ;  // maybe add error msg for frontend
+    
+    // add client to the roomId room for socketio
+    client.join(String(roomId));
+
+    const users = await this.roomService.getRoomUsers(roomId);
+    const chatHistory = await this.msgService.getChatHistory(roomId);
+    const chatData = await this.roomService.getRoomById(roomId);
+    client.emit('loadChatBase', {
+      chat: chatData,
+      users: users,
+      history: chatHistory,
+    });
+  }
 
   @SubscribeMessage('deleteMsg')
-    async handleDeleteMsg(client: Socket, payload: MsgDto) {
-      const { roomId, id } = payload;
-      // client extraction
-      const userId = await this.gate.getUserBySocket(client);
-      // verify that it is either an admin or the client self?
+  async handleDeleteMsg(client: Socket, payload: MsgDto) {
+    const { roomId, id } = payload;
+    // client extraction
+    const userId = await this.gate.getUserBySocket(client);
+    // verify that it is either an admin or the client self?
+  
+    if (await this.chatService.isAdminOrOwner(roomId, userId) === false
+    && await this.msgService.verifyAuthor(roomId, id, userId) === false
+    )
+      return ;
     
-      if (await this.chatService.isAdminOrOwner(roomId, userId) === false
-      && await this.msgService.verifyAuthor(roomId, id, userId) === false
-      )
-        return ;
-      
-      // delete the message
-      this.msgService.handleDeleteMsg(payload);
-    }
+    // delete the message
+    this.msgService.handleDeleteMsg(payload);
+  }
 }
