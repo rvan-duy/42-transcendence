@@ -12,6 +12,8 @@ function exclude<Room, Key extends keyof Room>(
   room: Room,
   keys: Key[]
 ): Omit<Room, Key> {
+  if (room === undefined)
+    return undefined;
   for (const key of keys) {
     delete room[key];
   }
@@ -36,33 +38,29 @@ export class RoomService {
   // adds user to the chatroom
   // need to add uban to this too? FUTURE feature
   async addToChat(userId: number, roomId: number) {
-    try {
-      this.prismaRoom.updateRoom({
-        where: {
-          id: roomId,
-        },
-        data: {
-          users: {
-            connect: {
-              id: userId,
-            }
+    this.prismaRoom.updateRoom({
+      where: {
+        id: roomId,
+      },
+      data: {
+        users: {
+          connect: {
+            id: userId,
           }
         }
-      });
-    } catch (e) {
-      console.error(e);
-    }
+      }
+    });
   }
 
   // fetches all users of this chatroom
   async getRoomUsers(roomId: number){
     const roomAndUsers = await this.prismaRoom.RoomWithUsers({id: roomId});
-    return(roomAndUsers.users);
+    return(roomAndUsers?.users);
   }
 
   async getRoomAdmins(roomId: number){
     const roomAndUsers = await this.prismaRoom.roomWithAdmins({id: roomId});
-    return(roomAndUsers.users);
+    return(roomAndUsers?.users);
   }
 
   async getRoomById(roomId: number) {
