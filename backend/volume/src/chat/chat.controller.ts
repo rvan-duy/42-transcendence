@@ -72,7 +72,7 @@ export class ChatController {
   ) {
     const userId = req.user.id;
     const room = await this.prismaRoomService.Room({id: roomId});
-    switch (room.access) {
+    switch (room?.access || 'invalid') {
     case Access.PRIVATE:
       return ; // you need to be added to this chat
     case Access.PROTECTED:
@@ -82,6 +82,8 @@ export class ChatController {
       break ;
     case Access.PUBLIC:
       return ; // not added to public rooms since everyone is part unless kicked / blocked
+    case 'invalid':
+      throw Error('room may not exist');
     }
   }
 
@@ -112,15 +114,13 @@ export class ChatController {
     @Request() req: any,
     @Query('roomId') roomId: number,
   ) {
-    // const clientId = req.user.id;
-    // check if client is in room or not needed?
+    const clientId = req.user.id;
+    if (false === await this.chatService.isChatter(roomId, clientId))
+      throw new Error('no access or invalid roomId'); // also catches non existing rooms
 
-    try {
-      const roomIncludingUsers = await this.roomService.getRoomUsers(roomId);
-      return roomIncludingUsers.users;
-    } catch {
-      throw new InternalServerErrorException('Failed to fetch users for room');
-    }
+    const roomIncludingUsers = await this.roomService.getRoomUsers(roomId);
+    return roomIncludingUsers.users;
+
   }
 
   @UseGuards(JwtAuthGuard)
@@ -129,8 +129,9 @@ export class ChatController {
     @Request() req: any,
     @Query('roomId') roomId: number,
   ) {
-    // const clientId = req.user.id;
-    // check if client is in room or not needed?
+    const clientId = req.user.id;
+    if (false === await this.chatService.isChatter(roomId, clientId))
+      throw new Error('no access or invalid roomId'); // also catches non existing rooms
 
     try {
       const roomIncludingAdmins = await this.roomService.getRoomAdmins(roomId);
@@ -149,7 +150,7 @@ export class ChatController {
     const userId =req.user.id;
 
     // is the sender is not the chat owner leave it intact and return and error
-    if (await this.chatService.isOwner(roomId, userId) === false)
+    if (await this.chatService.isOwner(roomId, userId) === false) // also catches non existing rooms
       throw new ForbiddenException('Only chat owner is alowed to destroy room');
 
     // destroy with fire
