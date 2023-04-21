@@ -42,6 +42,8 @@ export class ChatService {
   async isChatter(roomId: number, userId: number) {
     try {
       const room = await this.prismaRoomService.RoomWithUsers({id: roomId});
+      if (room === undefined)
+        return false;
       if (room.access === Access.PUBLIC)
         return true;
       if (room.ownerId === userId)
