@@ -45,7 +45,7 @@ export class ChatController {
       ownerId: userId,
       access: access,
       password: password,
-    }
+    };
     return await this.roomService.createChat(newRoom);
   }
 

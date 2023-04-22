@@ -9,11 +9,11 @@ export class PrismaUserService {
   async user(
     userWhereUniqueInput: Prisma.UserWhereUniqueInput,
   ): Promise<User | null> {
-      return this.prisma.user.findUnique({
-        where: userWhereUniqueInput,
-      }).catch(() => {
-        return undefined;
-      });
+    return this.prisma.user.findUnique({
+      where: userWhereUniqueInput,
+    }).catch(() => {
+      return undefined;
+    });
   }
 
   async userWithGames(userWhereUniqueInput: Prisma.UserWhereUniqueInput) {

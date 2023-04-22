@@ -88,7 +88,7 @@ export class PrismaRoomService {
     return this.prisma.room.create({
       data,
     }).catch(() => {
-      return  undefined;
+      return undefined;
     });
   }
 

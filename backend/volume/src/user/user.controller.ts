@@ -164,7 +164,7 @@ export class UserController {
         }
       });
       if (updateCatcher === undefined)
-        throw Error('friendship could not be established')
+        throw Error('friendship could not be established');
       return ; // well done you are now friends
     }
     // I LEFT HERE WITH CHECKING
@@ -178,7 +178,7 @@ export class UserController {
       }
     });
     if (updateCatcher === undefined)
-        throw Error('friendship could not be established')
+      throw Error('friendship could not be established');
     return ; // wait till they accept your request (spannend!)
   }
 

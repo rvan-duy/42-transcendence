@@ -1,6 +1,4 @@
 import { Access, PrismaClient, Status, UserTimestamp } from '@prisma/client';
-import { timeStamp } from 'console';
-import { create } from 'domain';
 
 const prisma = new PrismaClient();
 
