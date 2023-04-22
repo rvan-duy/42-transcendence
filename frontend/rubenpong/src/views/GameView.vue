@@ -71,7 +71,7 @@
 </template>
 
 <script lang="ts">
-import io from 'socket.io-client';
+import SocketioService from '../services/socketio.service.js';
 import { getBackend } from '@/utils/backend-requests';
 import { GameMode } from '../utils/game-definitions';
 import type { CurrentGameState } from '../utils/game-definitions';
@@ -94,7 +94,7 @@ export default {
       arrowDown: false,
       arrowLeft: false,
       arrowRight: false,
-      socket: io(`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/game`),
+      connection: SocketioService,
       namePlayer1: '',
       namePlayer2: '',
     };
@@ -106,13 +106,15 @@ export default {
         console.log(res);
         return res.json();
       })
-      .then(function(data){
+      .then((data) => {
         userId = data.id;
+        this.connection.setupSocketConnection('/game');
         console.log(data);
       })
       .catch(e => {
         userId = -1;
         console.log(e);
+        // ToDo: show error to reload / relog
       });
 
     this.userId = userId;
@@ -120,15 +122,16 @@ export default {
 
     var canvas: HTMLCanvasElement = document.getElementById('pixels') as HTMLCanvasElement;
     var ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
-    this.socket.on('connect_error', (err) => {
-      console.log(`connect_error due to ${err.message}`);
-    });
     
+    this.connection.socket.on('FailedToAuthenticate', function() {
+      // ToDo: show error to refresh or logout/login
+    });
+
     // ask the server to check if the user is already in a game or not
-    this.socket.emit('CheckGameStatus', this.userId);
+    this.connection.socket.emit('CheckGameStatus', this.userId);
     
     // retrieve if the user is already in a game or not
-    this.socket.on('GameStatus', (data) => {
+    this.connection.socket.on('GameStatus', (data) => {
       if (data.alreadyInGame === true) {
         this.namePlayer1 = data.namePlayer1;
         this.namePlayer2 = data.namePlayer2;
@@ -148,7 +151,7 @@ export default {
     });
 
     // once a game is created with the user inside start listening to the game
-    this.socket.on('GameCreated', (data: any) => {
+    this.connection.socket.on('GameCreated', (data: any) => {
       if (data.player1 === this.userId || data.player2 === this.userId) {
         this.namePlayer1 = data.namePlayer1;
         this.namePlayer2 = data.namePlayer2;
@@ -169,18 +172,18 @@ export default {
     document.removeEventListener('keydown', this.keyDownEvent);
     document.removeEventListener('keyup', this.keyUpEvent);
     if (this.inQueue)
-      this.socket.emit('ChangeGameTab', this.userId);
+      this.connection.socket.emit('ChangeGameTab', this.userId);
   },
   methods: {
     listenToGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
       // get the position and current gamestate back from the server
-      this.socket.on(`GameState_${this.gameId}`, (data: any) => {
+      this.connection.socket.on(`GameState_${this.gameId}`, (data: any) => {
         const state: CurrentGameState = data;
         this.drawGame(ctx, canvas, state);
       });
       
       // Listen to the power up being enabled
-      this.socket.on(`EnablePowerUp_${this.gameId}`, (data: any) => {
+      this.connection.socket.on(`EnablePowerUp_${this.gameId}`, (data: any) => {
         const powerUpType: string = data;
         this.frame = 0;
         this.powerUpActive = true;
@@ -188,16 +191,16 @@ export default {
       });
       
       // Listen to the power up being disabled after being enabled
-      this.socket.on(`DisablePowerUp_${this.gameId}`, (resetString: string) => {
+      this.connection.socket.on(`DisablePowerUp_${this.gameId}`, (resetString: string) => {
         this.powerUp = resetString;
         this.powerUpActive = false;
       });
 
       // Listen to the game ending and the winner of that match
-      this.socket.on(`Winner_${this.gameId}`, (winningUser: string) => {
+      this.connection.socket.on(`Winner_${this.gameId}`, (winningUser: string) => {
         this.inGame = false;
         this.drawEndScreen(ctx, canvas, winningUser);
-        this.socket.off(`GameState_${this.gameId}`);
+        this.connection.socket.off(`GameState_${this.gameId}`);
       });
     },
 
@@ -209,22 +212,22 @@ export default {
       const payload = {userId: this.userId, gameId: this.gameId, enabled: true, key: e.key};
       if (!this.arrowDown && e.key === 'ArrowDown')
       {
-        this.socket.emit('UpdateInput', payload);
+        this.connection.socket.emit('UpdateInput', payload);
         this.arrowDown = true;
       }
       else if (!this.arrowUp && e.key === 'ArrowUp')
       {
-        this.socket.emit('UpdateInput', payload);
+        this.connection.socket.emit('UpdateInput', payload);
         this.arrowUp = true;
       }
       else if (!this.arrowRight && e.key === 'ArrowRight')
       {
-        this.socket.emit('UpdateInput', payload);
+        this.connection.socket.emit('UpdateInput', payload);
         this.arrowRight = true;
       }
       else if (!this.arrowLeft && e.key === 'ArrowLeft')
       {
-        this.socket.emit('UpdateInput', payload);
+        this.connection.socket.emit('UpdateInput', payload);
         this.arrowLeft = true;
       }
     },
@@ -236,22 +239,22 @@ export default {
       const payload = {userId: this.userId, gameId: this.gameId, enabled: false, key: e.key};
       if (e.key === 'ArrowDown')
       {
-        this.socket.emit('UpdateInput', payload);
+        this.connection.socket.emit('UpdateInput', payload);
         this.arrowDown = false;
       }
       else if (e.key === 'ArrowUp')
       {
-        this.socket.emit('UpdateInput', payload);
+        this.connection.socket.emit('UpdateInput', payload);
         this.arrowUp = false;
       }
       else if (e.key === 'ArrowRight')
       {
-        this.socket.emit('UpdateInput', payload);
+        this.connection.socket.emit('UpdateInput', payload);
         this.arrowRight = false;
       }
       else if (e.key === 'ArrowLeft')
       {
-        this.socket.emit('UpdateInput', payload);
+        this.connection.socket.emit('UpdateInput', payload);
         this.arrowLeft = false;
       }
     },
@@ -267,7 +270,7 @@ export default {
 
       // Send the server a request to be queued in the given game-mode's queue
       const packet = {gameMode: this.gameMode, userId: this.userId};
-      this.socket.emit('QueueForGame', packet);
+      this.connection.socket.emit('QueueForGame', packet);
     },
 
     drawGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: CurrentGameState) {

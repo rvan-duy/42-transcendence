@@ -1,7 +1,15 @@
-import { SubscribeMessage, WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import {
+  SubscribeMessage,
+  WebSocketGateway,
+  OnGatewayInit,
+  OnGatewayConnection,
+  OnGatewayDisconnect
+} from '@nestjs/websockets';
 import { Socket, Server } from 'socket.io';
 import { GameService } from './game.service';
 import { MatchmakingService } from './matchmaking.service';
+import { JwtService } from '@nestjs/jwt';
+import { GateService } from 'src/gate/gate.service';
 
 @WebSocketGateway({
   cors: {
@@ -10,8 +18,12 @@ import { MatchmakingService } from './matchmaking.service';
   namespace: '/game'
 })
 export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  constructor (private gameService: GameService, private matchmakingService: MatchmakingService) {
-  }
+  constructor (
+    private gameService: GameService,
+    private matchmakingService: MatchmakingService,
+    private jwtService: JwtService,
+    private gate: GateService,
+  ){}
 
   private server: Server;
 
@@ -19,40 +31,72 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log('Created server inside game gateway');
     this.server = server;
     const fps: number = 1000 / 60; // 60 fps
-    const updatesPerSeconds: number = 1000 * 0.5; // half a second
+    const updatesPerSecond: number = 1000 * 0.5; // half a second
 
     this.gameService.setSocket(this.server);
-    setInterval(function() {this.matchmakingService.checkForMatches();}.bind(this), updatesPerSeconds);
+    setInterval(function() {this.matchmakingService.checkForMatches();}.bind(this), updatesPerSecond);
     setInterval(function() {this.gameService.updateGames();}.bind(this), fps);
   }
 
-  handleConnection(client: Socket) {
-    console.log(`Client connected to game: ${client.id}`);
-    client.emit('init'); // new connection
+  async handleConnection(client: Socket) {
+    if (client.handshake.auth.token === '')
+      return;
+    let user;
+    try {
+      user = await this.jwtService.verify(
+        client.handshake.auth.token, { secret: process.env.JWT_SECRET }
+      );
+    } catch(err) {
+      client.emit('FailedToAuthenticate');
+      client.disconnect();
+      console.log('Failed to Authenticate user');
+      return ;
+    }
+
+    console.log(`Auth worked, user: ${user}`);
+    const userId = user.sub;
+    this.gate.addSocket(userId, client);
+    console.log(`Client connected to game: ${client.id} user id ${userId}`);
   }
 
-  handleDisconnect(client: Socket) { // remove players from queue/game?
+  async handleDisconnect(client: Socket) {
+    const userId: number = await this.gate.getUserBySocket(client);
+    this.matchmakingService.removePlayerFromQueue(userId);
+    this.gate.removeSocket(client);
     console.log(`Client disconnected inside game gateway: ${client.id}`);
   }
 
   @SubscribeMessage('CheckGameStatus')
-  checkGameStatus(client: Socket, userId: number) {
+  async checkGameStatus(client: Socket) {
+    const userId: number = await this.gate.getUserBySocket(client);
+    if (userId === undefined)
+      return ;
     this.gameService.checkIfPlaying(userId, client);
   }
 
   @SubscribeMessage('ChangeGameTab')
-  userChangedTabs(client: Socket, userId: number) {
+  async userChangedTabs(client: Socket) {
+    const userId: number = await this.gate.getUserBySocket(client);
+    if (userId === undefined)
+      return ;
+    console.log(`user ${userId} changed tabs`);
     this.matchmakingService.removePlayerFromQueue(userId);
   }
 
   @SubscribeMessage('QueueForGame')
-  handleMessage(client: Socket, payload: any) {
-    console.log(`player: ${payload.userId} is queuing for gamemode: ${payload.gameMode}`);
-    this.matchmakingService.addPlayerToQueue(payload.gameMode, payload.userId);
+  async handleQueue(client: Socket, payload: any) {
+    const userId: number = await this.gate.getUserBySocket(client);
+    if (userId === undefined)
+      return ;
+    console.log(`player: ${userId} is queuing for gamemode: ${payload.gameMode}`);
+    this.matchmakingService.addPlayerToQueue(payload.gameMode, userId);
   }
 
   @SubscribeMessage('UpdateInput')
-  handleKeyDown(client: any, payload: any) {
-    this.gameService.UpdatePlayerInput(payload.userId, payload.gameId, payload.key, payload.enabled); // input validation / auth
+  async handleKeyDown(client: any, payload: any) {
+    const userId: number = await this.gate.getUserBySocket(client);
+    if (userId === undefined)
+      return ;
+    this.gameService.UpdatePlayerInput(userId, payload.gameId, payload.key, payload.enabled);
   }
 }
