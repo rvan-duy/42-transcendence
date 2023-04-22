@@ -111,14 +111,6 @@ export class GameService {
     }
   }
 
-  private resetGame(game: GameData) {
-    game.ball.x = MapSize.WIDTH / 2;
-    game.ball.y = MapSize.HEIGHT / 2;
-    game.ball.radius = DefaultElementSize.BALLRADIUS;
-    game.score = [0, 0];
-    game.isFinished = false;
-  }
-
   private async scored(game: GameData) {
     const ball = game.ball;
     let scoringPlayer: PlayerDefinitions;
@@ -238,7 +230,7 @@ export class GameService {
     // console.log(toSend);
   }
   
-  UpdatePlayerInput(playerId: number, gameId: number, input: PaddleInput) {
+  UpdatePlayerInput(playerId: number, gameId: number, input: PaddleInput, enabled: Boolean) {
     const game: GameData = this.getGameByGameId(gameId);
 
     if (game === null)
@@ -248,13 +240,31 @@ export class GameService {
       const player = game.players[index];
 
       if (player.userId === playerId) {
-        player.updateInput(input);
+        if (enabled)
+          player.enableInput(input);
+        else
+          player.disableInput(input);
         return;
       }
     }
   }
 
+  isUserInGame(userId: number) {
+    for (let index = 0; index < this.games.length; index++) {
+      const game = this.games[index];
+
+      for (let index = 0; index < game.players.length; index++) {
+        const player = game.players[index];
+
+        if (player.userId === userId)
+          return (true);
+      }
+    }
+    return (false);
+  }
+
   checkIfPlaying(userId: number, client: Socket) {
+    const powerUps: string[] = ['Paddle Slow', 'Paddle Speed', 'Ball Radius', 'Super Smash', 'Freeze'];
     for (let index = 0; index < this.games.length; index++) {
       const game = this.games[index];
 
@@ -264,14 +274,16 @@ export class GameService {
         // sends the user the gameId and game-mode back
         if (player.userId === userId) {
           client.emit('GameStatus', {alreadyInGame: true, gameId: game.gameID, gameMode: game.mode,
-            namePlayer1: game.players[0].name, namePlayer2: game.players[1].name});
+            namePlayer1: game.players[0].name, namePlayer2: game.players[1].name,
+            powerUpActive: game.powerUp.powerUpEnabled, powerUp: powerUps[game.powerUp.effect]});
           return ;
         }
       }
     }
     // user isn't found in a game so they can try to queue for one
     client.emit('GameStatus', {alreadyInGame: false, gameId: -1, gameMode: GameMode.UNMATCHED,
-      namePlayer1: '', namePlayer2: ''});
+      namePlayer1: '', namePlayer2: '',
+      powerUpActive: false, powerUp: ''});
   }
 
   private getGameByGameId(gameId: number) {

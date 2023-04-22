@@ -54,6 +54,9 @@
           </div>
         </div>
       </div>
+      <div v-if="inQueue">
+        Queueing for a game!
+      </div>
       <div class="p-16">
         <canvas
           id="pixels"
@@ -82,6 +85,8 @@ export default {
       inQueue: false,
       inGame: false,
       powerUp: '',
+      powerUpActive: false,
+      powerUpOnField: false,
       frame: 0,
       userId : -1,
       gameId: -1,
@@ -131,9 +136,11 @@ export default {
         this.inQueue = false;
         this.gameId = data.gameId;
         this.gameMode = data.gameMode;
+        this.powerUpActive = data.powerUpActive;
+        this.powerUp = data.powerUp;
         this.listenToGame(ctx, canvas);
       }
-      else {
+      else { // Don't think this is necessary?
         this.inQueue = false;
         this.inGame = false;
         this.gameMode = GameMode.UNMATCHED;
@@ -176,13 +183,14 @@ export default {
       this.socket.on(`EnablePowerUp_${this.gameId}`, (data: any) => {
         const powerUpType: string = data;
         this.frame = 0;
+        this.powerUpActive = true;
         this.powerUp = `${powerUpType} enabled!`;
       });
       
       // Listen to the power up being disabled after being enabled
-      this.socket.on(`DisablePowerUp_${this.gameId}`, (data: any) => {
-        const reset: string = data;
-        this.powerUp = reset;
+      this.socket.on(`DisablePowerUp_${this.gameId}`, (resetString: string) => {
+        this.powerUp = resetString;
+        this.powerUpActive = false;
       });
 
       // Listen to the game ending and the winner of that match
@@ -198,25 +206,25 @@ export default {
         return;
       }
 
-      const payload = {userId: this.userId, gameId: this.gameId};
+      const payload = {userId: this.userId, gameId: this.gameId, enabled: true, key: e.key};
       if (!this.arrowDown && e.key === 'ArrowDown')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowDown = true;
       }
       else if (!this.arrowUp && e.key === 'ArrowUp')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowUp = true;
       }
       else if (!this.arrowRight && e.key === 'ArrowRight')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowRight = true;
       }
       else if (!this.arrowLeft && e.key === 'ArrowLeft')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowLeft = true;
       }
     },
@@ -225,32 +233,37 @@ export default {
       if (this.userId === -1 || this.inGame === false)
         return;
 
-      const payload = {userId: this.userId, gameId: this.gameId};
+      const payload = {userId: this.userId, gameId: this.gameId, enabled: false, key: e.key};
       if (e.key === 'ArrowDown')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowDown = false;
       }
       else if (e.key === 'ArrowUp')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowUp = false;
       }
       else if (e.key === 'ArrowRight')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowRight = false;
       }
       else if (e.key === 'ArrowLeft')
       {
-        this.socket.emit(e.key, payload);
+        this.socket.emit('UpdateInput', payload);
         this.arrowLeft = false;
       }
     },
 
     queueForGame(gameMode: string) {
+      var canvas: HTMLCanvasElement = document.getElementById('pixels') as HTMLCanvasElement;
+      var ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
       this.gameMode = gameMode as GameMode;
       this.inQueue = true;
+
+      // clears the previous game if there is one still displayed
+      ctx.clearRect(0, 0, 1000, 6000);
 
       // Send the server a request to be queued in the given game-mode's queue
       const packet = {gameMode: this.gameMode, userId: this.userId};
@@ -313,7 +326,7 @@ export default {
       }
 
       // draw text power-up being enabled
-      if (this.powerUp !== '')
+      if (this.powerUpActive)
       {
         ctx.fillStyle = 'aqua';
         ctx.font = '30px arial';

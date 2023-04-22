@@ -7,10 +7,10 @@ export enum GameMode {
   }
 
 export enum PaddleInput {
-  UP = 'KeyUp',
-  DOWN = 'KeyDown',
-  LEFT = 'KeyLeft',
-  RIGHT = 'KeyRight',
+  UP = 'ArrowUp',
+  DOWN = 'ArrowDown',
+  LEFT = 'ArrowLeft',
+  RIGHT = 'ArrowRight',
   }
 
 export enum PlayerDefinitions {
@@ -27,6 +27,7 @@ export enum MoveSpeedPerTick {
   PADDLE = 2.5,
   BALL = 4,
   POWERUP = 5,
+  MAX_BALL_SPEED = 15,
   }
 
 export enum DefaultElementSize {
