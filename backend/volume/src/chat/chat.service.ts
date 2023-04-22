@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Access } from '@prisma/client';
+import { Access, Status, UserTimestamp } from '@prisma/client';
+import { Socket } from 'socket.io';
 import { PrismaRoomService } from 'src/room/prisma/prismaRoom.service';
 
 @Injectable()
@@ -42,6 +43,56 @@ export class ChatService {
       return true;
     if (room.users.includes(userId))
       return true;
+    return false;
+  }
+
+  clearPast(arr: UserTimestamp[], roomId: number) {
+    const timeNow = new Date();
+    const cleanedArr: UserTimestamp[] = [];
+    const removedIds: number[] = [];
+  
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i].timestamp >= timeNow) {
+        cleanedArr.push(arr[i]);
+      } else {
+        removedIds.push(arr[i].id);
+      }
+    }
+
+    // check if updated and push if needed
+    if (cleanedArr.length !== arr.length) {
+      this.prismaRoomService.updateRoom({
+        where: { id: roomId },
+        data: {
+          banMute: {
+            disconnect: removedIds.map(id => ({id})),
+          }
+        }
+      })
+    }
+
+    return cleanedArr;
+  }
+
+  async mutedCheck(userId: number, roomId: number, client: Socket): Promise<boolean> {
+    const roomWithBanMute = await this.prismaRoomService.roomWithBanMute({
+      id: roomId,
+    })
+    if (roomWithBanMute === undefined)
+      return true; // room does not exist
+
+    let banMute: UserTimestamp[] = roomWithBanMute.banMute;
+
+    // clean the array for outdated stuff and send back
+    banMute = this.clearPast(banMute, roomId);
+
+    for (let index = 0; index < banMute.length; index++) {
+      const element = banMute[index];
+      if (element.userId === userId && element.status === Status.MUTED) {
+        client.emit('receiveNewMsg', {body: 'You are muted.', author: {name: 'The system'}});
+        return true;
+      }
+    }
     return false;
   }
 }
