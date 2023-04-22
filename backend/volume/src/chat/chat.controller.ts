@@ -2,6 +2,8 @@ import {
   Controller,
   ForbiddenException,
   Get,
+  HttpException,
+  HttpStatus,
   InternalServerErrorException,
   Post,
   Query,
@@ -11,7 +13,7 @@ import {
 import { Room, Access } from '@prisma/client';
 import { PrismaRoomService } from 'src/room/prisma/prismaRoom.service';
 import { CryptService } from 'src/crypt/crypt.service';
-import { RoomService } from 'src/room/room.service';
+import { RoomService, roomDto } from 'src/room/room.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ChatService } from './chat.service';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
@@ -35,32 +37,16 @@ export class ChatController {
     @Query('password') password: string = undefined,
   ) {
     if (password === undefined && access === Access.PROTECTED)
-      return ; // this cannot work
-    if (access === Access.PROTECTED)
-      password = await this.cryptService.hashPassword(password);
-    else
-      password = undefined;
+      throw new HttpException('password left undefined for protected chat', HttpStatus.BAD_REQUEST);
 
     const userId = req.user.id;
-    let roomUser: number = userId;
-    if (access === Access.PUBLIC) // If the chat is public, don't add user to list of room's users, or the chat will show up twice for them
-      roomUser = 1;
-
-    return this.prismaRoomService.createRoom({
-      owner: {
-        connect: {
-          id: userId,
-        },
-      },
-      users: {
-        connect: {
-          id: roomUser,
-        }
-      },
+    const newRoom: roomDto = {
       name: roomName,
-      access,
-      hashedCode: password,
-    });
+      ownerId: userId,
+      access: access,
+      password: password,
+    }
+    return await this.roomService.createChat(newRoom);
   }
 
   @UseGuards(JwtAuthGuard)
