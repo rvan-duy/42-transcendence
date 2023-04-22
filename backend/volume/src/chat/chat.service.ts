@@ -68,7 +68,7 @@ export class ChatService {
             disconnect: removedIds.map(id => ({id})),
           }
         }
-      })
+      });
     }
 
     return cleanedArr;
@@ -77,7 +77,7 @@ export class ChatService {
   async mutedCheck(userId: number, roomId: number, client: Socket): Promise<boolean> {
     const roomWithBanMute = await this.prismaRoomService.roomWithBanMute({
       id: roomId,
-    })
+    });
     if (roomWithBanMute === undefined)
       return true; // room does not exist
 

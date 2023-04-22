@@ -83,7 +83,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const userId = await this.gate.getUserBySocket(client);
 
     // if muted in channel emit a temp mess to sender that they are muted and return
-    if (await this.chatService.mutedCheck(userId, packet.roomId, client) == true)
+    if (await this.chatService.mutedCheck(userId, packet.roomId, client) === true)
       return ;
   
     // force sender to be author

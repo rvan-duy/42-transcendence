@@ -31,7 +31,8 @@ export class RoomService {
 
   //  creates a new chatroom
   async createChat(roomData: roomDto) {
-    let {access, password, ownerId, name} = roomData;
+    const {access, ownerId, name} = roomData;
+    let { password } = roomData;
 
     // encrypt password when chat is proteced else leave undefined
     if (access === Access.PROTECTED)
@@ -40,7 +41,7 @@ export class RoomService {
       password = undefined;
 
     // If the chat is public, don't add user to list of room's users, or the chat will show up twice for them
-    if (access === Access.PUBLIC)       
+    if (access === Access.PUBLIC)
       return this.prismaRoom.createRoom({
         owner: {
           connect: {
