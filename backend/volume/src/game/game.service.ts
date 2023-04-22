@@ -256,7 +256,7 @@ export class GameService {
       for (let index = 0; index < game.players.length; index++) {
         const player = game.players[index];
 
-        if (player.userId == userId)
+        if (player.userId === userId)
           return (true);
       }
     }

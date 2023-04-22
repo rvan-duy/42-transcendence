@@ -1,9 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { GameService } from './game.service';
 import { GameMode } from './game.definitions';
-import { Server } from 'socket.io';
-import { Game } from '@prisma/client';
-import { networkInterfaces } from 'os';
 
 enum Debug { // make sure to seed before
   ENABLED = 0,
@@ -93,14 +90,7 @@ export class MatchmakingService {
 
   removePrivateGameInvite(inviteIndex: number) {
 
-
-
-
     // make sure to set the boolean inside all other chat invites to false
-  
-  
-  
-  
   
     this.privateGameInvites.splice(inviteIndex, 1);
   }
@@ -110,7 +100,7 @@ export class MatchmakingService {
     console.log(`${acceptingUserId} accepted a game invite from ${creatorId}`);
 
     if (this.gameService.isUserInGame(acceptingUserId) || this.gameService.isUserInGame(creatorId))
-      return (false)
+      return (false);
 
     for (let index = 0; index < this.privateGameInvites.length; index++) {
       const invite = this.privateGameInvites[index];

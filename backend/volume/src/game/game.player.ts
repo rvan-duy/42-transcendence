@@ -26,24 +26,24 @@ export class Player {
   moveRight: boolean = false;
 
   enableInput(input: PaddleInput) {
-    if (input == PaddleInput.DOWN)
+    if (input === PaddleInput.DOWN)
       this.moveDown = true;
-    else if (input == PaddleInput.UP)
+    else if (input === PaddleInput.UP)
       this.moveUp = true;
-    else if (input == PaddleInput.LEFT)
+    else if (input === PaddleInput.LEFT)
       this.moveLeft = true;
-    else if (input == PaddleInput.RIGHT)
-    this.moveRight = true;
+    else if (input === PaddleInput.RIGHT)
+      this.moveRight = true;
   }
 
-disableInput(input: PaddleInput) {
-  if (input == PaddleInput.DOWN)
-    this.moveDown = false;
-  else if (input == PaddleInput.UP)
-    this.moveUp = false;
-  else if (input == PaddleInput.LEFT)
-    this.moveLeft = false;
-  else if (input == PaddleInput.RIGHT)
-    this.moveRight = false;
+  disableInput(input: PaddleInput) {
+    if (input === PaddleInput.DOWN)
+      this.moveDown = false;
+    else if (input === PaddleInput.UP)
+      this.moveUp = false;
+    else if (input === PaddleInput.LEFT)
+      this.moveLeft = false;
+    else if (input === PaddleInput.RIGHT)
+      this.moveRight = false;
   }
 }
