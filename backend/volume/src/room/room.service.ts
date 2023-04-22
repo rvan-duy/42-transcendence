@@ -1,11 +1,13 @@
 import { PrismaRoomService } from './prisma/prismaRoom.service';
 import { Injectable } from '@nestjs/common';
 import { Access, Status } from '@prisma/client';
+import { CryptService } from 'src/crypt/crypt.service';
 
 export interface roomDto {
   name: string;
   ownerId: number;
   access: Access;
+  password: string;
 }
 
 function exclude<Room, Key extends keyof Room>(
@@ -24,15 +26,47 @@ function exclude<Room, Key extends keyof Room>(
 export class RoomService {
   constructor(
     private prismaRoom: PrismaRoomService,
+    private readonly cryptService: CryptService,
   ) {}
 
   //  creates a new chatroom
   async createChat(roomData: roomDto) {
-    try {
-      this.prismaRoom.createRoom(roomData);
-    } catch (e) {
-      console.error(e);
-    }
+    let {access, password, ownerId, name} = roomData;
+
+    // encrypt password when chat is proteced else leave undefined
+    if (access === Access.PROTECTED)
+      password = await this.cryptService.hashPassword(password);
+    else
+      password = undefined;
+
+    // If the chat is public, don't add user to list of room's users, or the chat will show up twice for them
+    if (access === Access.PUBLIC)       
+      return this.prismaRoom.createRoom({
+        owner: {
+          connect: {
+            id: ownerId,
+          },
+        },
+        name: name,
+        access: access,
+        hashedCode: password,
+      });
+    
+    return this.prismaRoom.createRoom({
+      owner: {
+        connect: {
+          id: ownerId,
+        },
+      },
+      users: {
+        connect: {
+          id: ownerId,
+        }
+      },
+      name: name,
+      access: access,
+      hashedCode: password,
+    });
   }
 
   // adds user to the chatroom

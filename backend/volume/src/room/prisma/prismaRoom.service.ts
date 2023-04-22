@@ -72,6 +72,8 @@ export class PrismaRoomService {
   async createRoom(data: Prisma.RoomCreateInput): Promise<Room> {
     return this.prisma.room.create({
       data,
+    }).catch(() => {
+      return  undefined;
     });
   }
 
