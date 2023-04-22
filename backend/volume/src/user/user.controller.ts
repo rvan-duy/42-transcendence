@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Post, Request, Response, UseGuards, HttpStatus, Query } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
@@ -95,13 +95,16 @@ export class UserController {
   @ApiOkResponse({ description: 'Friends found', type: [Number] })
   async getMeFriends(@Request() req: any, @Response() res: any) {
     const user = await this.userService.user({ id: Number(req.user.id) });
+    if (user === undefined)
+      throw Error('user does not exist');
     const friends = user.friends;
     return res.status(HttpStatus.OK).send(friends);
   }
 
   @Get('id/:id')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Get user information for user with id' })
+  @ApiOperation({ summary: 'Get user information for user with id'})
+  @ApiQuery({ name: 'withgames'})
   @ApiOkResponse({ description: 'User information', type: Object })
   @ApiNotFoundResponse({ description: 'User with id not found', type: String })
   async getUserById(@Param('id') id: string, @Response() res: any, @Query('withGames') withGames: boolean = false) {
@@ -125,6 +128,8 @@ export class UserController {
   @ApiOkResponse({ description: 'Users found', type: [Object] })
   async getUsers(@Response() res: any) {
     const users = await this.userService.users({});
+    if (users === undefined)
+      throw Error('users not found');
     return res.status(HttpStatus.OK).send(users);
   }
   
@@ -139,18 +144,18 @@ export class UserController {
     const myId = req.user.id;
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
-    if (otherAsUser === undefined)
-      return ;
+    if (otherAsUser === undefined || meAsUser === undefined)
+      throw Error('user or users not found');
     if (otherAsUser.blocked.includes(myId))
-      return ; // they blocked you do not try and freind!!
+      throw Error('friendship could not be established, you are blocked');
     if (meAsUser.blocked.includes(userId))
-      return ; // you blocked them do not be silly!
+      throw Error('friendship could not be established, you blocked them. unblock first');
     if (meAsUser.pending.includes(userId))
     {
       meAsUser.friends.push(userId);
       meAsUser.pending.splice(meAsUser.pending.indexOf(userId), 1); // removes the pending request
       otherAsUser.friends.push(myId);
-      this.userService.updateUser({
+      const updateCatcher = await this.userService.updateUser({
         where: {
           id: myId,
         },
@@ -158,10 +163,13 @@ export class UserController {
           friends: meAsUser.friends,
         }
       });
+      if (updateCatcher === undefined)
+        throw Error('friendship could not be established');
       return ; // well done you are now friends
     }
+    // I LEFT HERE WITH CHECKING
     otherAsUser.pending.push(myId);
-    this.userService.updateUser({
+    const updateCatcher = await this.userService.updateUser({
       where: {
         id: otherAsUser.id,
       },
@@ -169,6 +177,8 @@ export class UserController {
         pending: otherAsUser.pending,
       }
     });
+    if (updateCatcher === undefined)
+      throw Error('friendship could not be established');
     return ; // wait till they accept your request (spannend!)
   }
 

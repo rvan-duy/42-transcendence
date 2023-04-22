@@ -1,6 +1,23 @@
-import { Access, PrismaClient } from '@prisma/client';
+import { Access, PrismaClient, Status, UserTimestamp } from '@prisma/client';
 
 const prisma = new PrismaClient();
+
+async function createTimestamp(roomId: number, userId: number, status: Status): Promise<UserTimestamp> {
+  const timestamp = await prisma.userTimestamp.create({
+    data: {
+      room: {
+        connect: {
+          id: roomId
+        }
+      },
+      userId: userId,
+      status: status,
+      timestamp: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    }
+  });
+
+  return timestamp;
+}
 
 async function main() {
 
@@ -94,7 +111,9 @@ async function main() {
 
   });
 
-  console.log({ alice, bob, chad, daveroom });
+  const mute = createTimestamp(2, 1, Status.MUTED);
+
+  console.log({ alice, bob, chad, daveroom, mute });
 
 }
 
