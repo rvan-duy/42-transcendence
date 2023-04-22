@@ -81,12 +81,18 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
     // retrieve the userId of sender
     const userId = await this.gate.getUserBySocket(client);
+
+    // if muted in channel emit a temp mess to sender that they are muted and return
+    if (await this.chatService.mutedCheck(userId, packet.roomId, client) == true)
+      return ;
   
     // force sender to be author
     packet.authorId = userId;
   
-    const msgWithAuthor = await this.msgService.handleIncomingMsg(packet);  // handles db placement of the new msg based on sender id
-  
+    // handles db placement of the new msg based on sender id
+    // does require an update for is room real check
+    const msgWithAuthor = await this.msgService.handleIncomingMsg(packet);
+
     // send the message to the connected participants in chat
     this.spreadMessage(msgWithAuthor, String(packet.roomId));
   }

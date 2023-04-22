@@ -48,6 +48,21 @@ export class PrismaRoomService {
     }
   }
 
+  async roomWithBanMute(
+    RoomWhereUniqueInput: Prisma.RoomWhereUniqueInput,
+  ): Promise<any | null> {
+    try {
+      return this.prisma.room.findUnique({
+        where: RoomWhereUniqueInput,
+        include: {
+          banMute: true,
+        }
+      });
+    } catch {
+      return undefined;
+    }
+  }
+
   async Rooms(params: {
     skip?: number;
     take?: number;
