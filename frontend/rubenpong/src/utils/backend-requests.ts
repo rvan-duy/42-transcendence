@@ -1,5 +1,5 @@
 /*
- * This file contains functions to make requests to the backend.
+ * This file contains some wrapper functions for making requests to the backend.
  */
 
 const BACKEND_URL = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}`;
@@ -16,11 +16,11 @@ export function getBackend(endpoint: string): Promise<Response> {
   return res;
 }
 
-export async function putBackend(endpoint: string, body: any): Promise<Response> {
+export async function postBackend(endpoint: string, body: any): Promise<Response> {
   const endpointUrl = `${BACKEND_URL}/${endpoint}`;
   const token = getJwtFromCookies();
   const res = await fetch(endpointUrl, {
-    method: 'PUT',
+    method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -30,11 +30,13 @@ export async function putBackend(endpoint: string, body: any): Promise<Response>
   return res;
 }
 
+// Start of oswin's code
+
 interface QueryParams {
   [key: string]: string;
 }
 
-export async function postBackend<T>(endpoint: string, body: any, queryParams?: QueryParams): Promise<T> {
+export async function postBackendWithQueryParams<T>(endpoint: string, body: any, queryParams?: QueryParams): Promise<T> {
   let endpointUrl = `${BACKEND_URL}/${endpoint}`;
   const token = getJwtFromCookies();
   
@@ -56,6 +58,8 @@ export async function postBackend<T>(endpoint: string, body: any, queryParams?: 
   const responseData = await res.json();
   return responseData as T;
 }
+
+// End of oswin's code
 
 export function getJwtFromCookies(): string {
   const cookies = document.cookie.split(';');

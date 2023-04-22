@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getBackend, putBackend, postBackend } from '@/utils/backend-requests';
+import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/backend-requests';
 import SocketioService from '../services/socketio.service.js';
 import { ref } from 'vue';
 const input = ref('');
@@ -378,7 +378,7 @@ export default {
 
     async makeAdmin(newAdminId: number) {
       console.log('ban');
-      await putBackend('chat/makeUserAdmin', { roomId: this.chatId, userId: newAdminId});
+      await postBackend('chat/makeUserAdmin', { roomId: this.chatId, userId: newAdminId});
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
@@ -386,7 +386,7 @@ export default {
 
     async banUser(bannedUserId: number) {
       console.log('ban');
-      await putBackend('chat/banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId});
+      await postBackend('chat/banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId});
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
@@ -394,7 +394,7 @@ export default {
 
     async muteUser(mutedUserId: number) {
       console.log('mute');
-      await putBackend('chat/muteUserInRoom', { roomId: this.chatId, muteUserId: mutedUserId});
+      await postBackend('chat/muteUserInRoom', { roomId: this.chatId, muteUserId: mutedUserId});
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
@@ -431,7 +431,7 @@ export default {
       console.log('second');
       console.log(this.usersAdded);
       // await putBackend('chat/addUserToRoom', { roomId: this.chatId, userToAdd: user.id})
-      await postBackend('chat/addUserToRoom', { roomId: this.chatId, userId: user.id});
+      await postBackendWithQueryParams('chat/addUserToRoom', { roomId: this.chatId, userId: user.id});
       // .then((response => response.json()))
       // .then((data) => {
       //   console.log(data);
