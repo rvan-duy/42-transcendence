@@ -4,13 +4,17 @@ import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
 import * as path from 'path';
+import { StatusService } from 'src/status/status.service';
 
 @Controller('user')
 @ApiCookieAuth()
 @ApiTags('user')
 @ApiUnauthorizedResponse({ description: 'Unauthorized', type: Object })
 export class UserController {
-  constructor(private readonly userService: PrismaUserService) {}
+  constructor(
+    private readonly userService: PrismaUserService,
+    private readonly statusService: StatusService
+    ) {}
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
@@ -107,16 +111,25 @@ export class UserController {
   @ApiQuery({ name: 'withgames'})
   @ApiOkResponse({ description: 'User information', type: Object })
   @ApiNotFoundResponse({ description: 'User with id not found', type: String })
-  async getUserById(@Param('id') id: string, @Response() res: any, @Query('withGames') withGames: boolean = false) {
-    let user;
-
+  async getUserById(
+    @Param('id') id: number,
+    @Response() res: any,
+    @Query('withGames') withGames: boolean = false,
+    @Query('withStatus') withStatus: boolean = false
+    ) {
+    let user: any;
     if (withGames)
-      user = await this.userService.userWithGames({ id: Number(id) });
+      user = await this.userService.userWithGames({ id });
     else
-      user = await this.userService.user({ id: Number(id) });
+      user = await this.userService.user({ id });
     
     if (!user) {
       return res.status(HttpStatus.NOT_FOUND).send(`User with id ${id} not found`);
+    }
+
+    // check status
+    if (withStatus === true) {
+      user.status = this.statusService.getStatus(id);
     }
 
     return res.status(HttpStatus.OK).send(user);
