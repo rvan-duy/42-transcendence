@@ -8,13 +8,12 @@ import { GameService } from './game.service';
 import { MatchmakingService } from './matchmaking.service';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
 import { JwtModule } from '@nestjs/jwt';
-import { GateModule } from 'src/gate/gate.module';
+import { GameGateService } from './game.gate.service';
 
 @Module({
   imports: [
     PrismaClient,
     JwtModule,
-    GateModule,
   ],
   controllers: [GameController],
   providers: [
@@ -24,6 +23,7 @@ import { GateModule } from 'src/gate/gate.module';
     GameGateway,
     GameService,
     MatchmakingService,
+    GameGateService,
   ],
   exports: [GameController, GameService, MatchmakingService],
 })
