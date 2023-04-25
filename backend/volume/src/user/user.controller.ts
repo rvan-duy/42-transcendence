@@ -3,7 +3,6 @@ import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, Api
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
-import * as path from 'path';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
