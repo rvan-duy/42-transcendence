@@ -50,7 +50,7 @@ export class AuthService {
    */
   async downloadFile(userId: number, url: string, folderPath: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      const fileName = 'user_' + userId + '.jpg';
+      const fileName = 'user_' + userId + '.png';
       const filePath = `${folderPath}/${fileName}`;
       const file = fs.createWriteStream(filePath);
       

@@ -160,14 +160,9 @@ export default {
   methods: {
     async changeName() {
       await postBackend('user/me/name', { name: this.newUsername })
-        .then((response) => {
-          if (response.status === HttpStatus.OK) {
-            document.location.reload();
-          }
-        }
-        )
-        .catch((error) => {
-          console.log(error);
+        .then((response => response.json()))
+        .then((data) => {
+          this.name = data.name;
         });
     },
     uploadProfilePicture(event) {
