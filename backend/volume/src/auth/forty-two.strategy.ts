@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { Strategy } from 'passport-42';
+import * as fs from 'fs';
 
 @Injectable()
 export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
@@ -25,7 +26,12 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
     if (!user) {
       throw new UnauthorizedException();
     }
-    this.authService.downloadFile(user.id, profile.pictureUrl, '/usr/src/app/public');
+    
+    fs.access(`/usr/src/app/public/user_${user.id}.png`, fs.constants.F_OK, (err) => {
+      if (err) {
+        this.authService.downloadFile(user.id, profile.pictureUrl, '/usr/src/app/public');
+      }
+    });
     return user;
   }
 }
