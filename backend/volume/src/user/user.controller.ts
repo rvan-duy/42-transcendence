@@ -66,7 +66,6 @@ export class UserController {
     const picturePath = `http://${process.env.CODAM_PC}:${process.env.BACKEND_PORT}/public/user_${req.user.id}.jpg`;
     return res.status(HttpStatus.OK).send(picturePath);
   }
-
   
   @Post('me/picture')
   @UseGuards(JwtAuthGuard)
