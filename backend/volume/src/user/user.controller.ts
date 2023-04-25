@@ -70,7 +70,7 @@ export class UserController {
   @Post('me/picture')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('picture'))
-  @ApiOperation({ summary: 'Update user picture for current user' })
+  @ApiOperation({ summary: 'Update user picture for current user, must be a jpg image (max 1MB)' })
   @ApiOkResponse({ description: 'User picture updated' })
   @ApiBadRequestResponse({ description: 'Reason why request was bad' })
   async updateMePicture(@Request() req: any, @Response() res: any, @UploadedFile() file: Express.Multer.File) {
