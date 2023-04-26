@@ -63,14 +63,14 @@ export class UserController {
   @ApiOperation({ summary: 'Get user picture for current user' })
   @ApiOkResponse({ description: 'User picture found', type: String })
   async getMePicture(@Request() req: any, @Response() res: any) {
-    const picturePath = `http://${process.env.CODAM_PC}:${process.env.BACKEND_PORT}/public/user_${req.user.id}.jpg`;
+    const picturePath = `http://${process.env.CODAM_PC}:${process.env.BACKEND_PORT}/public/user_${req.user.id}.png`;
     return res.status(HttpStatus.OK).send(picturePath);
   }
   
   @Post('me/picture')
   @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('picture'))
-  @ApiOperation({ summary: 'Update user picture for current user, must be a jpg image (max 1MB)' })
+  @ApiOperation({ summary: 'Update user picture for current user, must be a png image (max 1MB)' })
   @ApiOkResponse({ description: 'User picture updated' })
   @ApiBadRequestResponse({ description: 'Reason why request was bad' })
   async updateMePicture(@Request() req: any, @Response() res: any, @UploadedFile() file: Express.Multer.File) {
