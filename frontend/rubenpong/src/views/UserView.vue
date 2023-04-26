@@ -28,7 +28,10 @@
         <main class="join-main">
           <!-- <form action="/chatroom"> -->
           <div class="form-control">
-            <form action="">
+            <form
+              action=""
+              @submit.prevent
+            >
               <label for="username">Change Username</label>
               <span class="text-black pr-4"><input
                 id="username"
@@ -88,10 +91,6 @@
               0
             </p>
           </div>
-          <label for="status">Elo</label>
-          <p class="text-black">
-            {{ elo }}
-          </p>
           <label for="status">Match History</label>
           <p
             v-if="matches_played === 0"
@@ -160,9 +159,15 @@ export default {
   methods: {
     async changeName() {
       await postBackend('user/me/name', { name: this.newUsername })
-        .then((response => response.json()))
-        .then((data) => {
-          this.name = data.name;
+        .then((response) => {
+          if (response.status === HttpStatus.OK) {
+            this.name = this.newUsername;
+            this.newUsername = '';
+          }
+        }
+        )
+        .catch((error) => {
+          console.log(error);
         });
     },
     uploadProfilePicture(event) {
