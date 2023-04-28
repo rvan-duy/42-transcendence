@@ -48,6 +48,11 @@ export class RoomService {
             id: ownerId,
           },
         },
+		admin: {
+			connect: {
+			  id: ownerId,
+			}
+		},
         name: name,
         access: access,
         hashedCode: password,
@@ -59,6 +64,11 @@ export class RoomService {
           id: ownerId,
         },
       },
+	  admin: {
+		connect: {
+		  id: ownerId,
+		}
+	  },
       users: {
         connect: {
           id: ownerId,
