@@ -11,6 +11,8 @@ export class PrismaUserService {
   ): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: userWhereUniqueInput,
+    }).catch(() => {
+      return undefined;
     });
   }
 
@@ -24,6 +26,8 @@ export class PrismaUserService {
           }
         },
       },
+    }).catch(() => {
+      return undefined;
     });
   }
 
@@ -41,12 +45,16 @@ export class PrismaUserService {
       cursor,
       where,
       orderBy,
+    }).catch(() => {
+      return undefined;
     });
   }
 
   async createUser(data: Prisma.UserCreateInput): Promise<User> {
     return this.prisma.user.create({
       data,
+    }).catch(() => {
+      return undefined;
     });
   }
 
@@ -56,6 +64,8 @@ export class PrismaUserService {
       where: { intraId },
       update: {},
       create: { intraId, name },
+    }).catch(() => {
+      return undefined;
     });
   }
 
@@ -67,6 +77,8 @@ export class PrismaUserService {
       include: {
         rooms: true,
       }
+    }).catch(() => {
+      return undefined;
     });
   }
 
@@ -78,12 +90,16 @@ export class PrismaUserService {
     return this.prisma.user.update({
       data,
       where,
+    }).catch(() => {
+      return undefined;
     });
   }
 
   async deleteUser(where: Prisma.UserWhereUniqueInput): Promise<User> {
     return this.prisma.user.delete({
       where,
+    }).catch(() => {
+      return undefined;
     });
   }
 }

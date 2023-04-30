@@ -1,9 +1,9 @@
-import { Controller, Get, Param, Post, Request, Response, UseGuards, HttpStatus, Query } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Controller, Get, Param, Post, Request, Response, UseGuards, HttpStatus, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
-import * as path from 'path';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
 @ApiCookieAuth()
@@ -63,29 +63,33 @@ export class UserController {
   @ApiOperation({ summary: 'Get user picture for current user' })
   @ApiOkResponse({ description: 'User picture found', type: String })
   async getMePicture(@Request() req: any, @Response() res: any) {
-    const picturePath = `http://${process.env.CODAM_PC}:${process.env.BACKEND_PORT}/public/user_${req.user.id}.jpg`;
+    const picturePath = `http://${process.env.CODAM_PC}:${process.env.BACKEND_PORT}/public/user_${req.user.id}.png`;
     return res.status(HttpStatus.OK).send(picturePath);
   }
-
-  /* Untested */
+  
   @Post('me/picture')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Update user picture for current user (NEEDS TESTING)' })
+  @UseInterceptors(FileInterceptor('picture'))
+  @ApiOperation({ summary: 'Update user picture for current user, must be a png image (max 1MB)' })
   @ApiOkResponse({ description: 'User picture updated' })
   @ApiBadRequestResponse({ description: 'Reason why request was bad' })
-  async updateMePicture(@Request() req: any, @Response() res: any) {
-    const pictureToBeUpdated = req.body.picture;
-
-    if (!pictureToBeUpdated) {
+  async updateMePicture(@Request() req: any, @Response() res: any, @UploadedFile() file: Express.Multer.File) {
+    if (!file) {
       return res.status(HttpStatus.BAD_REQUEST).send('Picture is required, please make sure "picture" is present in the body of the request');
     }
 
-    const ext = path.extname(pictureToBeUpdated.name);
-    const filename = `${req.user.id}${ext}`;
+    if (file.mimetype.startsWith('image/') === false) {
+      return res.status(HttpStatus.BAD_REQUEST).send('Picture must be an image');
+    }
+
+    if (file.size > 1000000) {
+      return res.status(HttpStatus.BAD_REQUEST).send('Picture size must be less than 1MB');
+    }
+  
+    const filename = `user_${req.user.id}.png`;
     const picturePath = '/usr/src/app/public/' + filename;
 
-    fs.writeFileSync(picturePath, pictureToBeUpdated.data);
-
+    fs.writeFileSync(picturePath, file.buffer);
     return res.status(HttpStatus.OK).send('User picture updated');
   }
 
@@ -95,13 +99,16 @@ export class UserController {
   @ApiOkResponse({ description: 'Friends found', type: [Number] })
   async getMeFriends(@Request() req: any, @Response() res: any) {
     const user = await this.userService.user({ id: Number(req.user.id) });
+    if (user === undefined)
+      throw Error('user does not exist');
     const friends = user.friends;
     return res.status(HttpStatus.OK).send(friends);
   }
 
   @Get('id/:id')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Get user information for user with id' })
+  @ApiOperation({ summary: 'Get user information for user with id'})
+  @ApiQuery({ name: 'withgames'})
   @ApiOkResponse({ description: 'User information', type: Object })
   @ApiNotFoundResponse({ description: 'User with id not found', type: String })
   async getUserById(@Param('id') id: string, @Response() res: any, @Query('withGames') withGames: boolean = false) {
@@ -125,6 +132,8 @@ export class UserController {
   @ApiOkResponse({ description: 'Users found', type: [Object] })
   async getUsers(@Response() res: any) {
     const users = await this.userService.users({});
+    if (users === undefined)
+      throw Error('users not found');
     return res.status(HttpStatus.OK).send(users);
   }
   
@@ -139,18 +148,18 @@ export class UserController {
     const myId = req.user.id;
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
-    if (otherAsUser === undefined)
-      return ;
+    if (otherAsUser === undefined || meAsUser === undefined)
+      throw Error('user or users not found');
     if (otherAsUser.blocked.includes(myId))
-      return ; // they blocked you do not try and freind!!
+      throw Error('friendship could not be established, you are blocked');
     if (meAsUser.blocked.includes(userId))
-      return ; // you blocked them do not be silly!
+      throw Error('friendship could not be established, you blocked them. unblock first');
     if (meAsUser.pending.includes(userId))
     {
       meAsUser.friends.push(userId);
       meAsUser.pending.splice(meAsUser.pending.indexOf(userId), 1); // removes the pending request
       otherAsUser.friends.push(myId);
-      this.userService.updateUser({
+      const updateCatcher = await this.userService.updateUser({
         where: {
           id: myId,
         },
@@ -158,10 +167,13 @@ export class UserController {
           friends: meAsUser.friends,
         }
       });
+      if (updateCatcher === undefined)
+        throw Error('friendship could not be established');
       return ; // well done you are now friends
     }
+    // I LEFT HERE WITH CHECKING
     otherAsUser.pending.push(myId);
-    this.userService.updateUser({
+    const updateCatcher = await this.userService.updateUser({
       where: {
         id: otherAsUser.id,
       },
@@ -169,6 +181,8 @@ export class UserController {
         pending: otherAsUser.pending,
       }
     });
+    if (updateCatcher === undefined)
+      throw Error('friendship could not be established');
     return ; // wait till they accept your request (spannend!)
   }
 

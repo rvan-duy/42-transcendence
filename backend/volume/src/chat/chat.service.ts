@@ -1,55 +1,97 @@
 import { Injectable } from '@nestjs/common';
-import { Access } from '@prisma/client';
+import { Access, Status, UserTimestamp } from '@prisma/client';
+import { Socket } from 'socket.io';
 import { PrismaRoomService } from 'src/room/prisma/prismaRoom.service';
-import { RoomService } from 'src/room/room.service';
 
 @Injectable()
 export class ChatService {
   constructor(
-    private roomService: RoomService,
     private prismaRoomService: PrismaRoomService,
-
   ){}
 
   async isOwner(roomId: number, userId: number) {
-    try {
-      const room = await this.prismaRoomService.Room({id: roomId});
-      if (room.ownerId === userId)
-        return true;
-    } catch (error) {
-      console.error('isOwner(): prisma.Room(): ', error);
-    }
+    const room = await this.prismaRoomService.Room({id: roomId});
+    if (room === undefined)
+      return false;
+    if (room.ownerId === userId)
+      return true;
     return false;
   }
 
   async isAdminOrOwner(roomId: number, userId: number) {
-    try {
-      const room = await this.prismaRoomService.RoomWithUsers({id: roomId});
-      if (room.access === Access.PUBLIC)
+    const room = await this.prismaRoomService.RoomWithUsers({id: roomId});
+    if (room === undefined)
+      return false;
+    if (room.access === Access.PUBLIC)
+      return true;
+    if (room.ownerId === userId)
+      return true;
+    for (let i = 0; i++; i < room.admin.length) {
+      if (room.admin[i].id === userId)
         return true;
-      if (room.ownerId === userId)
-        return true;
-      for (let i = 0; i++; i < room.admin.length) {
-        if (room.admin[i].id === userId)
-          return true;
-      }
-    } catch (error) {
-      console.error('isAdmin(): prisma.RoomWithUsers(): ', error);
     }
     return false;
   }
 
   async isChatter(roomId: number, userId: number) {
-    try {
-      const room = await this.prismaRoomService.RoomWithUsers({id: roomId});
-      if (room.access === Access.PUBLIC)
+    const room = await this.prismaRoomService.RoomWithUsers({id: roomId});
+    if (room === undefined)
+      return false;
+    if (room.access === Access.PUBLIC)
+      return true;
+    if (room.ownerId === userId)
+      return true;
+    if (room.users.includes(userId))
+      return true;
+    return false;
+  }
+
+  clearPast(arr: UserTimestamp[], roomId: number) {
+    const timeNow = new Date();
+    const cleanedArr: UserTimestamp[] = [];
+    const removedIds: number[] = [];
+  
+    for (let i = 0; i < arr.length; i++) {
+      if (arr[i].timestamp >= timeNow) {
+        cleanedArr.push(arr[i]);
+      } else {
+        removedIds.push(arr[i].id);
+      }
+    }
+
+    // check if updated and push if needed
+    if (cleanedArr.length !== arr.length) {
+      this.prismaRoomService.updateRoom({
+        where: { id: roomId },
+        data: {
+          banMute: {
+            disconnect: removedIds.map(id => ({id})),
+          }
+        }
+      });
+    }
+
+    return cleanedArr;
+  }
+
+  async mutedCheck(userId: number, roomId: number, client: Socket): Promise<boolean> {
+    const roomWithBanMute = await this.prismaRoomService.roomWithBanMute({
+      id: roomId,
+    });
+    if (roomWithBanMute === undefined)
+      return true; // room does not exist
+
+    let banMute: UserTimestamp[] = roomWithBanMute.banMute;
+
+    // clean the array for outdated stuff and send back
+    banMute = this.clearPast(banMute, roomId);
+
+    for (let index = 0; index < banMute.length; index++) {
+      const element = banMute[index];
+      if (element.userId === userId && element.status === Status.MUTED) {
+        client.emit('receiveNewMsg', {body: 'You are muted.', author: {name: 'The system'}});
         return true;
-      if (room.ownerId === userId)
-        return true;
-      if (room.users.includes(userId))
-        return true;
-    } catch (error) {
-      console.error('isChatter(): ', error);
+      }
     }
     return false;
   }

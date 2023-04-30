@@ -1,17 +1,21 @@
 import { PrismaRoomService } from './prisma/prismaRoom.service';
 import { Injectable } from '@nestjs/common';
 import { Access, Status } from '@prisma/client';
+import { CryptService } from 'src/crypt/crypt.service';
 
 export interface roomDto {
   name: string;
   ownerId: number;
   access: Access;
+  password: string;
 }
 
 function exclude<Room, Key extends keyof Room>(
   room: Room,
   keys: Key[]
 ): Omit<Room, Key> {
+  if (room === undefined)
+    return undefined;
   for (const key of keys) {
     delete room[key];
   }
@@ -22,47 +26,76 @@ function exclude<Room, Key extends keyof Room>(
 export class RoomService {
   constructor(
     private prismaRoom: PrismaRoomService,
+    private readonly cryptService: CryptService,
   ) {}
 
   //  creates a new chatroom
   async createChat(roomData: roomDto) {
-    try {
-      this.prismaRoom.createRoom(roomData);
-    } catch (e) {
-      console.error(e);
-    }
+    const {access, ownerId, name} = roomData;
+    let { password } = roomData;
+
+    // encrypt password when chat is proteced else leave undefined
+    if (access === Access.PROTECTED)
+      password = await this.cryptService.hashPassword(password);
+    else
+      password = undefined;
+
+    // If the chat is public, don't add user to list of room's users, or the chat will show up twice for them
+    if (access === Access.PUBLIC)
+      return this.prismaRoom.createRoom({
+        owner: {
+          connect: {
+            id: ownerId,
+          },
+        },
+        name: name,
+        access: access,
+        hashedCode: password,
+      });
+    
+    return this.prismaRoom.createRoom({
+      owner: {
+        connect: {
+          id: ownerId,
+        },
+      },
+      users: {
+        connect: {
+          id: ownerId,
+        }
+      },
+      name: name,
+      access: access,
+      hashedCode: password,
+    });
   }
 
   // adds user to the chatroom
   // need to add uban to this too? FUTURE feature
   async addToChat(userId: number, roomId: number) {
-    try {
-      this.prismaRoom.updateRoom({
-        where: {
-          id: roomId,
-        },
-        data: {
-          users: {
-            connect: {
-              id: userId,
-            }
+    this.prismaRoom.updateRoom({
+      where: {
+        id: roomId,
+      },
+      data: {
+        users: {
+          connect: {
+            id: userId,
           }
         }
-      });
-    } catch (e) {
-      console.error(e);
-    }
+      }
+    });
   }
 
   // fetches all users of this chatroom
   async getRoomUsers(roomId: number){
     const roomAndUsers = await this.prismaRoom.RoomWithUsers({id: roomId});
-    return(roomAndUsers.users);
+    return(roomAndUsers?.users);
   }
 
   async getRoomAdmins(roomId: number){
     const roomAndUsers = await this.prismaRoom.roomWithAdmins({id: roomId});
-    return(roomAndUsers.users);
+    return(roomAndUsers?.users);
   }
 
   async getRoomById(roomId: number) {

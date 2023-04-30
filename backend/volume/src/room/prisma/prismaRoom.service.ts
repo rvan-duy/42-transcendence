@@ -9,31 +9,58 @@ export class PrismaRoomService {
   async Room(
     RoomWhereUniqueInput: Prisma.RoomWhereUniqueInput,
   ): Promise<Room | null> {
-    return this.prisma.room.findUnique({
-      where: RoomWhereUniqueInput,
-    });
+    try {
+      return this.prisma.room.findUnique({
+        where: RoomWhereUniqueInput,
+      });
+    } catch {
+      return undefined;
+    }
   }
 
   async RoomWithUsers(
     RoomWhereUniqueInput: Prisma.RoomWhereUniqueInput,
   ): Promise<any | null> {
-    return this.prisma.room.findUnique({
-      where: RoomWhereUniqueInput,
-      include: {
-        users: true,
-      }
-    });
+    try {
+      return this.prisma.room.findUnique({
+        where: RoomWhereUniqueInput,
+        include: {
+          users: true,
+        }
+      });
+    } catch {
+      return undefined;
+    }
   }
 
   async roomWithAdmins(
     RoomWhereUniqueInput: Prisma.RoomWhereUniqueInput,
   ): Promise<any | null> {
-    return this.prisma.room.findUnique({
-      where: RoomWhereUniqueInput,
-      include: {
-        admin: true,
-      }
-    });
+    try {
+      return this.prisma.room.findUnique({
+        where: RoomWhereUniqueInput,
+        include: {
+          admin: true,
+        }
+      });
+    } catch {
+      return undefined;
+    }
+  }
+
+  async roomWithBanMute(
+    RoomWhereUniqueInput: Prisma.RoomWhereUniqueInput,
+  ): Promise<any | null> {
+    try {
+      return this.prisma.room.findUnique({
+        where: RoomWhereUniqueInput,
+        include: {
+          banMute: true,
+        }
+      });
+    } catch {
+      return undefined;
+    }
   }
 
   async Rooms(params: {
@@ -43,19 +70,25 @@ export class PrismaRoomService {
     where?: Prisma.RoomWhereInput;
     orderBy?: Prisma.RoomOrderByWithRelationInput;
   }): Promise<Room[]> {
-    const { skip, take, cursor, where, orderBy } = params;
-    return this.prisma.room.findMany({
-      skip,
-      take,
-      cursor,
-      where,
-      orderBy,
-    });
+    try {
+      const { skip, take, cursor, where, orderBy } = params;
+      return this.prisma.room.findMany({
+        skip,
+        take,
+        cursor,
+        where,
+        orderBy,
+      });
+    } catch {
+      return undefined;
+    }
   }
 
   async createRoom(data: Prisma.RoomCreateInput): Promise<Room> {
     return this.prisma.room.create({
       data,
+    }).catch(() => {
+      return undefined;
     });
   }
 
@@ -63,16 +96,24 @@ export class PrismaRoomService {
     where: Prisma.RoomWhereUniqueInput;
     data: Prisma.RoomUpdateInput;
   }): Promise<Room> {
-    const { where, data } = params;
-    return this.prisma.room.update({
-      data,
-      where,
-    });
+    try {
+      const { where, data } = params;
+      return this.prisma.room.update({
+        data,
+        where,
+      });
+    } catch {
+      return undefined;
+    }
   }
 
   async deleteRoom(where: Prisma.RoomWhereUniqueInput): Promise<Room> {
-    return this.prisma.room.delete({
-      where,
-    });
+    try {
+      return this.prisma.room.delete({
+        where,
+      });
+    } catch {
+      return undefined;
+    }
   }
 }

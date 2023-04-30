@@ -28,7 +28,10 @@
         <main class="join-main">
           <!-- <form action="/chatroom"> -->
           <div class="form-control">
-            <form action="">
+            <form
+              action=""
+              @submit.prevent
+            >
               <label for="username">Change Username</label>
               <span class="text-black pr-4"><input
                 id="username"
@@ -49,17 +52,19 @@
           <div class="form-control">
             <label
               class="custom-file-upload"
-              style="border-radius: 20px"
+              style="text-black"
             >
               Change Avatar
               <div><input
+                ref="file"
                 type="file"
-                style=" width:315px"
+                class="block text-gray-700 text-sm mb-2"
+                @change="uploadProfilePicture($event)"
               ><span><button
                 class="bg-blue-500 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-full"
+                @click="submitProfilePicture"
               >Submit
               </button></span></div>
-               
             </label>
           </div>
           <label for="status">Status</label>
@@ -86,10 +91,6 @@
               0
             </p>
           </div>
-          <label for="status">Elo</label>
-          <p class="text-black">
-            {{ elo }}
-          </p>
           <label for="status">Match History</label>
           <p
             v-if="matches_played === 0"
@@ -127,7 +128,8 @@
   </div>
 </template>
 <script lang="ts">
-import { getBackend, postBackend } from '@/utils/backend-requests';
+import { getBackend, postBackend, postPictureBackend } from '@/utils/backend-requests';
+import { HttpStatus } from '@nestjs/common';
 export default {
   data()
   {
@@ -139,7 +141,8 @@ export default {
       matches_played: 1,
       newUsername: '',
       elo: 500,
-      matches: [{player1: 'Oswin', player2: 'Alice', won: 'Alice'}, {player1: 'Alice', player2: 'Ruben', won: 'Ruben'}]
+      matches: [{player1: 'Oswin', player2: 'Alice', won: 'Alice'}, {player1: 'Alice', player2: 'Ruben', won: 'Ruben'}],
+      image: null,
     };
   },
   async created () {
@@ -148,7 +151,7 @@ export default {
       .then((data) => {
         this.name = data.name;
         this.id = data.id;
-        this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.jpg`;
+        this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.png`;
         this.elo = data.elo;
         this.status = 'Online';
       });
@@ -156,9 +159,37 @@ export default {
   methods: {
     async changeName() {
       await postBackend('user/me/name', { name: this.newUsername })
-        .then((response => response.json()))
-        .then((data) => {
-          this.name = data.name;
+        .then((response) => {
+          if (response.status === HttpStatus.OK) {
+            this.name = this.newUsername;
+            this.newUsername = '';
+          }
+        }
+        )
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    uploadProfilePicture(event) {
+      this.image = event.target.files[0];
+    },
+    async submitProfilePicture() {
+      if (this.image === null) {
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('picture', this.image);
+
+      await postPictureBackend('user/me/picture', formData)
+        .then((response) => {
+          if (response.status === HttpStatus.OK) {
+            document.location.reload();
+          }
+        }
+        )
+        .catch((error) => {
+          console.log(error);
         });
     }
   },
