@@ -177,13 +177,13 @@ export default {
   methods: {
     listenToGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
       // get the position and current gamestate back from the server
-      this.connection.socket.on(`GameState_${this.gameId}`, (data: any) => {
+      this.connection.socket.on('GameState', (data: any) => {
         const state: CurrentGameState = data;
         this.drawGame(ctx, canvas, state);
       });
       
       // Listen to the power up being enabled
-      this.connection.socket.on(`EnablePowerUp_${this.gameId}`, (data: any) => {
+      this.connection.socket.on('EnablePowerUp', (data: any) => {
         const powerUpType: string = data;
         this.frame = 0;
         this.powerUpActive = true;
@@ -191,16 +191,16 @@ export default {
       });
       
       // Listen to the power up being disabled after being enabled
-      this.connection.socket.on(`DisablePowerUp_${this.gameId}`, (resetString: string) => {
+      this.connection.socket.on('DisablePowerUp', (resetString: string) => {
         this.powerUp = resetString;
         this.powerUpActive = false;
       });
 
       // Listen to the game ending and the winner of that match
-      this.connection.socket.on(`Winner_${this.gameId}`, (winningUser: string) => {
+      this.connection.socket.on('Winner', (winningUser: string) => {
         this.inGame = false;
         this.drawEndScreen(ctx, canvas, winningUser);
-        this.connection.socket.off(`GameState_${this.gameId}`);
+        this.connection.socket.off('GameState');
       });
     },
 

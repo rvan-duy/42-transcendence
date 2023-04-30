@@ -56,12 +56,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     console.log(`Auth worked, user: ${user}`);
     const userId = user.sub;
     this.gate.addSocket(userId, client);
+	this.gameService.joinUserToRoomIfPlaying(userId);
     console.log(`Client connected to game: ${client.id} user id ${userId}`);
   }
 
   async handleDisconnect(client: Socket) {
     const userId: number = await this.gate.getUserBySocket(client);
     this.matchmakingService.removePlayerFromQueue(userId);
+	this.gameService.removeUserFromGameRoom(userId, client);
     this.gate.removeSocket(client);
     console.log(`Client disconnected inside game gateway: ${client.id}`);
   }

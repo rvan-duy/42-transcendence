@@ -3,7 +3,7 @@ import { GameService } from './game.service';
 import { GameMode } from './game.definitions';
 
 enum Debug { // make sure to seed before
-  ENABLED = 0,
+  ENABLED = 1,
 }
 
 class PrivateGameInvite {
