@@ -413,7 +413,7 @@ export default {
     async addUser(user: User) {
       this.usersAdded.push(user);
       // await putBackend('chat/addUserToRoom', { roomId: this.chatId, userToAdd: user.id})
-      await postBackendWithQueryParams('chat/addUserToRoom', { roomId: this.chatId, userId: user.id});
+      await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToAdd: user.id});
       // .then((response => response.json()))
       // .then((data) => {
       //   console.log(data);
