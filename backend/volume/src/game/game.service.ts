@@ -3,7 +3,6 @@ import { Injectable } from '@nestjs/common';
 import { PrismaGameService } from './prisma/prismaGame.service';
 import { PrismaUserService } from '../user/prisma/prismaUser.service';
 import { Server } from 'socket.io';
-import { Game, User } from '@prisma/client';
 import { Player } from './game.player';
 import { Ball } from './game.ball';
 import { PowerUp } from './game.powerup';
@@ -334,15 +333,15 @@ export class GameService {
   }
 
   resetUserInput(userId: number) {
-  const gameIndex = this.getGameIndexByUserId(userId);
+    const gameIndex = this.getGameIndexByUserId(userId);
 
-  if (gameIndex === -1)
-    return ;
-  const game = this.games[gameIndex];
-  if (game.players[0].userId === userId)
-    game.players[0].resetInput();
-  else
-    game.players[1].resetInput();
+    if (gameIndex === -1)
+      return ;
+    const game = this.games[gameIndex];
+    if (game.players[0].userId === userId)
+      game.players[0].resetInput();
+    else
+      game.players[1].resetInput();
   }
 }
 

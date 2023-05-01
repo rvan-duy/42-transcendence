@@ -48,9 +48,9 @@ export class Player {
   }
 
   resetInput() {
-	this.moveDown = false;
-	this.moveLeft = false;
-	this.moveRight = false;
-	this.moveUp = false;
+    this.moveDown = false;
+    this.moveLeft = false;
+    this.moveRight = false;
+    this.moveUp = false;
   }
 }
