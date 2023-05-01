@@ -53,17 +53,17 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return ;
     }
 
-    console.log(`Auth worked, user: ${user}`);
     const userId = user.sub;
     this.gate.addSocket(userId, client);
-	this.gameService.joinUserToRoomIfPlaying(userId);
+    this.gameService.joinUserToRoomIfPlaying(userId);
     console.log(`Client connected to game: ${client.id} user id ${userId}`);
   }
 
   async handleDisconnect(client: Socket) {
     const userId: number = await this.gate.getUserBySocket(client);
     this.matchmakingService.removePlayerFromQueue(userId);
-	this.gameService.removeUserFromGameRoom(userId, client);
+    this.gameService.resetUserInput(userId);
+    this.gameService.removeUserFromGameRoom(userId, client);
     this.gate.removeSocket(client);
     console.log(`Client disconnected inside game gateway: ${client.id}`);
   }
@@ -82,6 +82,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (userId === undefined)
       return ;
     console.log(`user ${userId} changed tabs`);
+    this.gameService.resetUserInput(userId);
     this.matchmakingService.removePlayerFromQueue(userId);
   }
 

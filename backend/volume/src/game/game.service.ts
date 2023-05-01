@@ -205,34 +205,6 @@ export class GameService {
     });
   }
 
-  addSpectator(spectator: number, gameID: number) {
-    for (let index = 0; index < this.games.length; index++) {
-      if (this.games[index].gameID === gameID) {
-        if (this.games[index].isFinished) {
-          // send info back that game is already finished
-          return;
-        }
-        this.games[index].spectators.push(spectator);
-        return;
-      }
-    }
-    // send info back that game is already finished
-  }
-
-  removeSpectator(spectator: number, gameID: number) {
-    for (let index = 0; index < this.games.length; index++) {
-      if (this.games[index].gameID === gameID) {
-        const indexOfSpectator = this.games[index].spectators.indexOf(spectator);
-
-        if (indexOfSpectator === -1)
-          return;
-
-        this.games[index].spectators.splice(indexOfSpectator, 1);
-        return;
-      }
-    }
-  }
-
   private sendGameInfo(game: GameData) {
     const player1 = game.players[PlayerDefinitions.PLAYER1];
     const player2 = game.players[PlayerDefinitions.PLAYER2];
@@ -298,7 +270,7 @@ export class GameService {
       });
       return ;
     }
-    // there is a game where the user is playing so we send back all the game's details
+    // there is a game where the user is playing so we send back all the game's details and join the client to the game's room
     const game: GameData = this.games[gameIndex];
     client.emit('GameStatus', {
       alreadyInGame: true,
@@ -359,6 +331,18 @@ export class GameService {
       return ;
     const game: GameData = this.games[gameIndex];
     userSocket.leave(`game_${game.gameID}`);
+  }
+
+  resetUserInput(userId: number) {
+  const gameIndex = this.getGameIndexByUserId(userId);
+
+  if (gameIndex === -1)
+    return ;
+  const game = this.games[gameIndex];
+  if (game.players[0].userId === userId)
+    game.players[0].resetInput();
+  else
+    game.players[1].resetInput();
   }
 }
 
