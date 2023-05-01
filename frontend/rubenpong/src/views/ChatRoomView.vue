@@ -1,9 +1,6 @@
 <script setup lang="ts">
 import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/backend-requests';
 import SocketioService from '../services/socketio.service.js';
-// import { ref } from 'vue';
-// const input = ref('');
-
 </script>
 
 <!-- • The user should be able to create channels (chat rooms) that can be either public,
@@ -136,7 +133,7 @@ interface.
                 >
                   <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
                     <img
-                      src="../assets/dagmar.jpeg"
+                      v-bind:src="String(getUserPicture(user.id))"
                       width="30"
                       height="30"
                       style="border-radius: 50%; vertical-align: center; float: left;"
@@ -420,22 +417,25 @@ export default {
       // }
       // );
     },
+    async getUsers() {
+      await getBackend('user/all').then(res => res.json())
+        .then((data: User[]) => {
+          this.allUsers = data;
+        });
 
-async getUsers() {
-  await getBackend('user/all').then(res => res.json())
-    .then((data: User[]) => {
-      this.allUsers = data;
-    });
-
-},
-filteredList() {
-  this.getUsers();
-  if (this.input !== '') {
-    return this.allUsers.filter((user) =>
-      user.name.toLowerCase().includes(this.input.toLowerCase())
-    );
-  }
-}
+    },
+    filteredList() {
+      this.getUsers();
+      if (this.input !== '') {
+        return this.allUsers.filter((user) =>
+          user.name.toLowerCase().includes(this.input.toLowerCase())
+        );
+      }
+    },
+    getUserPicture(userId: number): string{
+      return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${userId}.png`);
+    }
+    
   },
 };
 
