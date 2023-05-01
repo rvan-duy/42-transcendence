@@ -338,9 +338,7 @@ export default {
       await Promise.all(promises);
       this.messages = room.history;
       this.users = room.users;
-      // this.usersAdded = this.usersAdded.concat(this.users);
       Array.prototype.push.apply(this.usersAdded, this.users);
-      console.log(this.usersAdded);
     },
 
     receiveNewMsgListener(msg: any) {
@@ -414,8 +412,6 @@ export default {
     },
     async addUser(user: User) {
       this.usersAdded.push(user);
-      console.log('second');
-      console.log(this.usersAdded);
       // await putBackend('chat/addUserToRoom', { roomId: this.chatId, userToAdd: user.id})
       await postBackendWithQueryParams('chat/addUserToRoom', { roomId: this.chatId, userId: user.id});
       // .then((response => response.json()))
