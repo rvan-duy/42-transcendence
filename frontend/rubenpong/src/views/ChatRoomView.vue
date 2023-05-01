@@ -367,7 +367,8 @@ export default {
 
     async banUser(bannedUserId: number) {
       console.log('ban');
-      await postBackend('chat/banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId});
+      console.log(bannedUserId);
+      await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToBan: bannedUserId});
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
@@ -381,7 +382,7 @@ export default {
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
 
-    confirmAndGo(message: string, f: any, param: number) {
+    confirmAndGo(message: string, f: Function, param: number) {
       if (confirm('Are you sure you want to ' + message + '?') === true) {
         console.log('You pressed OK!');
         f(param);

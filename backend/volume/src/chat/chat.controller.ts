@@ -57,8 +57,8 @@ export class ChatController {
     @Query('password') password: string,
   ) {
     const userId = req.user.id;
-    const room = await this.prismaRoomService.Room({id: roomId});
     roomId = Number(roomId);
+    const room = await this.prismaRoomService.Room({id: roomId});
     switch (room?.access || 'invalid') {
     case Access.PRIVATE:
       return ; // you need to be added to this chat
@@ -191,7 +191,7 @@ export class ChatController {
     @Query('roomId') roomId: number,
     @Query('userToBan') banUserId: number,
   ) {
-    const clientId = req.user.id;
+    const clientId = Number(req.user.id);
     banUserId = Number(banUserId);
     roomId = Number(roomId);
 

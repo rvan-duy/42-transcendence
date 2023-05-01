@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { getBackend } from '@/utils/backend-requests';
+import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/backend-requests';
 </script>
 
 <template>
   <div class="chat">
-    <body>
+    <body>å
       <div class="join-container">
         <header class="join-header">
           <div style="text-align: center;">
@@ -20,7 +20,7 @@ import { getBackend } from '@/utils/backend-requests';
               </figcaption>
               <button
                 class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
-                @click="goTo('chatroom/AwesomeChat')"
+                @click="addFriend()"
               >
                 Add as friend
               </button>
@@ -122,7 +122,7 @@ export default {
     let name: string = '';
     let status: string = '';
     let rank: number = 500;
-    await getBackend('user/id/2')
+    await getBackend(`user/id/${Number(this.$route.query.id)}`)
       .then(function (res) {
         return res.json();
       })
@@ -144,6 +144,10 @@ export default {
       // } else {
       //   this.$router.push('/login')
       this.$router.push('/' + route);
+    },
+    async addFriend() {
+      console.log(Number(this.$route.query.id));
+      await postBackendWithQueryParams('user/befriend', undefined, { id: Number(this.$route.query.id)});
     }
   }
 };

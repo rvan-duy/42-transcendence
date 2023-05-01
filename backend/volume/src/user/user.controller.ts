@@ -145,7 +145,8 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Post('befriend')
   async handleFriendRequest(@Request() req: any, @Query('id') userId: number) {
-    const myId = req.user.id;
+    const myId = Number(req.user.id);
+    userId = Number(userId);
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
     if (otherAsUser === undefined || meAsUser === undefined)
@@ -191,7 +192,8 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Post('unfriend')
   async handleUnfriend(@Request() req: any, @Query('id') userId: number) {
-    const myId = req.user.id;
+    const myId = Number(req.user.id);
+    userId = Number(userId);
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
     if (meAsUser.friends.includes(userId) === false)
