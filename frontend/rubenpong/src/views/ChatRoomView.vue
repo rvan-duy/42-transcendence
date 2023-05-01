@@ -1,25 +1,9 @@
 <script setup lang="ts">
 import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/backend-requests';
 import SocketioService from '../services/socketio.service.js';
-import { ref } from 'vue';
-const input = ref('');
-let allUsers: User[] = [];
+// import { ref } from 'vue';
+// const input = ref('');
 
-async function getUsers() {
-  await getBackend('user/all').then(res => res.json())
-    .then((data: User[]) => {
-      allUsers = data;
-    });
-
-}
-getUsers();
-function filteredList() {
-  if (input.value !== '') {
-    return allUsers.filter((user) =>
-      user.name.toLowerCase().includes(input.value.toLowerCase())
-    );
-  }
-}
 </script>
 
 <!-- • The user should be able to create channels (chat rooms) that can be either public,
@@ -122,7 +106,6 @@ interface.
                   v-for="user in filteredList()"
                   :key="user.id"
                   :value="user"
-                  class="item fruit"
                 >
                   <span><button
                     class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
@@ -148,7 +131,7 @@ interface.
               <h3><i class="fas fa-users" /> Users</h3>
               <ul id="users">
                 <li
-                  v-for="user in users"
+                  v-for="user in usersAdded"
                   :key="user.id"
                 >
                   <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
@@ -291,6 +274,9 @@ export default {
       connection: SocketioService,
       setup: false,
       usersAdded: [] as User[],
+      allUsers: [] as User[],
+      input: '',
+
       // input: ''
     };
   },
@@ -437,7 +423,23 @@ export default {
       //   console.log(data);
       // }
       // );
-    }
+    },
+
+async getUsers() {
+  await getBackend('user/all').then(res => res.json())
+    .then((data: User[]) => {
+      this.allUsers = data;
+    });
+
+},
+filteredList() {
+  this.getUsers();
+  if (this.input !== '') {
+    return this.allUsers.filter((user) =>
+      user.name.toLowerCase().includes(this.input.toLowerCase())
+    );
+  }
+}
   },
 };
 
