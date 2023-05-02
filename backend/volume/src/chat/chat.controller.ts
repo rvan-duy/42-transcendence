@@ -208,8 +208,8 @@ export class ChatController {
     @Query('muteUserId') muteUserId: number,
   ) {
     const clientId = req.user.id;
-	roomId = Number(roomId);
-	muteUserId = Number(muteUserId);
+    roomId = Number(roomId);
+    muteUserId = Number(muteUserId);
 
     // only alow the chat owner and admins to ban members from the chat
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
@@ -221,9 +221,9 @@ export class ChatController {
 
     // add user to the muted list in this chat
     const resp = await this.roomService.muteUser(roomId, muteUserId);
-	if (resp === undefined)
-	  throw new NotFoundException('room not found');
-	return;
+    if (resp === undefined)
+      throw new NotFoundException('room not found');
+    return;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -234,9 +234,9 @@ export class ChatController {
     @Query('kickUserId') kickUserId: number,
   ) {
     const clientId = req.user.id;
-	console.log('new', roomId, kickUserId);
-	roomId = Number(roomId);
-	kickUserId = Number(kickUserId);
+    console.log('new', roomId, kickUserId);
+    roomId = Number(roomId);
+    kickUserId = Number(kickUserId);
 
     // only alow the chat owner and admins to ban members from the chat
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)

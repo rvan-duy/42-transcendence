@@ -394,16 +394,16 @@ export default {
 
     async muteUser(mutedUserId: number) {
       console.log(`mute ${mutedUserId}`);
-    //   await postBackend('chat/muteUserInRoom', { roomId: this.chatId, muteUserId: mutedUserId});
-	postBackendWithQueryParams('chat/muteUserInRoom', undefined, { roomId: this.chatId, muteUserId: mutedUserId});
+      //   await postBackend('chat/muteUserInRoom', { roomId: this.chatId, muteUserId: mutedUserId});
+      postBackendWithQueryParams('chat/muteUserInRoom', undefined, { roomId: this.chatId, muteUserId: mutedUserId});
 
-	//   await postBackendWithQueryParams('chat/muteUserInRoom', null, )
+      //   await postBackendWithQueryParams('chat/muteUserInRoom', null, )
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
 
-	async kickUser(kickUserId: number) {
+    async kickUser(kickUserId: number) {
       console.log('kick');
       postBackendWithQueryParams('chat/kickUserFromRoom', undefined, { roomId: this.chatId, kickUserId: kickUserId});
       // const connection = SocketioService;
