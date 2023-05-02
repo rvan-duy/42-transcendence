@@ -2,12 +2,13 @@ import { GameMode, PaddleInput, PlayerDefinitions, MapSize, MoveSpeedPerTick, De
 import { Injectable } from '@nestjs/common';
 import { PrismaGameService } from './prisma/prismaGame.service';
 import { PrismaUserService } from '../user/prisma/prismaUser.service';
-import { Server } from 'socket.io';
 import { User } from '@prisma/client';
+import { Server } from 'socket.io';
 import { Player } from './game.player';
 import { Ball } from './game.ball';
 import { PowerUp } from './game.powerup';
 import { Socket } from 'socket.io';
+import { GameGateService } from './game.gate.service';
 
 export class GameData {
   gameID: number;
@@ -24,8 +25,9 @@ export class GameData {
   ball: Ball;
   server: Server;
 
-  emit(path: string, payload: any) {
-    this.server.emit(`${path}_${this.gameID}`, payload);
+  emitToRoom(path: string, payload: any) {
+    this.server.to(`game_${this.gameID}`).emit(path, payload);
+    // this.server.emit(`${path}_${this.gameID}`, payload);
   }
 }
 
@@ -66,7 +68,8 @@ export class CurrentGameState {
 @Injectable()
 export class GameService {
   constructor(private readonly prismaGameService: PrismaGameService,
-              private readonly prismaUserService: PrismaUserService) {
+              private readonly prismaUserService: PrismaUserService,
+              private readonly gate: GameGateService,) {
   }
 
   private games: GameData[] = [];
@@ -128,7 +131,7 @@ export class GameService {
       const winningPlayer: Player = game.players[scoringPlayer];
 
       game.isFinished = true;
-      game.emit('Winner', winningPlayer.name);
+      game.emitToRoom('Winner', winningPlayer.name);
       this.storeGameInfo(game);
     }
     ball.x = MapSize.WIDTH / 2;
@@ -154,6 +157,8 @@ export class GameService {
     newGame.server = this.server;
     this.games.push(newGame);
     this.gamesPlayed++;
+    await this.joinUserToGameRoom(dataPlayer1.id, newGame.gameID);
+    await this.joinUserToGameRoom(dataPlayer2.id, newGame.gameID);
     this.server.emit('GameCreated', {gameId: newGame.gameID,
       player1: player1, namePlayer1: dataPlayer1.name,
       player2: player2, namePlayer2: dataPlayer2.name});
@@ -163,12 +168,25 @@ export class GameService {
     console.log('\n\nLogging games:', this.games);
   }
 
-  private removeFinishedGames() {
+  private async removeFinishedGames() {
     for (let index = 0; index < this.games.length; index++) {
-      if (this.games[index].isFinished) {
-        console.log(`removing game ${this.games[index].gameID}`);
+      const game: GameData = this.games[index];
+      if (game.isFinished) {
+        console.log(`removing game ${game.gameID}`);
+        const userId1: number = game.players[0].userId;
+        const userId2: number = game.players[1].userId;
+        const socketsUser1: Socket[] = await this.gate.getSocketsByUser(userId1);
+        const socketsUser2: Socket[] = await this.gate.getSocketsByUser(userId2);
+        for (let index = 0; index < socketsUser1.length; index++) {
+          const socket = socketsUser1[index];
+          this.removeUserFromGameRoom(userId1, socket);
+        }
+        for (let index = 0; index < socketsUser2.length; index++) {
+          const socket = socketsUser2[index];
+          this.removeUserFromGameRoom(userId1, socket);
+        }
         this.games.splice(index, 1);
-        index--; // is this necessary ??
+        index--;
       }
     }
   }
@@ -187,34 +205,6 @@ export class GameService {
     });
   }
 
-  addSpectator(spectator: number, gameID: number) {
-    for (let index = 0; index < this.games.length; index++) {
-      if (this.games[index].gameID === gameID) {
-        if (this.games[index].isFinished) {
-          // send info back that game is already finished
-          return;
-        }
-        this.games[index].spectators.push(spectator);
-        return;
-      }
-    }
-    // send info back that game is already finished
-  }
-
-  removeSpectator(spectator: number, gameID: number) {
-    for (let index = 0; index < this.games.length; index++) {
-      if (this.games[index].gameID === gameID) {
-        const indexOfSpectator = this.games[index].spectators.indexOf(spectator);
-
-        if (indexOfSpectator === -1)
-          return;
-
-        this.games[index].spectators.splice(indexOfSpectator, 1);
-        return;
-      }
-    }
-  }
-
   private sendGameInfo(game: GameData) {
     const player1 = game.players[PlayerDefinitions.PLAYER1];
     const player2 = game.players[PlayerDefinitions.PLAYER2];
@@ -226,7 +216,7 @@ export class GameService {
 
     // send current game state back through socket
     if (!game.isFinished)
-      game.emit('GameState', toSend);
+      game.emitToRoom('GameState', toSend);
     // console.log(toSend);
   }
   
@@ -265,25 +255,47 @@ export class GameService {
 
   checkIfPlaying(userId: number, client: Socket) {
     const powerUps: string[] = ['Paddle Slow', 'Paddle Speed', 'Ball Radius', 'Super Smash', 'Freeze'];
+    const gameIndex: number = this.getGameIndexByUserId(userId);
+
+    if (gameIndex === -1) {
+      // there is no game where the userId is found in so we send back
+      client.emit('GameStatus', {
+        alreadyInGame: false,
+        gameId: -1,
+        gameMode: GameMode.UNMATCHED,
+        namePlayer1: '',
+        namePlayer2: '',
+        powerUpActive: false,
+        powerUp: '',
+      });
+      return ;
+    }
+    // there is a game where the user is playing so we send back all the game's details and join the client to the game's room
+    const game: GameData = this.games[gameIndex];
+    client.emit('GameStatus', {
+      alreadyInGame: true,
+      gameId: game.gameID,
+      gameMode: game.mode,
+      namePlayer1: game.players[0].name,
+      namePlayer2: game.players[1].name,
+      powerUpActive: game.powerUp.powerUpEnabled,
+      powerUp: powerUps[game.powerUp.effect]
+    });
+    client.join(`game_${game.gameID}`);
+  }
+
+  private getGameIndexByUserId(userId: number) {
     for (let index = 0; index < this.games.length; index++) {
-      const game = this.games[index];
+      const game: GameData = this.games[index];
 
-      for (let index = 0; index < game.players.length; index++) {
-        const player = game.players[index];
-
-        // sends the user the gameId and game-mode back
-        if (player.userId === userId) {
-          client.emit('GameStatus', {alreadyInGame: true, gameId: game.gameID, gameMode: game.mode,
-            namePlayer1: game.players[0].name, namePlayer2: game.players[1].name,
-            powerUpActive: game.powerUp.powerUpEnabled, powerUp: powerUps[game.powerUp.effect]});
-          return ;
-        }
+      for (let playerIndex = 0; playerIndex < game.players.length; playerIndex++) {
+        const player: Player = game.players[playerIndex];
+        
+        if (player.userId === userId)
+          return (index);
       }
     }
-    // user isn't found in a game so they can try to queue for one
-    client.emit('GameStatus', {alreadyInGame: false, gameId: -1, gameMode: GameMode.UNMATCHED,
-      namePlayer1: '', namePlayer2: '',
-      powerUpActive: false, powerUp: ''});
+    return (-1);
   }
 
   private getGameByGameId(gameId: number) {
@@ -293,6 +305,44 @@ export class GameService {
         return (game);
     }
     return (null);
+  }
+
+  async joinUserToGameRoom(userId: number, gameId: number) {
+    const	userSockets = await this.gate.getSocketsByUser(userId);
+
+    for (let index = 0; index < userSockets.length; index++) {
+      userSockets[index].join(`game_${gameId}`);
+    }
+  }
+
+  async joinUserToRoomIfPlaying(userId: number) {
+    const gameIndex: number = this.getGameIndexByUserId(userId);
+
+    if (gameIndex === -1)
+      return ;
+    
+    await this.joinUserToGameRoom(userId, this.games[gameIndex].gameID);
+  }
+
+  removeUserFromGameRoom(userId: number, userSocket: Socket) {
+    const gameIndex: number = this.getGameIndexByUserId(userId);
+    
+    if (gameIndex === -1)
+      return ;
+    const game: GameData = this.games[gameIndex];
+    userSocket.leave(`game_${game.gameID}`);
+  }
+
+  resetUserInput(userId: number) {
+    const gameIndex = this.getGameIndexByUserId(userId);
+
+    if (gameIndex === -1)
+      return ;
+    const game = this.games[gameIndex];
+    if (game.players[0].userId === userId)
+      game.players[0].resetInput();
+    else
+      game.players[1].resetInput();
   }
 }
 
