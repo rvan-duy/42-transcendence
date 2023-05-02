@@ -46,4 +46,11 @@ export class Player {
     else if (input === PaddleInput.RIGHT)
       this.moveRight = false;
   }
+
+  resetInput() {
+    this.moveDown = false;
+    this.moveLeft = false;
+    this.moveRight = false;
+    this.moveUp = false;
+  }
 }

@@ -67,7 +67,7 @@ export class Ball {
       let speed = this.acceleration * MoveSpeedPerTick.BALL;
       const collisionPoint = this.y - (paddle.y + paddle.height / 2); // gets a point on the paddle that has a value between the paddle's height / 2 and negative paddle's height / 2
       const normalizedCollisionPoint = collisionPoint / paddle.height / 2; // sets the entire length of the paddle's collision points to be between -1 and 1
-      const returnAngle = Math.PI / 4 * normalizedCollisionPoint; // 45 degrees (Pi / 4) times the normalized paddle collision point which is between 1 and -1
+      const returnAngle = Math.PI / 3 * normalizedCollisionPoint; // 60 degrees (Pi / 3) times the normalized paddle collision point which is between 1 and -1
       const returnDirection = paddle.x < this.x ? 1 : -1; // check what side of the bat the ball gets hit
 
       if (this.superSmash && side === this.playerHoldingSmash) {

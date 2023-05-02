@@ -25,6 +25,7 @@ export class MatchmakingService {
   addPlayerToQueue(mode: GameMode, userId: number) {
     this.removePlayerFromQueue(userId);
 
+    console.log(`Adding user ${userId} to a queue`);
     if (mode === GameMode.NORMAL)
       this.queueNormal.push(userId);
     else if (mode === GameMode.FREEMOVE)
@@ -36,6 +37,7 @@ export class MatchmakingService {
   }
 
   removePlayerFromQueue(userId: number) {
+    console.log(`Removing user: ${userId} from the queue`);
     if (this.checkAndRemoveFromArray(this.queueNormal, userId))
       return;
     if (this.checkAndRemoveFromArray(this.queueFreeMove, userId))
