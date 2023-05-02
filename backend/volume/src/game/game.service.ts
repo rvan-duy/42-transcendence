@@ -2,6 +2,7 @@ import { GameMode, PaddleInput, PlayerDefinitions, MapSize, MoveSpeedPerTick, De
 import { Injectable } from '@nestjs/common';
 import { PrismaGameService } from './prisma/prismaGame.service';
 import { PrismaUserService } from '../user/prisma/prismaUser.service';
+import { User } from '@prisma/client';
 import { Server } from 'socket.io';
 import { Player } from './game.player';
 import { Ball } from './game.ball';
