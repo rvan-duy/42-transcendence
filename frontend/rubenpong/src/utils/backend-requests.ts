@@ -49,7 +49,7 @@ interface QueryParams {
   [key: string]: string;
 }
 
-export async function postBackendWithQueryParams<T>(endpoint: string, body: any, queryParams?: QueryParams): Promise<T> {
+export async function postBackendWithQueryParams<T>(endpoint: string, body: any, queryParams?: QueryParams) {
   let endpointUrl = `${BACKEND_URL}/${endpoint}`;
   const token = getJwtFromCookies();
   
@@ -59,7 +59,8 @@ export async function postBackendWithQueryParams<T>(endpoint: string, body: any,
     endpointUrl += `?${params.toString()}`;
   }
 
-  const res = await fetch(endpointUrl, {
+  console.log(endpointUrl)
+  fetch(endpointUrl, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -67,9 +68,6 @@ export async function postBackendWithQueryParams<T>(endpoint: string, body: any,
     },
     body: JSON.stringify(body),
   });
-
-  const responseData = await res.json();
-  return responseData as T;
 }
 
 // End of oswin's code

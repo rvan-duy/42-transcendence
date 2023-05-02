@@ -207,7 +207,7 @@ interface.
                     </button>
                     <button
                       class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="confirmAndGo('kick ' + user.name, banUser, user.id)"
+                      @click="confirmAndGo('kick ' + user.name, kickUser, user.id)"
                     >
                       Kick
                     </button>
@@ -386,15 +386,26 @@ export default {
 
     async banUser(bannedUserId: number) {
       console.log('ban');
-      await postBackend('chat/banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId});
+      postBackendWithQueryParams('chat/banUserFromRoom', undefined, { roomId: this.chatId, banUserId: bannedUserId});
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
 
     async muteUser(mutedUserId: number) {
-      console.log('mute');
-      await postBackend('chat/muteUserInRoom', { roomId: this.chatId, muteUserId: mutedUserId});
+      console.log(`mute ${mutedUserId}`);
+    //   await postBackend('chat/muteUserInRoom', { roomId: this.chatId, muteUserId: mutedUserId});
+	postBackendWithQueryParams('chat/muteUserInRoom', undefined, { roomId: this.chatId, muteUserId: mutedUserId});
+
+	//   await postBackendWithQueryParams('chat/muteUserInRoom', null, )
+      // const connection = SocketioService;
+      // connection.setupSocketConnection('/chat');
+      // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
+    },
+
+	async kickUser(kickUserId: number) {
+      console.log('kick');
+      postBackendWithQueryParams('chat/kickUserFromRoom', undefined, { roomId: this.chatId, kickUserId: kickUserId});
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
@@ -402,10 +413,7 @@ export default {
 
     confirmAndGo(message: string, f: any, param: number) {
       if (confirm('Are you sure you want to ' + message + '?') === true) {
-        console.log('You pressed OK!');
         f(param);
-      } else {
-        console.log('You canceled!');
       }
     },
 

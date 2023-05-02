@@ -174,7 +174,7 @@ export class RoomService {
   }
 
   async muteUser(roomId: number, userId: number) {
-    this.prismaRoom.updateRoom({
+    return await this.prismaRoom.updateRoom({
       where: {
         id: roomId,
       },
@@ -189,5 +189,19 @@ export class RoomService {
       }
     });
   }
-
+  
+  async kickUser(roomId: number, userId: number) {
+    return await this.prismaRoom.updateRoom({
+      where: {
+        id: roomId,
+      },
+      data: {
+        users: {
+			disconnect: {
+				id: userId,
+			}
+		}
+      }
+    });
+  }
 }
