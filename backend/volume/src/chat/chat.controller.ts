@@ -187,6 +187,8 @@ export class ChatController {
     @Query('banUserId') banUserId: number,
   ) {
     const clientId = req.user.id;
+    roomId = Number(roomId);
+    banUserId = Number(banUserId);
 
     // only alow the chat owner and admins to ban members from the chat
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
