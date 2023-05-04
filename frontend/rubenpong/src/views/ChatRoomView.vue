@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/backend-requests';
+import { Modal } from 'usemodal-vue3';
 import SocketioService from '../services/socketio.service.js';
 </script>
 
@@ -33,23 +34,23 @@ interface.
             {{ $route.query.id }}
             <div style="text-align: right;">
               <button
-                class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs"
-                @click="confirmAndGo('leave chat ' + $route.params.id, banUser, 1)"
+                class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs m-3"
+                @click="confirmAndGo('leave chat ' + $route.params.id, leaveChat, 1)"
               >
                 Leave Chat
               </button>
+              <div v-if="chat?.access === 'PROTECTED'">
               <span
-                v-if="chat?.access === 'PROTECTED'"
                 class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
                 @click="goTo('chat')"
               >Change
                 Password</span>
               <span
-                v-if="chat?.access === 'PROTECTED'"
                 class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
                 @click="goTo('chat')"
               >Delete
                 Password</span>
+              </div>
               <span
                 v-if="chat?.access === 'PUBLIC'"
                 class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
@@ -187,7 +188,7 @@ interface.
                     </button>
                     <button
                       class="bg-blue-500 hover:bg-red-400 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="confirmAndGo('kick ' + user.name, banUser, user.id)"
+                      @click="confirmAndGo('kick ' + user.name, kickUser, user.id)"
                     >
                       Kick
                     </button>
@@ -358,7 +359,6 @@ export default {
     },
 
     async makeAdmin(newAdminId: number) {
-      console.log('ban');
       await postBackend('chat/makeUserAdmin', { roomId: this.chatId, userId: newAdminId});
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
@@ -366,16 +366,29 @@ export default {
     },
 
     async banUser(bannedUserId: number) {
-      console.log('ban');
-      await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToBan: bannedUserId});
+      postBackendWithQueryParams('chat/banUserFromRoom', undefined, { roomId: this.chatId, banUserId: bannedUserId});
+      // const connection = SocketioService;
+      // connection.setupSocketConnection('/chat');
+      // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
+    },
+    async kickUser(kickedUserId: number) {
+      postBackendWithQueryParams('chat/kickUserFromRoom', undefined, { roomId: this.chatId, kickUserId: kickedUserId});
+      this.usersAdded.forEach(element => {
+       
+    if(element.id === kickedUserId) {
+      this.usersAdded.splice(this.usersAdded.indexOf(element),1);
+    }
+    
+});
+
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
 
     async muteUser(mutedUserId: number) {
-      console.log('mute');
-      await postBackend('chat/muteUserInRoom', { roomId: this.chatId, muteUserId: mutedUserId});
+      postBackendWithQueryParams('chat/muteUserInRoom', undefined, { roomId: this.chatId, muteUserId: mutedUserId});
+
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
@@ -388,6 +401,9 @@ export default {
       } else {
         console.log('You canceled!');
       }
+    },
+    leaveChat() {
+
     },
 
     scrollChatToBottom() {
