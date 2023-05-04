@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/backend-requests';
 </script>
 
 <template>
@@ -9,11 +8,11 @@ import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/bac
         <header class="join-header">
           <div style="text-align: center;">
             <span>
-                <div
-            class="columns-1"
-            style="text-align: center"
-          >
-            <!-- <p style="text-align: center">
+              <div
+                class="columns-1"
+                style="text-align: center"
+              >
+                <!-- <p style="text-align: center">
               <img
                 :src="backendPictureUrl"
                 width="50"
@@ -25,7 +24,7 @@ import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/bac
             <figcaption class="text-white text-m">
               {{ name }}
             </figcaption> -->
-          </div>
+              </div>
               <!-- <img
                 src="../assets/dagmar.jpeg"
                 width="50"
@@ -133,7 +132,7 @@ import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/bac
 export default {
   data() {
     return {
-    }
+    };
   }
-}
+};
 </script>

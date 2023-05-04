@@ -40,16 +40,16 @@ interface.
                 Leave Chat
               </button>
               <div v-if="chat?.access === 'PROTECTED'">
-              <span
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                @click="goTo('chat')"
-              >Change
-                Password</span>
-              <span
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                @click="goTo('chat')"
-              >Delete
-                Password</span>
+                <span
+                  class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                  @click="goTo('chat')"
+                >Change
+                  Password</span>
+                <span
+                  class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                  @click="goTo('chat')"
+                >Delete
+                  Password</span>
               </div>
               <span
                 v-if="chat?.access === 'PUBLIC'"
@@ -134,7 +134,7 @@ interface.
                 >
                   <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
                     <img
-                      v-bind:src="String(getUserPicture(user.id))"
+                      :src="String(getUserPicture(user.id))"
                       width="30"
                       height="30"
                       style="border-radius: 50%; vertical-align: center; float: left;"
@@ -375,11 +375,11 @@ export default {
       postBackendWithQueryParams('chat/kickUserFromRoom', undefined, { roomId: this.chatId, kickUserId: kickedUserId});
       this.usersAdded.forEach(element => {
        
-    if(element.id === kickedUserId) {
-      this.usersAdded.splice(this.usersAdded.indexOf(element),1);
-    }
+        if(element.id === kickedUserId) {
+          this.usersAdded.splice(this.usersAdded.indexOf(element),1);
+        }
     
-});
+      });
 
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');

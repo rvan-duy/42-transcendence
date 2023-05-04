@@ -8,7 +8,6 @@ import OtherUserView from '@/views/OtherUserView.vue';
 import SearchUserView from '@/views/SearchUserView.vue';
 import LadderView from '@/views/LadderView.vue';
 
-
 const routes = [
   {
     path: '/',

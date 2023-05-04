@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/backend-requests';
+import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests';
 </script>
 
 <template>
   <div class="chat">
-    <body>å
+    <body>
+      å
       <div class="join-container">
         <header class="join-header">
           <div style="text-align: center;">
@@ -18,13 +19,15 @@ import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/bac
               <figcaption class="text-white text-m">
                 {{ name }}
               </figcaption>
-              <button v-if="!alreadyFriends()"
+              <button
+                v-if="!alreadyFriends()"
                 class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
                 @click="addFriend()"
               >
                 Add as friend
               </button>
-              <button v-else-if="alreadyFriends()"
+              <button
+                v-else-if="alreadyFriends()"
                 class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
                 @click="removeFriend()"
               >
@@ -129,7 +132,7 @@ export default {
     let name: string = '';
     let status: string = '';
     let rank: number = 500;
-    let friends: number[] = [];
+    // let friends: number[] = [];
     await getBackend(`user/id/${Number(this.$route.query.id)}`)
       .then(function (res) {
         return res.json();
@@ -140,7 +143,7 @@ export default {
         rank = data.elo;
         console.log('friends');
         console.log(data.friends);
-        friends = data.friends
+        // friends = data.friends;
       });
     this.name = name;
     this.rank = rank;
