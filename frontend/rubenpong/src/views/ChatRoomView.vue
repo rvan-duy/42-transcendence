@@ -367,7 +367,6 @@ export default {
 
     async banUser(bannedUserId: number) {
       console.log('ban');
-      console.log(bannedUserId);
       await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToBan: bannedUserId});
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');

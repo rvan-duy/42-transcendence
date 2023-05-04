@@ -190,7 +190,6 @@ export default {
     },
     async createChat(newChat: Chat) {
       const createdChat = await postBackendWithQueryParams('chat/createRoom', undefined, { name: newChat.name, access: newChat.access, password: newChat.password }) as Chat;
-      console.log('create chat');
       this.goTo('chatroom/' + newChat.name + '?id=' + createdChat.id);
     },
     // need to implement in the back-end too before this ca work
