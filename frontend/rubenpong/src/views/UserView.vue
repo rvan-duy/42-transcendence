@@ -99,10 +99,9 @@
             No matches played yet!
           </p>
           <div v-else-if="matches_played > 0">
-              <!-- :key="match.player1" -->
-
             <div
               v-for="match in matches"
+              :key="match.id"
             >
               <span
                 v-if="match.winnerId === id"
@@ -113,10 +112,12 @@
                 class="text-black font-bold"
               >LOST</span>
               <span class="text-black"> against </span>
-              <span v-if="match.players[0]?.name === name"
+              <span
+                v-if="match.players[0]?.name === name"
                 class="text-black font-bold"
               >{{ match.players[1]?.name }}</span>
-              <span v-else
+              <span
+                v-else
                 class="text-black font-bold"
               >{{ match.players[0]?.name }}</span>
             </div>
@@ -126,7 +127,6 @@
     </body>
   </div>
 </template>
-
 
 <script lang="ts">
 import { getBackend, postBackend, postPictureBackend } from '@/utils/backend-requests';
@@ -174,13 +174,13 @@ export default {
         console.log('data');
         console.log(data);
       });
-      await getBackend('user/id/' + this.id + '?withGames=true')
-          .then(res => res.json())
-          .then(user => {
-            console.log('user');
-            console.log(user);
-            this.matches = user.games;
-          });
+    await getBackend('user/id/' + this.id + '?withGames=true')
+      .then(res => res.json())
+      .then(user => {
+        console.log('user');
+        console.log(user);
+        this.matches = user.games;
+      });
   },
   methods: {
     async changeName() {

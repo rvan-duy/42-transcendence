@@ -54,19 +54,19 @@ export default {
       allUsers: [] as User[],
       input: '',
       myId: 0
-    }
+    };
   },
   async created() {
-      await getBackend('user/all').then(res => res.json())
-        .then((data: User[]) => {
-          this.allUsers = data;
+    await getBackend('user/all').then(res => res.json())
+      .then((data: User[]) => {
+        this.allUsers = data;
+      });
+    getBackend('user/me')
+      .then((res) => { res.json()
+        .then((data) => {
+          this.myId = data.id;
         });
-        getBackend('user/me')
-        .then((res) => { res.json()
-          .then((data) => {
-            this.myId = data.id;
-          });
-        });
+      });
   },
   methods: {
     goTo(route: string, id: number) {

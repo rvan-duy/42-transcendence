@@ -14,7 +14,8 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
                 width="50"
                 height="50"
                 style="border-radius: 50%; display:block; margin-left: auto; margin-right: auto;"
-                class="w-11 h-11 shrink-0 grow-0 rounded-full"              >
+                class="w-11 h-11 shrink-0 grow-0 rounded-full"
+              >
               <figcaption class="text-white text-m">
                 {{ name }}
               </figcaption>
@@ -85,10 +86,9 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
             No matches played yet!
           </p>
           <div v-else-if="matches_played > 0">
-              <!-- :key="match.player1" -->
-
             <div
               v-for="match in matches"
+              :key="match.id"
             >
               <span
                 v-if="match.winnerId === id"
@@ -99,10 +99,12 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
                 class="text-black font-bold"
               >LOST</span>
               <span class="text-black"> against </span>
-              <span v-if="match.players[0]?.name === name"
+              <span
+                v-if="match.players[0]?.name === name"
                 class="text-black font-bold"
               >{{ match.players[1]?.name }}</span>
-              <span v-else
+              <span
+                v-else
                 class="text-black font-bold"
               >{{ match.players[0]?.name }}</span>
             </div>
@@ -163,12 +165,12 @@ export default {
     this.status = 'Online';
     // this.myFriends = friends;
     await getBackend('user/id/' + Number(this.$route.query.id) + '?withGames=true')
-          .then(res => res.json())
-          .then(user => {
-            console.log('user');
-            console.log(user);
-            this.matches = user.games;
-          });
+      .then(res => res.json())
+      .then(user => {
+        console.log('user');
+        console.log(user);
+        this.matches = user.games;
+      });
   },
   methods: {
     goTo(route: string) {
