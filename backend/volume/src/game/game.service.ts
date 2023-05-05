@@ -70,7 +70,7 @@ export class GameService {
   constructor(private readonly prismaGameService: PrismaGameService,
               private readonly prismaUserService: PrismaUserService,
               @Inject('gameGate') private readonly gameGate: GateService,
-              ) {}
+  ) {}
 
   private games: GameData[] = [];
   private gamesPlayed: number = 0;

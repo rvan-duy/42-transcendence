@@ -14,7 +14,7 @@ export class UserController {
   constructor(
     private readonly userService: PrismaUserService,
     private readonly statusService: StatusService
-    ) {}
+  ) {}
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
@@ -120,7 +120,7 @@ export class UserController {
     @Response() res: any,
     @Query('withGames') withGames: boolean = false,
     @Query('withStatus') withStatus: boolean = false
-    ) {
+  ) {
     let user: any;
     if (withGames)
       user = await this.userService.userWithGames({ id });

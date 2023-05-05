@@ -20,9 +20,9 @@ export class StatusService {
 
   // for testing purposes
   async listConnections() {
-    console.log("gameGate connections: ");
+    console.log('gameGate connections: ');
     this.gameGate.printAllConnections();
-    console.log("chatGate connections: ");
+    console.log('chatGate connections: ');
     this.chatGate.printAllConnections();
   }
 }
