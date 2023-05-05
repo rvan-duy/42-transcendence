@@ -1,13 +1,15 @@
 <script setup lang='ts'>
-import { ref } from 'vue';
-const input = ref('');
-const users = [{ name: 'Ruben1', pic: '', id: 1 }, { name: 'Ruben2', pic: '', id: 2 }, { name: 'Dagmar', pic: '', id: 3 }, { name: 'Oswin', pic: '', id: 4 }, { name: 'Lindsay', pic: '', id: 5 }];
-function filteredList() {
-  if (input.value !== '')
-    return users.filter((user) =>
-      user.name.toLowerCase().includes(input.value.toLowerCase())
-    );
-}
+import { getBackend } from '@/utils/backend-requests';
+
+// import { ref } from 'vue';
+// const input = ref('');
+// const users = [{ name: 'Ruben1', pic: '', id: 1 }, { name: 'Ruben2', pic: '', id: 2 }, { name: 'Dagmar', pic: '', id: 3 }, { name: 'Oswin', pic: '', id: 4 }, { name: 'Lindsay', pic: '', id: 5 }];
+// function filteredList() {
+//   if (input.value !== '')
+//     return users.filter((user) =>
+//       user.name.toLowerCase().includes(input.value.toLowerCase())
+//     );
+// }
 </script>
 
 <template>
@@ -42,15 +44,48 @@ function filteredList() {
 </template>
 
 <script lang="ts">
+interface User {
+  id: number;
+  name: string;
+}
 export default {
+  data() {
+    return {
+      allUsers: [] as User[],
+      input: '',
+      myId: 0
+    }
+  },
+  async created() {
+      await getBackend('user/all').then(res => res.json())
+        .then((data: User[]) => {
+          this.allUsers = data;
+        });
+        getBackend('user/me')
+        .then((res) => { res.json()
+          .then((data) => {
+            this.myId = data.id;
+          });
+        });
+  },
   methods: {
     goTo(route: string, id: number) {
       // if (isAuthenticated) {
       //   this.$router.push('/dashboard')
       // } else {
       //   this.$router.push('/login')
-      console.log('/' + route + '?id=' + id);
-      this.$router.push('/' + route + '?id=' + id);
+      if (id === this.myId)
+        this.$router.push('/user');
+      else
+        this.$router.push('/' + route + '?id=' + id);
+    },
+   
+    filteredList() {
+      if (this.input !== '') {
+        return this.allUsers.filter((user) =>
+          user.name.toLowerCase().includes(this.input.toLowerCase())
+        );
+      }
     },
   },
 };
