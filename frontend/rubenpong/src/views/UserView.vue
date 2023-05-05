@@ -104,14 +104,14 @@
             <div
               v-for="match in matches"
             >
-              <!-- <span
-                v-if="match.won === name"
+              <span
+                v-if="match.winnerId === id"
                 class="text-black font-bold"
               >WON</span>
               <span
-                v-else-if="match.won !== name"
+                v-else
                 class="text-black font-bold"
-              >LOST</span> -->
+              >LOST</span>
               <span class="text-black"> against </span>
               <span v-if="match.players[0]?.name === name"
                 class="text-black font-bold"
@@ -156,7 +156,7 @@ export default {
       newUsername: '',
       elo: 500,
       matches: [
-        {id: 0, score: [] as number[], players: [] as User[]}
+        {id: 0, score: [] as number[], players: [] as User[], winnerId: 0}
       ],
       // matches: [{player1: 'Oswin', player2: 'Alice', won: 'Alice'}, {player1: 'Alice', player2: 'Ruben', won: 'Ruben'}],
       image: null,

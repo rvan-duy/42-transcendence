@@ -90,23 +90,21 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
             <div
               v-for="match in matches"
             >
-              <!-- <span
-                v-if="match.won === name"
+              <span
+                v-if="match.winnerId === id"
                 class="text-black font-bold"
               >WON</span>
               <span
-                v-else-if="match.won !== name"
-                class="text-black font-bold"
-              >LOST</span> -->
-              <span class="text-black"> against </span>
-              <span
-                v-if="match.players[0] === name"
-                class="text-black font-bold"
-              >{{ match.players[1] }}</span>
-              <span
                 v-else
                 class="text-black font-bold"
-              >{{ match.players[0] }}</span>
+              >LOST</span>
+              <span class="text-black"> against </span>
+              <span v-if="match.players[0]?.name === name"
+                class="text-black font-bold"
+              >{{ match.players[1]?.name }}</span>
+              <span v-else
+                class="text-black font-bold"
+              >{{ match.players[0]?.name }}</span>
             </div>
           </div>
         </main>
@@ -116,6 +114,18 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
 </template>
 
 <script lang="ts">
+interface User {
+  id: number;
+  intraId: number;
+  name: string;
+  status: string;
+  pending: [];
+  friends: [];
+  blocked: [];
+  elo: number;
+  twoFactor: boolean;
+  secret: string;
+}
 export default {
   data() {
     return {
@@ -125,7 +135,7 @@ export default {
       newUsername: '',
       rank: 0,
       matches: [
-        {players: [], score: []}
+        {id: 0, score: [] as number[], players: [] as User[], winnerId: 0}
       ],
       myFriends: [1],
     };
@@ -157,6 +167,7 @@ export default {
           .then(user => {
             console.log('user');
             console.log(user);
+            this.matches = user.games;
           });
   },
   methods: {
