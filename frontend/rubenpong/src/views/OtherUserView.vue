@@ -11,11 +11,11 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
           <div style="text-align: center;">
             <span>
               <img
-                src="../assets/dagmar.jpeg"
+                :src="String(getUserPicture())"
                 width="50"
                 height="50"
-                style="border-radius: 50%; display:block;margin-left: auto; margin-right: auto"
-              >
+                style="border-radius: 50%; display:block; margin-left: auto; margin-right: auto;"
+                class="w-11 h-11 shrink-0 grow-0 rounded-full"              >
               <figcaption class="text-white text-m">
                 {{ name }}
               </figcaption>
@@ -86,27 +86,28 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
             No matches played yet!
           </p>
           <div v-else-if="matches_played > 0">
+              <!-- :key="match.player1" -->
+
             <div
               v-for="match in matches"
-              :key="match.player1"
             >
-              <span
+              <!-- <span
                 v-if="match.won === name"
                 class="text-black font-bold"
               >WON</span>
               <span
                 v-else-if="match.won !== name"
                 class="text-black font-bold"
-              >LOST</span>
+              >LOST</span> -->
               <span class="text-black"> against </span>
               <span
-                v-if="match.player1 === name"
+                v-if="match.players[0] === name"
                 class="text-black font-bold"
-              >{{ match.player2 }}</span>
+              >{{ match.players[1] }}</span>
               <span
                 v-else
                 class="text-black font-bold"
-              >{{ match.player1 }}</span>
+              >{{ match.players[0] }}</span>
             </div>
           </div>
         </main>
@@ -124,7 +125,9 @@ export default {
       matches_played: 1,
       newUsername: '',
       rank: 0,
-      matches: [{ player1: 'Oswin', player2: 'Alice', won: 'Alice' }, { player1: 'Alice', player2: 'Ruben', won: 'Ruben' }],
+      matches: [
+        {players: [], score: []}
+      ],
       myFriends: [1],
     };
   },
@@ -150,6 +153,12 @@ export default {
     this.status = status;
     this.status = 'Online';
     // this.myFriends = friends;
+    await getBackend('user/id/' + Number(this.$route.query.id) + '?withGames=true')
+          .then(res => res.json())
+          .then(user => {
+            console.log('user');
+            console.log(user);
+          });
   },
   methods: {
     goTo(route: string) {
@@ -169,6 +178,9 @@ export default {
     },
     async removeFriend() {
       await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id)});
+    },
+    getUserPicture(): string{
+      return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${Number(this.$route.query.id)}.png`);
     }
   }
 };

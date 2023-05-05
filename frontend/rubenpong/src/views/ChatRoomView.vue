@@ -137,7 +137,8 @@ interface.
                       :src="String(getUserPicture(user.id))"
                       width="30"
                       height="30"
-                      style="border-radius: 50%; vertical-align: center; float: left;"
+                      style="border-radius: 50%; display:block;  vertical-align: center; float: left;"
+                      class="w-11 h-11 shrink-0 grow-0 rounded-full"
                     >
                     <span class="text-white text-xs p-1">
                       {{ user.name }}
