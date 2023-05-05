@@ -12,6 +12,7 @@ import { GateService } from 'src/gate/gate.service';
 import { RoomService } from 'src/room/room.service';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
+import { Inject } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
@@ -22,7 +23,7 @@ import { ChatService } from './chat.service';
 })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(
-    private readonly chatGate: GateService,
+    @Inject('chatGate') private readonly chatGate: GateService,
     private msgService: MsgService,
     private roomService: RoomService,
     private chatService: ChatService,

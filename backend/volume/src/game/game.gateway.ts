@@ -10,6 +10,7 @@ import { GameService } from './game.service';
 import { MatchmakingService } from './matchmaking.service';
 import { JwtService } from '@nestjs/jwt';
 import { GateService } from 'src/gate/gate.service';
+import { Inject } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
@@ -22,10 +23,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private gameService: GameService,
     private matchmakingService: MatchmakingService,
     private jwtService: JwtService,
-    private gameGate: GateService,
-  ){
-    gameGate = new GateService();
-  }
+    @Inject('gameGate') private gameGate: GateService,
+  ){}
 
   private server: Server;
 
