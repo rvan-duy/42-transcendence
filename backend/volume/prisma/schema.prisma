@@ -78,4 +78,5 @@ model Game {
   id      Int    @id @default(autoincrement())
   players User[]
   score   Int[]
+  winnerId Int
 }

@@ -132,7 +132,7 @@ export class GameService {
 
       game.isFinished = true;
       game.emitToRoom('Winner', winningPlayer.name);
-      this.storeGameInfo(game);
+      this.storeGameInfo(game, winningPlayer);
     }
     ball.x = MapSize.WIDTH / 2;
     ball.y = MapSize.HEIGHT / 2;
@@ -191,7 +191,7 @@ export class GameService {
     }
   }
 
-  private storeGameInfo(game: GameData) {
+  private storeGameInfo(game: GameData, winningPlayer: Player) {
     this.prismaGameService.createGame({
       score: game.score,
       players: {
@@ -201,7 +201,8 @@ export class GameService {
         {
           id: game.players[PlayerDefinitions.PLAYER2].userId
         }],
-      }
+      },
+      winnerId: winningPlayer.userId
     });
   }
 

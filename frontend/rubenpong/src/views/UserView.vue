@@ -101,25 +101,25 @@
           <div v-else-if="matches_played > 0">
             <div
               v-for="match in matches"
-              :key="match.player1"
+              :key="match.id"
             >
               <span
-                v-if="match.won === name"
+                v-if="match.winnerId === id"
                 class="text-black font-bold"
               >WON</span>
               <span
-                v-else-if="match.won !== name"
+                v-else
                 class="text-black font-bold"
               >LOST</span>
               <span class="text-black"> against </span>
               <span
-                v-if="match.player1 === name"
+                v-if="match.players[0]?.name === name"
                 class="text-black font-bold"
-              >{{ match.player2 }}</span>
+              >{{ match.players[1]?.name }}</span>
               <span
                 v-else
                 class="text-black font-bold"
-              >{{ match.player1 }}</span>
+              >{{ match.players[0]?.name }}</span>
             </div>
           </div>
         </main>
@@ -127,9 +127,23 @@
     </body>
   </div>
 </template>
+
 <script lang="ts">
 import { getBackend, postBackend, postPictureBackend } from '@/utils/backend-requests';
 import { HttpStatus } from '@nestjs/common';
+interface User {
+  id: number;
+  intraId: number;
+  name: string;
+  status: string;
+  pending: [];
+  friends: [];
+  blocked: [];
+  elo: number;
+  twoFactor: boolean;
+  secret: string;
+}
+
 export default {
   data()
   {
@@ -141,7 +155,10 @@ export default {
       matches_played: 1,
       newUsername: '',
       elo: 500,
-      matches: [{player1: 'Oswin', player2: 'Alice', won: 'Alice'}, {player1: 'Alice', player2: 'Ruben', won: 'Ruben'}],
+      matches: [
+        {id: 0, score: [] as number[], players: [] as User[], winnerId: 0}
+      ],
+      // matches: [{player1: 'Oswin', player2: 'Alice', won: 'Alice'}, {player1: 'Alice', player2: 'Ruben', won: 'Ruben'}],
       image: null,
     };
   },
@@ -154,6 +171,15 @@ export default {
         this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.png`;
         this.elo = data.elo;
         this.status = 'Online';
+        console.log('data');
+        console.log(data);
+      });
+    await getBackend('user/id/' + this.id + '?withGames=true')
+      .then(res => res.json())
+      .then(user => {
+        console.log('user');
+        console.log(user);
+        this.matches = user.games;
       });
   },
   methods: {
@@ -191,7 +217,7 @@ export default {
         .catch((error) => {
           console.log(error);
         });
-    }
+    },
   },
 };
 </script>
