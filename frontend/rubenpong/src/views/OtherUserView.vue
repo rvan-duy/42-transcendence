@@ -5,7 +5,6 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
 <template>
   <div class="chat">
     <body>
-      å
       <div class="join-container">
         <header class="join-header">
           <div style="text-align: center;">
