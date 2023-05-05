@@ -58,6 +58,7 @@ export class ChatController {
     @Query('password') password: string,
   ) {
     const userId = req.user.id;
+    roomId = Number(roomId);
     const room = await this.prismaRoomService.Room({id: roomId});
     switch (room?.access || 'invalid') {
     case Access.PRIVATE:
@@ -102,6 +103,7 @@ export class ChatController {
     @Query('roomId') roomId: number,
   ) {
     const clientId = req.user.id;
+    roomId = Number(roomId);
     if (false === await this.chatService.isChatter(roomId, clientId))
       throw new Error('no access or invalid roomId'); // also catches non existing rooms
 
@@ -117,6 +119,8 @@ export class ChatController {
     @Query('roomId') roomId: number,
   ) {
     const clientId = req.user.id;
+    roomId = Number(roomId);
+
     if (false === await this.chatService.isChatter(roomId, clientId))
       throw new Error('no access or invalid roomId'); // also catches non existing rooms
 
@@ -134,8 +138,8 @@ export class ChatController {
         @Request() req: any,
         @Query('roomId') roomId: number,
   ) {
-    const userId =req.user.id;
-
+    const userId = req.user.id;
+    roomId = Number(roomId);
     // is the sender is not the chat owner leave it intact and return and error
     if (await this.chatService.isOwner(roomId, userId) === false) // also catches non existing rooms
       throw new ForbiddenException('Only chat owner is alowed to destroy room');
@@ -152,7 +156,8 @@ export class ChatController {
     @Query('userId') userId: number,
   ) {
     const clientId = req.user.id;
-
+    userId = Number(userId);
+    roomId = Number(roomId);
     // is the sender is not the chat owner leave it intact and return and error
     if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner is alowed to promote to admin');
@@ -170,7 +175,8 @@ export class ChatController {
     @Query('userToAdd') userId: number,
   ) {
     const clientId = req.user.id;
-
+    userId = Number(userId);
+    roomId = Number(roomId);
     // only alow the chat owner and admins to add members to the chat
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to add users to chat');

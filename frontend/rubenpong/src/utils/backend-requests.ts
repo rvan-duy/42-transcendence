@@ -46,7 +46,7 @@ export async function postPictureBackend(endpoint: string, body: any): Promise<R
 // Start of oswin's code
 
 interface QueryParams {
-  [key: string]: string;
+  [key: string]: any;
 }
 
 export async function postBackendWithQueryParams<T>(endpoint: string, body: any, queryParams?: QueryParams): Promise<T> {
