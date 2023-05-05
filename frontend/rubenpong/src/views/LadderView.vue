@@ -1,16 +1,31 @@
 <script setup lang="ts">
-import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests';
 </script>
 
 <template>
   <div class="chat">
     <body>
-      å
       <div class="join-container">
         <header class="join-header">
           <div style="text-align: center;">
             <span>
+              <div
+                class="columns-1"
+                style="text-align: center"
+              >
+                <!-- <p style="text-align: center">
               <img
+                :src="backendPictureUrl"
+                width="50"
+                height="50"
+                style="border-radius: 50%; display:block; margin-left: auto; margin-right: auto;"
+                class="w-11 h-11 shrink-0 grow-0 rounded-full"
+              >
+            </p>
+            <figcaption class="text-white text-m">
+              {{ name }}
+            </figcaption> -->
+              </div>
+              <!-- <img
                 src="../assets/dagmar.jpeg"
                 width="50"
                 height="50"
@@ -19,25 +34,23 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
               <figcaption class="text-white text-m">
                 {{ name }}
               </figcaption>
-              <button
-                v-if="!alreadyFriends()"
+              <button v-if="!alreadyFriends()"
                 class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
                 @click="addFriend()"
               >
                 Add as friend
               </button>
-              <button
-                v-else-if="alreadyFriends()"
+              <button v-else-if="alreadyFriends()"
                 class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
                 @click="removeFriend()"
               >
                 Remove as friend
-              </button>
+              </button> -->
             </span>
           </div>
         </header>
         <main class="join-main">
-          <button
+          <!-- <button
             class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
             style="float: right"
           >
@@ -108,7 +121,7 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
                 class="text-black font-bold"
               >{{ match.player1 }}</span>
             </div>
-          </div>
+          </div> -->
         </main>
       </div>
     </body>
@@ -119,71 +132,7 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
 export default {
   data() {
     return {
-      name: '',
-      status: 'Online',
-      matches_played: 1,
-      newUsername: '',
-      rank: 0,
-      matches: [{ player1: 'Oswin', player2: 'Alice', won: 'Alice' }, { player1: 'Alice', player2: 'Ruben', won: 'Ruben' }],
-      myFriends: [1],
     };
-  },
-  async created() {
-    let name: string = '';
-    let status: string = '';
-    let rank: number = 500;
-    // let friends: number[] = [];
-    await getBackend(`user/id/${Number(this.$route.query.id)}`)
-      .then(function (res) {
-        return res.json();
-      })
-      .then(function (data) {
-        name = data.name;
-        status = data.status;
-        rank = data.elo;
-        console.log('friends');
-        console.log(data.friends);
-        // friends = data.friends;
-      });
-    this.name = name;
-    this.rank = rank;
-    this.status = status;
-    this.status = 'Online';
-    // this.myFriends = friends;
-  },
-  methods: {
-    goTo(route: string) {
-      // if (isAuthenticated) {
-      //   this.$router.push('/dashboard')
-      // } else {
-      //   this.$router.push('/login')
-      this.$router.push('/' + route);
-    },
-    alreadyFriends(): boolean
-    {
-      return (this.myFriends.includes(Number(this.$route.query.id)));
-    },
-    async addFriend() {
-      console.log(Number(this.$route.query.id));
-      await postBackendWithQueryParams('user/befriend', undefined, { id: Number(this.$route.query.id)});
-    },
-    async removeFriend() {
-      await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id)});
-    }
   }
 };
 </script>
-
-<style src="../assets/chat.css">
-@media (min-width: 1024px) {
-  .chat {
-    min-height: 100vh;
-    align-items: center;
-  }
-}
-
-.custom-file-upload {
-  border: 1px solid #ccc;
-  border-radius: 50%;
-}
-</style>

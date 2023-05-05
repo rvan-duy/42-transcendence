@@ -42,6 +42,13 @@
         <RouterLink
           v-if="userIsLoggedIn"
           class="text-blue-100 p-2 text-lg hover:text-white"
+          to="/ladder"
+        >
+          User Ladder
+        </RouterLink>
+        <RouterLink
+          v-if="userIsLoggedIn"
+          class="text-blue-100 p-2 text-lg hover:text-white"
           to="/logout"
         >
           Log Out
@@ -108,7 +115,7 @@ export default {
             .then((data) => {
               this.name = data.name;
               this.id = data.id;
-              this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.jpg`;
+              this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.png`;
             });
         });
     }

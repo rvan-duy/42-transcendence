@@ -80,7 +80,7 @@ export class PowerUp {
     this.powerUpOnField = false;
     game.powerUpOnField = false;
 
-    game.emit('EnablePowerUp', messages[this.effect]);
+    game.emitToRoom('EnablePowerUp', messages[this.effect]);
     if (this.effect === PowerUpEffects.BALL_SMASH)  // Speeds up the ball for one 'turn' on the next paddle hit
       this.ballEffect(game);
     else if (this.effect === PowerUpEffects.BALL_RADIUS) // decreases the ball's radius till the next paddle hit
@@ -173,7 +173,7 @@ export class PowerUp {
     game.players[PlayerDefinitions.PLAYER1].paddle.acceleration = 1;
     game.players[PlayerDefinitions.PLAYER2].paddle.acceleration = 1;
     game.ball.superSmash = false;
-    game.emit('DisablePowerUp', '');
+    game.emitToRoom('DisablePowerUp', '');
   }
 
   private powerUpBallCollision(game: GameData) {

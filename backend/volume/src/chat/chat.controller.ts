@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   InternalServerErrorException,
+  NotFoundException,
   Post,
   Query,
   Request,
@@ -57,6 +58,7 @@ export class ChatController {
     @Query('password') password: string,
   ) {
     const userId = req.user.id;
+    roomId = Number(roomId);
     const room = await this.prismaRoomService.Room({id: roomId});
     switch (room?.access || 'invalid') {
     case Access.PRIVATE:
@@ -101,6 +103,7 @@ export class ChatController {
     @Query('roomId') roomId: number,
   ) {
     const clientId = req.user.id;
+    roomId = Number(roomId);
     if (false === await this.chatService.isChatter(roomId, clientId))
       throw new Error('no access or invalid roomId'); // also catches non existing rooms
 
@@ -116,6 +119,8 @@ export class ChatController {
     @Query('roomId') roomId: number,
   ) {
     const clientId = req.user.id;
+    roomId = Number(roomId);
+
     if (false === await this.chatService.isChatter(roomId, clientId))
       throw new Error('no access or invalid roomId'); // also catches non existing rooms
 
@@ -133,8 +138,8 @@ export class ChatController {
         @Request() req: any,
         @Query('roomId') roomId: number,
   ) {
-    const userId =req.user.id;
-
+    const userId = req.user.id;
+    roomId = Number(roomId);
     // is the sender is not the chat owner leave it intact and return and error
     if (await this.chatService.isOwner(roomId, userId) === false) // also catches non existing rooms
       throw new ForbiddenException('Only chat owner is alowed to destroy room');
@@ -151,7 +156,8 @@ export class ChatController {
     @Query('userId') userId: number,
   ) {
     const clientId = req.user.id;
-
+    userId = Number(userId);
+    roomId = Number(roomId);
     // is the sender is not the chat owner leave it intact and return and error
     if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner is alowed to promote to admin');
@@ -169,7 +175,8 @@ export class ChatController {
     @Query('userToAdd') userId: number,
   ) {
     const clientId = req.user.id;
-
+    userId = Number(userId);
+    roomId = Number(roomId);
     // only alow the chat owner and admins to add members to the chat
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to add users to chat');
@@ -183,16 +190,18 @@ export class ChatController {
   async banUserFromRoom(
     @Request() req: any,
     @Query('roomId') roomId: number,
-    @Query('userToBan') banUserId: number,
+    @Query('banUserId') banUserId: number,
   ) {
     const clientId = req.user.id;
+    roomId = Number(roomId);
+    banUserId = Number(banUserId);
 
     // only alow the chat owner and admins to ban members from the chat
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to ban users from chat');
 
     // check if the banned user is not the owner
-    if (this.chatService.isOwner(roomId, banUserId))
+    if (await this.chatService.isOwner(roomId, banUserId) === true)
       throw new ForbiddenException('The chat owner cannot be banned');
 
     // add user to the banned list in this chat
@@ -204,19 +213,48 @@ export class ChatController {
   async muteUserInRoom(
     @Request() req: any,
     @Query('roomId') roomId: number,
-    @Query('userToMute') muteUserId: number,
+    @Query('muteUserId') muteUserId: number,
   ) {
     const clientId = req.user.id;
+    roomId = Number(roomId);
+    muteUserId = Number(muteUserId);
 
     // only alow the chat owner and admins to ban members from the chat
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to mute users from chat');
 
     // check if the muted user is not the owner
-    if (this.chatService.isOwner(roomId, muteUserId))
+    if (await this.chatService.isOwner(roomId, muteUserId) === true)
       throw new ForbiddenException('The chat owner cannot be muted');
 
     // add user to the muted list in this chat
-    this.roomService.muteUser(roomId, muteUserId);
+    const resp = await this.roomService.muteUser(roomId, muteUserId);
+    if (resp === undefined)
+      throw new NotFoundException('room not found');
+    return;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('kickUserFromRoom')
+  async kickUserFromRoom(
+    @Request() req: any,
+    @Query('roomId') roomId: number,
+    @Query('kickUserId') kickUserId: number,
+  ) {
+    const clientId = req.user.id;
+    console.log('new', roomId, kickUserId);
+    roomId = Number(roomId);
+    kickUserId = Number(kickUserId);
+
+    // only alow the chat owner and admins to ban members from the chat
+    if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
+      throw new ForbiddenException('Only chat owner or admin is alowed to kick users from chat');
+
+    // check if the kicked user is not the owner
+    if (await this.chatService.isOwner(roomId, kickUserId) === true)
+      throw new ForbiddenException('The chat owner cannot be kicked');
+
+    // remove the kicked user from chat
+    this.roomService.kickUser(roomId, kickUserId);
   }
 }

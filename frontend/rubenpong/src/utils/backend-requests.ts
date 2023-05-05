@@ -30,10 +30,23 @@ export async function postBackend(endpoint: string, body: any): Promise<Response
   return res;
 }
 
+export async function postPictureBackend(endpoint: string, body: any): Promise<Response> {
+  const endpointUrl = `${BACKEND_URL}/${endpoint}`;
+  const token = getJwtFromCookies();
+  const res = await fetch(endpointUrl, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+    },
+    body: body,
+  });
+  return res;
+}
+
 // Start of oswin's code
 
 interface QueryParams {
-  [key: string]: string;
+  [key: string]: any;
 }
 
 export async function postBackendWithQueryParams<T>(endpoint: string, body: any, queryParams?: QueryParams): Promise<T> {

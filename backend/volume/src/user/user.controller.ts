@@ -1,10 +1,10 @@
-import { Controller, Get, Param, Post, Request, Response, UseGuards, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Get, Param, Post, Request, Response, UseGuards, HttpStatus, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
-import * as path from 'path';
 import { StatusService } from 'src/status/status.service';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
 @ApiCookieAuth()
@@ -67,29 +67,33 @@ export class UserController {
   @ApiOperation({ summary: 'Get user picture for current user' })
   @ApiOkResponse({ description: 'User picture found', type: String })
   async getMePicture(@Request() req: any, @Response() res: any) {
-    const picturePath = `http://${process.env.CODAM_PC}:${process.env.BACKEND_PORT}/public/user_${req.user.id}.jpg`;
+    const picturePath = `http://${process.env.CODAM_PC}:${process.env.BACKEND_PORT}/public/user_${req.user.id}.png`;
     return res.status(HttpStatus.OK).send(picturePath);
   }
-
-  /* Untested */
+  
   @Post('me/picture')
   @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Update user picture for current user (NEEDS TESTING)' })
+  @UseInterceptors(FileInterceptor('picture'))
+  @ApiOperation({ summary: 'Update user picture for current user, must be a png image (max 1MB)' })
   @ApiOkResponse({ description: 'User picture updated' })
   @ApiBadRequestResponse({ description: 'Reason why request was bad' })
-  async updateMePicture(@Request() req: any, @Response() res: any) {
-    const pictureToBeUpdated = req.body.picture;
-
-    if (!pictureToBeUpdated) {
+  async updateMePicture(@Request() req: any, @Response() res: any, @UploadedFile() file: Express.Multer.File) {
+    if (!file) {
       return res.status(HttpStatus.BAD_REQUEST).send('Picture is required, please make sure "picture" is present in the body of the request');
     }
 
-    const ext = path.extname(pictureToBeUpdated.name);
-    const filename = `${req.user.id}${ext}`;
+    if (file.mimetype.startsWith('image/') === false) {
+      return res.status(HttpStatus.BAD_REQUEST).send('Picture must be an image');
+    }
+
+    if (file.size > 1000000) {
+      return res.status(HttpStatus.BAD_REQUEST).send('Picture size must be less than 1MB');
+    }
+  
+    const filename = `user_${req.user.id}.png`;
     const picturePath = '/usr/src/app/public/' + filename;
 
-    fs.writeFileSync(picturePath, pictureToBeUpdated.data);
-
+    fs.writeFileSync(picturePath, file.buffer);
     return res.status(HttpStatus.OK).send('User picture updated');
   }
 
@@ -154,7 +158,8 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Post('befriend')
   async handleFriendRequest(@Request() req: any, @Query('id') userId: number) {
-    const myId = req.user.id;
+    const myId = Number(req.user.id);
+    userId = Number(userId);
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
     if (otherAsUser === undefined || meAsUser === undefined)
@@ -200,7 +205,8 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @Post('unfriend')
   async handleUnfriend(@Request() req: any, @Query('id') userId: number) {
-    const myId = req.user.id;
+    const myId = Number(req.user.id);
+    userId = Number(userId);
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
     if (meAsUser.friends.includes(userId) === false)
