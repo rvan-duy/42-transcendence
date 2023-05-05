@@ -107,7 +107,7 @@ interface.
                 >
                   <span><button
                     class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                    @click="goTo('otheruser/' + user.name + '?id=' + user.id)"
+                    @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)"
                   >{{ user.name }}</button></span>
                   <span>
                     <button
@@ -132,12 +132,13 @@ interface.
                   v-for="user in usersAdded"
                   :key="user.id"
                 >
-                  <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
+                  <span @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)">
                     <img
                       :src="String(getUserPicture(user.id))"
                       width="30"
                       height="30"
-                      style="border-radius: 50%; vertical-align: center; float: left;"
+                      style="border-radius: 50%; display:block;  vertical-align: center; float: left;"
+                      class="w-11 h-11 shrink-0 grow-0 rounded-full"
                     >
                     <span class="text-white text-xs p-1">
                       {{ user.name }}
@@ -253,7 +254,6 @@ interface Chat {
 interface User {
   id: number;
   name: string;
-
 }
 
 export default {
@@ -283,6 +283,8 @@ export default {
       .then((res) => {
         res.json()
           .then((data) => {
+            console.log('check');
+            console.log(data);
             this.idUser = data.id;
             console.log(data.id);
             this.connection.setupSocketConnection('/chat');
