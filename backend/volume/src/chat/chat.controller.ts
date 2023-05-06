@@ -86,7 +86,7 @@ export class ChatController {
       const chatsFromUser = userWithChats.rooms as Room[];
       
       // get public chats and add them to the list
-      const publicChats = await this.roomService.getPublicRooms();
+      const publicChats = await this.roomService.getPublicRooms(Number(userId));
       const combinedChats = chatsFromUser.concat(publicChats);
 
       // return all available chat for users to sender

@@ -56,7 +56,7 @@
                 v-else
                 type="submit"
                 class="btn bg-blue-100"
-                @click="goTo('chatroom/' + selectedChat?.name + '?id=' + selectedChat?.id)"
+                @click="selectedChat?.access !== 'PRIVATE' ? joinAndGo('chatroom/' + selectedChat?.name + '?id=' + selectedChat?.id) : goTo('chatroom/' + selectedChat?.name + '?id=' + selectedChat?.id)"
               >
                 Join Chat
               </button>
@@ -184,6 +184,11 @@ export default {
       });
   },
   methods: {
+    joinAndGo(route: string)
+    {
+      postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.selectedChat?.id, userToAdd: this.id});
+      this.$router.push('/' + route);
+    },
     goTo(route: string) {
       console.log('/' + route);
       this.$router.push('/' + route);
