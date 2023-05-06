@@ -10,17 +10,12 @@ import LadderView from '@/views/LadderView.vue';
 
 const routes = [
   {
-    path: '/',
-    name: 'home',
-    component: HomeView,
-  },
-  {
     path: '/chat',
     name: 'chat',
     component: ChatView,
   },
   {
-    path: '/game',
+    path: '/',
     name: 'game',
     component: GameView,
   },

@@ -16,13 +16,6 @@
           class="text-blue-100 p-2 text-lg hover:text-white"
           to="/"
         >
-          Home
-        </RouterLink>
-        <RouterLink
-          v-if="userIsLoggedIn"
-          class="text-blue-100 p-2 text-lg hover:text-white"
-          to="/game"
-        >
           Game
         </RouterLink>
         <RouterLink
