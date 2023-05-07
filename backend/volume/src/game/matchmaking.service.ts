@@ -22,6 +22,20 @@ export class MatchmakingService {
   queueFiesta: number[] = [];
   privateGameInvites: PrivateGameInvite[] = [];
 
+  // returns the queue the user is in or NotQueued
+  isUserQueued(userId: number) {
+    if (this.queueNormal.indexOf(userId) !== -1)
+      return (GameMode.NORMAL);
+    if (this.queueFreeMove.indexOf(userId) !== -1)
+      return (GameMode.FREEMOVE);
+    if (this.queuePowerUp.indexOf(userId) !== -1)
+      return (GameMode.POWERUP);
+    if (this.queueFiesta.indexOf(userId) !== -1)
+      return (GameMode.FIESTA);
+    return (GameMode.NOTQUEUED);
+  }
+
+  // first removes the user from any queue they are already inside of and then adds them to a new queue
   addPlayerToQueue(mode: GameMode, userId: number) {
     this.removePlayerFromQueue(userId);
 
@@ -36,6 +50,7 @@ export class MatchmakingService {
       this.queueFiesta.push(userId);
   }
 
+  // removed the player from a queue if they are inside of one
   removePlayerFromQueue(userId: number) {
     console.log(`Removing user: ${userId} from the queue`);
     if (this.checkAndRemoveFromArray(this.queueNormal, userId))
@@ -48,6 +63,7 @@ export class MatchmakingService {
       return;
   }
 
+  // checks if a userId is found inside of an array and then removed it
   private checkAndRemoveFromArray(arr: number[], userId: number) {
     const index = arr.indexOf(userId);
 
@@ -57,6 +73,7 @@ export class MatchmakingService {
     return true;
   }
 
+  // checks if there are enough players in a queue, creates a game with 2 players if they are found
   private checkAndMatchPlayers(arr: number[], mode: GameMode) {
     if (Debug.ENABLED && arr.length === 1) {
       this.gameService.createGame(arr.pop(), 2, mode);
@@ -72,6 +89,7 @@ export class MatchmakingService {
     this.gameService.createGame(player1, player2, mode);
   }
 
+  // checks all the queues if any games can be created
   checkForMatches() {
     // console.log(`Checking for matches current players searching: normal ${this.queueNormal} freeMove ${this.queueFreeMove} powerUp ${this.queuePowerUp} fiesta: ${this.queueFiesta}`);
     this.checkAndMatchPlayers(this.queueNormal, GameMode.NORMAL);

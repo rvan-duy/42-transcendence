@@ -8,6 +8,7 @@ import { Player } from './game.player';
 import { Ball } from './game.ball';
 import { PowerUp } from './game.powerup';
 import { Socket } from 'socket.io';
+import { MatchmakingService } from './matchmaking.service';
 import { GateService } from 'src/gate/gate.service';
 
 export class GameData {
@@ -69,7 +70,7 @@ export class CurrentGameState {
 export class GameService {
   constructor(private readonly prismaGameService: PrismaGameService,
               private readonly prismaUserService: PrismaUserService,
-              @Inject('gameGate') private readonly gameGate: GateService,
+              @Inject('gameGate') private readonly gate: GateService,
   ) {}
 
   private games: GameData[] = [];
@@ -175,8 +176,8 @@ export class GameService {
         console.log(`removing game ${game.gameID}`);
         const userId1: number = game.players[0].userId;
         const userId2: number = game.players[1].userId;
-        const socketsUser1: Socket[] = await this.gameGate.getSocketsByUser(userId1);
-        const socketsUser2: Socket[] = await this.gameGate.getSocketsByUser(userId2);
+        const socketsUser1: Socket[] = await this.gate.getSocketsByUser(userId1);
+        const socketsUser2: Socket[] = await this.gate.getSocketsByUser(userId2);
         for (let index = 0; index < socketsUser1.length; index++) {
           const socket = socketsUser1[index];
           this.removeUserFromGameRoom(userId1, socket);
@@ -254,16 +255,22 @@ export class GameService {
     return (false);
   }
 
-  checkIfPlaying(userId: number, client: Socket) {
+  checkIfPlaying(userId: number, client: Socket, matchmakingService: MatchmakingService) {
     const powerUps: string[] = ['Paddle Slow', 'Paddle Speed', 'Ball Radius', 'Super Smash', 'Freeze'];
     const gameIndex: number = this.getGameIndexByUserId(userId);
 
     if (gameIndex === -1) {
-      // there is no game where the userId is found in so we send back
+      const mode: GameMode = matchmakingService.isUserQueued(userId);
+      let inQueue = false;
+      if (mode !== GameMode.NOTQUEUED)
+        inQueue = true;
+
+      // there is no game where the user is currently playing in, we send back if the user is in a queue for a game or not
       client.emit('GameStatus', {
         alreadyInGame: false,
+        alreadyInQueue: inQueue,
         gameId: -1,
-        gameMode: GameMode.UNMATCHED,
+        gameMode: mode,
         namePlayer1: '',
         namePlayer2: '',
         powerUpActive: false,
@@ -271,10 +278,12 @@ export class GameService {
       });
       return ;
     }
+
     // there is a game where the user is playing so we send back all the game's details and join the client to the game's room
     const game: GameData = this.games[gameIndex];
     client.emit('GameStatus', {
       alreadyInGame: true,
+      alreadyInQueue: false,
       gameId: game.gameID,
       gameMode: game.mode,
       namePlayer1: game.players[0].name,
@@ -309,7 +318,7 @@ export class GameService {
   }
 
   async joinUserToGameRoom(userId: number, gameId: number) {
-    const	userSockets = await this.gameGate.getSocketsByUser(userId);
+    const	userSockets = await this.gate.getSocketsByUser(userId);
 
     for (let index = 0; index < userSockets.length; index++) {
       userSockets[index].join(`game_${gameId}`);
