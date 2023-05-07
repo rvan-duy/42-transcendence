@@ -1,5 +1,5 @@
 import { GameMode, PaddleInput, PlayerDefinitions, MapSize, MoveSpeedPerTick, DefaultElementSize, BallStatus } from './game.definitions';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PrismaGameService } from './prisma/prismaGame.service';
 import { PrismaUserService } from '../user/prisma/prismaUser.service';
 import { User } from '@prisma/client';
@@ -8,8 +8,8 @@ import { Player } from './game.player';
 import { Ball } from './game.ball';
 import { PowerUp } from './game.powerup';
 import { Socket } from 'socket.io';
-import { GameGateService } from './game.gate.service';
 import { MatchmakingService } from './matchmaking.service';
+import { GateService } from 'src/gate/gate.service';
 
 export class GameData {
   gameID: number;
@@ -70,8 +70,8 @@ export class CurrentGameState {
 export class GameService {
   constructor(private readonly prismaGameService: PrismaGameService,
               private readonly prismaUserService: PrismaUserService,
-              private readonly gate: GameGateService) {
-  }
+              @Inject('gameGate') private readonly gate: GateService,
+  ) {}
 
   private games: GameData[] = [];
   private gamesPlayed: number = 0;

@@ -11,6 +11,10 @@ function getKeysByValue(map: Map<any, any>, searchValue: any): any[] {
   return keys;
 }
 
+function logSocketUserMap(value: number, key: Socket) {
+  console.log(`userId: ${value}, socket: ${key}`);
+}
+
 @Injectable()
 export class GateService {
   constructor(){}
@@ -31,5 +35,9 @@ export class GateService {
 
   async getUserBySocket(socket: Socket): Promise<number> {
     return this.userBySocket.get(socket);
+  }
+
+  async printAllConnections() {
+    this.userBySocket.forEach(logSocketUserMap);
   }
 }

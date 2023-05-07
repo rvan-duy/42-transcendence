@@ -133,10 +133,15 @@ export class RoomService {
     });
   }
 
-  async getPublicRooms() {
+  async getPublicRooms(userId: number) : Promise<any | null> {
     return (this.prismaRoom.Rooms({
       where: {
         access: Access.PUBLIC,
+        users: {
+          none: {
+            id: userId
+          }
+        }
       }
     }));
   }
