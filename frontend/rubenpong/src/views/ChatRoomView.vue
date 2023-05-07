@@ -247,10 +247,10 @@ export default {
       console.log('loadRoom: ', room);
       this.chat = room.chat;
       // this.chat?.ownerId = room.chat.ownerId;
-      console.log('chat: ', room);
       const promises = room.history.map((msg: any) => {
+        console.log(getBackend('user/id/' + msg.authorId));
         return getBackend('user/id/' + msg.authorId)
-          // .then(res => res.json())
+          .then(res => res.json())
           .then(user => {
             msg.username = user.name;
           });

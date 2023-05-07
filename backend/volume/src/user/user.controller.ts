@@ -121,13 +121,14 @@ export class UserController {
     @Query('withGames') withGames: boolean = false,
     @Query('withStatus') withStatus: boolean = false
   ) {
+    id = Number(id);
     let user: any;
-    if (withGames)
-      user = await this.userService.userWithGames({ id });
+    if (withGames === true)
+      user = await this.userService.userWithGames({ id: id });
     else
-      user = await this.userService.user({ id });
+      user = await this.userService.user({ id: id });
     
-    if (!user) {
+    if (user === undefined) {
       return res.status(HttpStatus.NOT_FOUND).send(`User with id ${id} not found`);
     }
 
