@@ -4,7 +4,7 @@
 
 const BACKEND_URL = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}`;
 
-export function getBackend(endpoint: string): Promise<Response> {
+export async function getBackend(endpoint: string): Promise<Response> {
   const endpointUrl = `${BACKEND_URL}/${endpoint}`;
   const token = getJwtFromCookies();
   const res = fetch(endpointUrl, {

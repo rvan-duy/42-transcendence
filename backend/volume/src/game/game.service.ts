@@ -1,5 +1,5 @@
 import { GameMode, PaddleInput, PlayerDefinitions, MapSize, MoveSpeedPerTick, DefaultElementSize, BallStatus } from './game.definitions';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PrismaGameService } from './prisma/prismaGame.service';
 import { PrismaUserService } from '../user/prisma/prismaUser.service';
 import { User } from '@prisma/client';
@@ -8,7 +8,7 @@ import { Player } from './game.player';
 import { Ball } from './game.ball';
 import { PowerUp } from './game.powerup';
 import { Socket } from 'socket.io';
-import { GameGateService } from './game.gate.service';
+import { GateService } from 'src/gate/gate.service';
 
 export class GameData {
   gameID: number;
@@ -69,8 +69,8 @@ export class CurrentGameState {
 export class GameService {
   constructor(private readonly prismaGameService: PrismaGameService,
               private readonly prismaUserService: PrismaUserService,
-              private readonly gate: GameGateService,) {
-  }
+              @Inject('gameGate') private readonly gameGate: GateService,
+  ) {}
 
   private games: GameData[] = [];
   private gamesPlayed: number = 0;
@@ -175,8 +175,8 @@ export class GameService {
         console.log(`removing game ${game.gameID}`);
         const userId1: number = game.players[0].userId;
         const userId2: number = game.players[1].userId;
-        const socketsUser1: Socket[] = await this.gate.getSocketsByUser(userId1);
-        const socketsUser2: Socket[] = await this.gate.getSocketsByUser(userId2);
+        const socketsUser1: Socket[] = await this.gameGate.getSocketsByUser(userId1);
+        const socketsUser2: Socket[] = await this.gameGate.getSocketsByUser(userId2);
         for (let index = 0; index < socketsUser1.length; index++) {
           const socket = socketsUser1[index];
           this.removeUserFromGameRoom(userId1, socket);
@@ -309,7 +309,7 @@ export class GameService {
   }
 
   async joinUserToGameRoom(userId: number, gameId: number) {
-    const	userSockets = await this.gate.getSocketsByUser(userId);
+    const	userSockets = await this.gameGate.getSocketsByUser(userId);
 
     for (let index = 0; index < userSockets.length; index++) {
       userSockets[index].join(`game_${gameId}`);

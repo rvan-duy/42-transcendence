@@ -111,7 +111,7 @@ async function main() {
 
   });
 
-  const mute = createTimestamp(2, 1, Status.MUTED);
+  const mute = await createTimestamp(2, 1, Status.MUTED);
 
   console.log({ alice, bob, chad, daveroom, mute });
 

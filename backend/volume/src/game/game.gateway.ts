@@ -9,7 +9,8 @@ import { Socket, Server } from 'socket.io';
 import { GameService } from './game.service';
 import { MatchmakingService } from './matchmaking.service';
 import { JwtService } from '@nestjs/jwt';
-import { GameGateService } from './game.gate.service';
+import { GateService } from 'src/gate/gate.service';
+import { Inject } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
@@ -22,7 +23,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private gameService: GameService,
     private matchmakingService: MatchmakingService,
     private jwtService: JwtService,
-    private gate: GameGateService,
+    @Inject('gameGate') private gameGate: GateService,
   ){}
 
   private server: Server;
@@ -54,23 +55,23 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     const userId = user.sub;
-    this.gate.addSocket(userId, client);
+    this.gameGate.addSocket(userId, client);
     this.gameService.joinUserToRoomIfPlaying(userId);
     console.log(`Client connected to game: ${client.id} user id ${userId}`);
   }
 
   async handleDisconnect(client: Socket) {
-    const userId: number = await this.gate.getUserBySocket(client);
+    const userId: number = await this.gameGate.getUserBySocket(client);
     this.matchmakingService.removePlayerFromQueue(userId);
     this.gameService.resetUserInput(userId);
     this.gameService.removeUserFromGameRoom(userId, client);
-    this.gate.removeSocket(client);
+    this.gameGate.removeSocket(client);
     console.log(`Client disconnected inside game gateway: ${client.id}`);
   }
 
   @SubscribeMessage('CheckGameStatus')
   async checkGameStatus(client: Socket) {
-    const userId: number = await this.gate.getUserBySocket(client);
+    const userId: number = await this.gameGate.getUserBySocket(client);
     if (userId === undefined)
       return ;
     this.gameService.checkIfPlaying(userId, client);
@@ -78,7 +79,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('ChangeGameTab')
   async userChangedTabs(client: Socket) {
-    const userId: number = await this.gate.getUserBySocket(client);
+    const userId: number = await this.gameGate.getUserBySocket(client);
     if (userId === undefined)
       return ;
     console.log(`user ${userId} changed tabs`);
@@ -88,7 +89,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('QueueForGame')
   async handleQueue(client: Socket, payload: any) {
-    const userId: number = await this.gate.getUserBySocket(client);
+    const userId: number = await this.gameGate.getUserBySocket(client);
     if (userId === undefined)
       return ;
     console.log(`player: ${userId} is queuing for gamemode: ${payload.gameMode}`);
@@ -97,7 +98,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
   @SubscribeMessage('UpdateInput')
   async handleKeyDown(client: any, payload: any) {
-    const userId: number = await this.gate.getUserBySocket(client);
+    const userId: number = await this.gameGate.getUserBySocket(client);
     if (userId === undefined)
       return ;
     this.gameService.UpdatePlayerInput(userId, payload.gameId, payload.key, payload.enabled);
