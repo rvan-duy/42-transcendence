@@ -108,7 +108,6 @@ export default {
       })
       .then((data) => {
         userId = data.id;
-        this.connection.setupSocketConnection('/game');
         console.log(data);
       })
       .catch(e => {
@@ -120,18 +119,23 @@ export default {
     this.userId = userId;
     console.log(`received userId: ${this.userId}`);
 
-    var canvas: HTMLCanvasElement = document.getElementById('pixels') as HTMLCanvasElement;
-    var ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
-    
-    this.connection.socket.on('FailedToAuthenticate', function() {
-      // ToDo: show error to refresh or logout/login
+  },
+  mounted() {
+    const canvas: HTMLCanvasElement = document.getElementById('pixels') as HTMLCanvasElement;
+    const ctx: CanvasRenderingContext2D = canvas.getContext('2d') as CanvasRenderingContext2D;
+
+    this.connection.setupSocketConnection('/game');
+
+    this.connection.socket.on('FailedToAuthenticate', () => {
+      console.log('Authentication failed');
+      this.goTo('login');
     });
 
     // ask the server to check if the user is already in a game or not
     this.connection.socket.emit('CheckGameStatus', this.userId);
     
     // retrieve if the user is already in a game or not
-    this.connection.socket.on('GameStatus', (data) => {
+    this.connection.socket.on('GameStatus', (data: any) => {
       if (data.alreadyInGame === true) {
         this.namePlayer1 = data.namePlayer1;
         this.namePlayer2 = data.namePlayer2;
@@ -143,10 +147,10 @@ export default {
         this.powerUp = data.powerUp;
         this.listenToGame(ctx, canvas);
       }
-      else { // Don't think this is necessary?
-        this.inQueue = false;
+      else if (data.alreadyInQueue) {
+        this.inQueue = true;
         this.inGame = false;
-        this.gameMode = GameMode.UNMATCHED;
+        this.gameMode = data.gameMode;
       }
     });
 
@@ -162,8 +166,6 @@ export default {
       }
     });
 
-  },
-  mounted() {
     // set the functions for the movement handling
     document.addEventListener('keydown', this.keyDownEvent);
     document.addEventListener('keyup', this.keyUpEvent);
@@ -171,10 +173,13 @@ export default {
   unmounted() {
     document.removeEventListener('keydown', this.keyDownEvent);
     document.removeEventListener('keyup', this.keyUpEvent);
-    if (this.inQueue)
-      this.connection.socket.emit('ChangeGameTab', this.userId);
+    this.connection.socket.disconnect();
   },
   methods: {
+    goTo(route: string) {
+      this.$router.push('/' + route);
+    },
+
     listenToGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
       // get the position and current gamestate back from the server
       this.connection.socket.on('GameState', (data: any) => {

@@ -9,6 +9,7 @@ import { Ball } from './game.ball';
 import { PowerUp } from './game.powerup';
 import { Socket } from 'socket.io';
 import { GameGateService } from './game.gate.service';
+import { MatchmakingService } from './matchmaking.service';
 
 export class GameData {
   gameID: number;
@@ -69,7 +70,7 @@ export class CurrentGameState {
 export class GameService {
   constructor(private readonly prismaGameService: PrismaGameService,
               private readonly prismaUserService: PrismaUserService,
-              private readonly gate: GameGateService,) {
+              private readonly gate: GameGateService) {
   }
 
   private games: GameData[] = [];
@@ -254,16 +255,22 @@ export class GameService {
     return (false);
   }
 
-  checkIfPlaying(userId: number, client: Socket) {
+  checkIfPlaying(userId: number, client: Socket, matchmakingService: MatchmakingService) {
     const powerUps: string[] = ['Paddle Slow', 'Paddle Speed', 'Ball Radius', 'Super Smash', 'Freeze'];
     const gameIndex: number = this.getGameIndexByUserId(userId);
 
     if (gameIndex === -1) {
-      // there is no game where the userId is found in so we send back
+      const mode: GameMode = matchmakingService.isUserQueued(userId);
+      let inQueue = false;
+      if (mode !== GameMode.NOTQUEUED)
+        inQueue = true;
+
+      // there is no game where the user is currently playing in, we send back if the user is in a queue for a game or not
       client.emit('GameStatus', {
         alreadyInGame: false,
+        alreadyInQueue: inQueue,
         gameId: -1,
-        gameMode: GameMode.UNMATCHED,
+        gameMode: mode,
         namePlayer1: '',
         namePlayer2: '',
         powerUpActive: false,
@@ -271,10 +278,12 @@ export class GameService {
       });
       return ;
     }
+
     // there is a game where the user is playing so we send back all the game's details and join the client to the game's room
     const game: GameData = this.games[gameIndex];
     client.emit('GameStatus', {
       alreadyInGame: true,
+      alreadyInQueue: false,
       gameId: game.gameID,
       gameMode: game.mode,
       namePlayer1: game.players[0].name,

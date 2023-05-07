@@ -56,16 +56,14 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const userId = user.sub;
     this.gate.addSocket(userId, client);
     this.gameService.joinUserToRoomIfPlaying(userId);
-    console.log(`Client connected to game: ${client.id} user id ${userId}`);
   }
 
   async handleDisconnect(client: Socket) {
-    const userId: number = await this.gate.getUserBySocket(client);
-    this.matchmakingService.removePlayerFromQueue(userId);
-    this.gameService.resetUserInput(userId);
-    this.gameService.removeUserFromGameRoom(userId, client);
+    await this.disconnectUser(client);
     this.gate.removeSocket(client);
-    console.log(`Client disconnected inside game gateway: ${client.id}`);
+    client.rooms.forEach(room => {
+      client.leave(room);
+    });
   }
 
   @SubscribeMessage('CheckGameStatus')
@@ -73,17 +71,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const userId: number = await this.gate.getUserBySocket(client);
     if (userId === undefined)
       return ;
-    this.gameService.checkIfPlaying(userId, client);
-  }
-
-  @SubscribeMessage('ChangeGameTab')
-  async userChangedTabs(client: Socket) {
-    const userId: number = await this.gate.getUserBySocket(client);
-    if (userId === undefined)
-      return ;
-    console.log(`user ${userId} changed tabs`);
-    this.gameService.resetUserInput(userId);
-    this.matchmakingService.removePlayerFromQueue(userId);
+    this.gameService.checkIfPlaying(userId, client, this.matchmakingService);
   }
 
   @SubscribeMessage('QueueForGame')
@@ -101,5 +89,18 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (userId === undefined)
       return ;
     this.gameService.UpdatePlayerInput(userId, payload.gameId, payload.key, payload.enabled);
+  }
+
+  private async disconnectUser(client: Socket) {
+    const userId: number = await this.gate.getUserBySocket(client);
+    if (userId === undefined)
+      return ;
+    const sockets: Socket[] = await this.gate.getSocketsByUser(userId);
+    
+    // if multiple browsers are open a user can still have connections open to the backend and thus we shouldn't always remove them from the queue
+    if (sockets.length === 1)
+      this.matchmakingService.removePlayerFromQueue(userId);
+    this.gameService.resetUserInput(userId);
+    console.log(`${userId} has disconnected with socket ${client.id}`);
   }
 }
