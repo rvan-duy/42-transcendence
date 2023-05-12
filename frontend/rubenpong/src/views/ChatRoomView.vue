@@ -458,12 +458,12 @@ export default {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${userId}.png`);
     },
     changePassword(newPassword: string) {
-      postBackendWithQueryParams('chat/changePassword', undefined, { roomId: this.chatId, newPassword: newPassword });
+      postBackendWithQueryParams('chat/changePassword', undefined, { roomId: this.chatId, newPassword });
     },
-    changeAccess(newAccess: String) {
+    changeAccess(newAccess: string, newPassword?: string) {
       if (newAccess !== 'PUBLIC' && newAccess !== 'PRIVATE' && newAccess !== 'PROTECTED')
         return;
-      postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess: newAccess });
+      postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess, newPassword });
     }
 
   },
