@@ -47,7 +47,7 @@ interface.
                   Password</span>
                 <span
                   class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                  @click="goTo('chat')"
+                  @click="changeAccess('PRIVATE')"
                 >Delete
                   Password</span>
               </div>
@@ -456,6 +456,14 @@ export default {
     },
     getUserPicture(userId: number): string {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${userId}.png`);
+    },
+    changePassword(newPassword: string) {
+      postBackendWithQueryParams('chat/changePassword', undefined, { roomId: this.chatId, newPassword: newPassword });
+    },
+    changeAccess(newAccess: String) {
+      if (newAccess !== 'PUBLIC' && newAccess !== 'PRIVATE' && newAccess !== 'PROTECTED')
+        return;
+      postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess: newAccess });
     }
 
   },

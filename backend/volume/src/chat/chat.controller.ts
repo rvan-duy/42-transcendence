@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   ForbiddenException,
   Get,
@@ -296,15 +297,21 @@ export class ChatController {
     @Request() req: any,
     @Query('roomId') roomId: number,
     @Query('newAccess') newAccess: Access,
+    @Query('newPassword') newPassword: string = undefined,
   ) {
     const clientId = req.user.id;
     roomId = Number(roomId);
 
+    if (newAccess === Access.PROTECTED && newPassword === undefined)
+      throw new BadRequestException('A change to password protected chat requires an new password');
+    else if (newAccess !== Access.PROTECTED)
+      newAccess = undefined;
+
     // only alow the chat owner and admins to change chat password
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
-      throw new ForbiddenException('Only chat owner or admin is alowed to change the password');
+      throw new ForbiddenException('Only chat owner or admin is alowed to change the access level');
 
     // change chat type to protected instead?
-    return await this.roomService.changeAccess(roomId, newAccess);
+    return await this.roomService.changeAccess(roomId, newAccess, newPassword);
   }
 }
