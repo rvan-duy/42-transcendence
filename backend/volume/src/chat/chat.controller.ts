@@ -109,13 +109,10 @@ export class ChatController {
     friendId = Number(friendId);
     const clientId = req.user.id;
 
-    console.log('dmhandler');
-
-    // check if is blocked
+    // TODO: check if is blocked
 
     // get and return the dm
     const room = await this.roomService.getDirectMsg(clientId, friendId);
-    console.log('private room', room);
     return room;
   }
 

@@ -99,7 +99,6 @@ export class RoomService {
 
   async getDirectMsg(myId: number, friendId: number) {
     return await this.prismaRoom.getOrCreateDirectMessage(myId, friendId);
-    // return exclude(room, ['hashedCode']);
   }
 
   // fetches all users of this chatroom
