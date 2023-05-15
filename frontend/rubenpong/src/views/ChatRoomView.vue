@@ -40,14 +40,14 @@ interface.
                 Leave Chat
               </button>
               <div v-if="chat?.access === 'PROTECTED'">
-                <span
+                <!-- <span
                   class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                  @click="goTo('chat')"
+                  @click="confirmAndGo('change the password: ' + $route.params.id, changeAccess, 'PRIVATE')"changePassword
                 >Change
-                  Password</span>
+                  Password</span> -->
                 <span
                   class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                  @click="changeAccess('PRIVATE')"
+                  @click="confirmAndGo('delete the password and make the chat private: ' + $route.params.id, changeAccess, 'PRIVATE')"
                 >Delete
                   Password</span>
               </div>
@@ -55,13 +55,13 @@ interface.
                 v-if="chat?.access === 'PUBLIC'"
                 class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
                 @click="isVisible = true"
-              > Set
-                Password</span>
+              > Set / Change Password</span>
               <Modal
                 v-model:visible="isVisible"
                 class="text-black"
                 style="text-align: left;"
                 :cancel-button="cancelBtn"
+                :ok-button="okBtn"
                 :title="'Set Password'"
               >
                 <div>
@@ -86,47 +86,49 @@ interface.
           <main class="chat-main">
             <div class="chat-sidebar">
               <!-- <div v-if="chat?.access === 'PRIVATE'"> -->
-              <label
-                for="name"
-                class="pt-2"
-              >Add users</label>
-              <span class="text-black pr-4">
-                <input
-                  v-model="input"
-                  type="text"
-                  placeholder="Search users..."
-                  VALYE
-                  required
-                  style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-                >
-                <!-- {{ filteredList() }} -->
-                <div
-                  v-for="user in filteredList()"
-                  :key="user.id"
-                  :value="user"
-                >
-                  <span><button
-                    class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                    @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)"
-                  >{{
-                    user.name }}</button></span>
-                  <span>
-                    <button
-                      v-if="!usersAdded.find(el => el.id === user.id)"
-                      class="bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="addUser(user)"
-                    >Add</button></span>
-                </div>
+              <!-- only for admins -->
+              <div>
+                <label
+                  for="name"
+                  class="pt-2"
+                >Add users</label>
+                <span class="text-black pr-4">
+                  <input
+                    v-model="input"
+                    type="text"
+                    placeholder="Search users..."
+                    VALYE
+                    required
+                    style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+                  >
+                  <!-- {{ filteredList() }} -->
+                  <div
+                    v-for="user in filteredList()"
+                    :key="user.id"
+                    :value="user"
+                  >
+                    <span><button
+                      class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)"
+                    >{{
+                      user.name }}</button></span>
+                    <span>
+                      <button
+                        v-if="!usersAdded.find(el => el.id === user.id)"
+                        class="bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                        @click="addUser(user)"
+                      >Add</button></span>
+                  </div>
 
-                <div
-                  v-if="input && !allUsers.length"
-                  class="item error"
-                  style="text-align: center;"
-                >
-                  <p>No results found!</p>
-                </div>
-              </span>
-              <!-- </div> -->
+                  <div
+                    v-if="input && !allUsers.length"
+                    class="item error"
+                    style="text-align: center;"
+                  >
+                    <p>No results found!</p>
+                  </div>
+                </span>
+              </div>
               <h3><i class="fas fa-users" /> Users</h3>
               <ul id="users">
                 <li
@@ -266,9 +268,10 @@ export default {
       idUser: null,
       isAdmin: false,
       isVisible: false,
+      isVisibleChange: false,
       newPassword: '',
-      cancelBtn: { text: 'cancel', onclick: () => { }, loading: false },
-      okBtn: { text: 'ok', onclick: () => { this.setPassword(); }, loading: false },
+      cancelBtn: { text: 'cancel', onclick: () => { this.setVisibilityFalse();}, loading: false },
+      okBtn: { text: 'ok', onclick: () => { this.changePassword(); this.setVisibilityFalse();}, loading: false },
       chatId: Number(this.$route.query.id),
       connection: SocketioService,
       setup: false,
@@ -304,6 +307,9 @@ export default {
     this.connection.socket.disconnect();
   },
   methods: {
+    setVisibilityFalse() {
+      this.isVisible = false;
+    },
     goTo(route: string) {
       this.$router.push('/' + route);
     },
@@ -400,7 +406,7 @@ export default {
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
 
-    confirmAndGo(message: string, f: Function, param: number) {
+    confirmAndGo(message: string, f: Function, param: any) {
       if (confirm('Are you sure you want to ' + message + '?') === true) {
         console.log('You pressed OK!');
         f(param);
@@ -409,17 +415,21 @@ export default {
       }
     },
     leaveChat() {
+      console.log('leave');
+      postBackendWithQueryParams('chat/leaveRoom', undefined, { roomId: this.chatId});
+      this.usersAdded.forEach(element => {
 
+        if (element.id === this.idUser) {
+          this.usersAdded.splice(this.usersAdded.indexOf(element), 1);
+        }
+
+      });
     },
 
     scrollChatToBottom() {
       const messageContainer = this.$refs.messageContainer as HTMLElement;
       console.log('current: ', messageContainer.scrollTop, ' next: ', messageContainer.scrollHeight);
       messageContainer.scrollTop = messageContainer.scrollHeight;
-    },
-
-    setPassword() {
-
     },
     async chatFormSubmit(e: any, chatId: number) {
       const msg = e.target.elements.msg;
@@ -457,15 +467,17 @@ export default {
     getUserPicture(userId: number): string {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${userId}.png`);
     },
-    changePassword(newPassword: string) {
-      postBackendWithQueryParams('chat/changePassword', undefined, { roomId: this.chatId, newPassword });
+    changePassword() {
+      console.log('change pw' + this.newPassword);
+      postBackendWithQueryParams('chat/changePassword', undefined, { roomId: this.chatId, newPassword: this.newPassword });
     },
-    changeAccess(newAccess: string, newPassword?: string) {
+    //change access is for setting a password and change password is for changing a password
+    changeAccess(newAccess: string) {
+      console.log('change access' + newAccess);
       if (newAccess !== 'PUBLIC' && newAccess !== 'PRIVATE' && newAccess !== 'PROTECTED')
         return;
-      postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess, newPassword });
+      postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess: newAccess, newPassword: this.newPassword});
     }
-
   },
 };
 

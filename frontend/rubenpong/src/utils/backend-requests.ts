@@ -68,8 +68,12 @@ export async function postBackendWithQueryParams<T>(endpoint: string, body: any,
     body: JSON.stringify(body),
   });
 
-  const responseData = await res.json();
-  return responseData as T;
+  try {
+    const responseData = await res.json();
+    return responseData as T;
+  } catch {
+    return res as T;
+  }
 }
 
 // End of oswin's code

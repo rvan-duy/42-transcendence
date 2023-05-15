@@ -65,14 +65,15 @@ export class ChatController {
     case Access.PRIVATE:
       return ; // you need to be added to this chat
     case Access.PROTECTED:
-      if (await this.cryptService.comparePassword(password, room.hashedCode) === false)
-        return ; // incorrect password
+      if (await this.cryptService.comparePassword(password, room.hashedCode) === false) {
+        throw new ForbiddenException('Incorrect password');
+      }
       this.roomService.addToChat(userId, roomId);
-      break ;
+      return ;
     case Access.PUBLIC:
       return ; // not added to public rooms since everyone is part unless kicked / blocked
     case 'invalid':
-      throw Error('room may not exist');
+      throw new NotFoundException('Room not found');
     }
   }
 
@@ -87,11 +88,13 @@ export class ChatController {
       const chatsFromUser = userWithChats.rooms as Room[];
       
       // get public chats and add them to the list
-      const publicChats = await this.roomService.getPublicRooms(Number(userId));
-      const combinedChats = chatsFromUser.concat(publicChats);
+      const availableChats = await this.roomService.getPublicAndProtectedRooms(Number(userId));
+      // console.log(publicChats);
+      // console.log('userschats: ', chatsFromUser);
+      // const combinedChats = chatsFromUser.concat(publicChats);
 
       // return all available chat for users to sender
-      return combinedChats;
+      return {myRooms: chatsFromUser, available: availableChats};
     } catch {
       throw new InternalServerErrorException('Failed to fetch Rooms');
     }
@@ -305,7 +308,7 @@ export class ChatController {
     if (newAccess === Access.PROTECTED && newPassword === undefined)
       throw new BadRequestException('A change to password protected chat requires an new password');
     else if (newAccess !== Access.PROTECTED)
-      newAccess = undefined;
+      newPassword = undefined;
 
     // only alow the chat owner and admins to change chat password
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
