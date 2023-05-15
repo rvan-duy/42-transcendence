@@ -139,7 +139,7 @@ export class RoomService {
         access: Access.PUBLIC,
         users: {
           none: {
-            id: userId
+            id: userId,
           }
         }
       }
@@ -208,5 +208,28 @@ export class RoomService {
         }
       }
     });
+  }
+
+  async changeAccess(roomId: number, newAccess: Access, newPassword: string) {
+    const room = await this.prismaRoom.updateRoom({
+      where: { id: roomId },
+      data: {
+        access: newAccess,
+        hashedCode: await this.cryptService.hashPassword(newPassword),
+      },
+    });
+    const roomWithoutPasscode = exclude(room, ['hashedCode']);
+    return roomWithoutPasscode;
+  }
+
+  async changePassword(roomId: number, newPassword: string) {
+    const room = await this.prismaRoom.updateRoom({
+      where: { id: roomId },
+      data: {
+        hashedCode: await this.cryptService.hashPassword(newPassword),
+      },
+    });
+    const roomWithoutPasscode = exclude(room, ['hashedCode']);
+    return roomWithoutPasscode;
   }
 }

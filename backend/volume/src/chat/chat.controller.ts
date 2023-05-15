@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   ForbiddenException,
   Get,
@@ -250,8 +251,8 @@ export class ChatController {
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to kick users from chat');
 
-    // check if the kicked user is not the owner
-    if (await this.chatService.isOwner(roomId, kickUserId) === true)
+    // check if the kicked user is not the owner or admin
+    if (await this.chatService.isAdminOrOwner(roomId, kickUserId) === true)
       throw new ForbiddenException('The chat owner cannot be kicked');
 
     // remove the kicked user from chat
@@ -267,12 +268,50 @@ export class ChatController {
     const clientId = req.user.id;
     roomId = Number(roomId);
 
-    // check if the kicked user is not the owner
-    // if (await this.chatService.isOwner(roomId, clientId) === true)
-    //   throw new ForbiddenException('The chat owner cannot leave?');
-
     // remove the user from chat
     // does not remove admin status
     this.roomService.kickUser(roomId, clientId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('changePassword')
+  async changePassword(
+    @Request() req: any,
+    @Query('roomId') roomId: number,
+    @Query('newPassword') newPassword: string,
+  ) {
+    const clientId = req.user.id;
+    roomId = Number(roomId);
+
+    // only alow the chat owner and admins to change chat password
+    if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
+      throw new ForbiddenException('Only chat owner or admin is alowed to change the password');
+
+    // passcode will be hashed in changePassword
+    return await this.roomService.changePassword(roomId, newPassword);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('changeAccess')
+  async changeAccess(
+    @Request() req: any,
+    @Query('roomId') roomId: number,
+    @Query('newAccess') newAccess: Access,
+    @Query('newPassword') newPassword: string = undefined,
+  ) {
+    const clientId = req.user.id;
+    roomId = Number(roomId);
+
+    if (newAccess === Access.PROTECTED && newPassword === undefined)
+      throw new BadRequestException('A change to password protected chat requires an new password');
+    else if (newAccess !== Access.PROTECTED)
+      newAccess = undefined;
+
+    // only alow the chat owner and admins to change chat password
+    if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
+      throw new ForbiddenException('Only chat owner or admin is alowed to change the access level');
+
+    // change chat type to protected instead?
+    return await this.roomService.changeAccess(roomId, newAccess, newPassword);
   }
 }
