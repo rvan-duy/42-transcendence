@@ -1,4 +1,3 @@
-import HomeView from '@/views/HomeView.vue';
 import ChatView from '@/views/ChatView.vue';
 import ChatRoomView from '@/views/ChatRoomView.vue';
 import GameView from '@/views/GameView.vue';

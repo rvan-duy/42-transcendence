@@ -176,13 +176,13 @@ export default {
     };
   },
   async created() {
-    const res = await getBackend('chat/myRooms') .then((response => response.json()))
+    await getBackend('chat/myRooms') .then((response => response.json()))
       .then((data) => {
-    this.myRooms = data.myRooms as Chat[];
-    this.available = data.available as Chat[];
-    const chats = this.myRooms.concat(this.available);
-    Array.prototype.push.apply(this.chats, chats);
-  });
+        this.myRooms = data.myRooms as Chat[];
+        this.available = data.available as Chat[];
+        const chats = this.myRooms.concat(this.available);
+        Array.prototype.push.apply(this.chats, chats);
+      });
     await getBackend('user/me')
       .then((response => response.json()))
       .then((data) => {
@@ -193,21 +193,18 @@ export default {
   methods: {
     async joinAndGo(route: string)
     {
-      // let returny = 0 as number;
       if (!this.myRooms.includes(this.selectedChat as Chat))
       {
-        console.log('in');
         const result = await postBackendWithQueryParams('chat/joinRoom', undefined, { roomId: this.selectedChat?.id, password: this.enteredPW});
         console.log(result);
         if (result.statusCode === 403)
         {
-          alert("Wrong password");
+          alert('Wrong password');
           return;
         }
         else
           this.$router.push('/' + route);
       }
-      console.log('out');
       this.$router.push('/' + route);
     },
     goTo(route: string) {

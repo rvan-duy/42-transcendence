@@ -86,49 +86,49 @@ interface.
           <main class="chat-main">
             <div class="chat-sidebar">
               <!-- <div v-if="chat?.access === 'PRIVATE'"> -->
-                <!-- only for admins -->
-              <div > 
-              <label
-                for="name"
-                class="pt-2"
-              >Add users</label>
-              <span class="text-black pr-4">
-                <input
-                  v-model="input"
-                  type="text"
-                  placeholder="Search users..."
-                  VALYE
-                  required
-                  style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-                >
-                <!-- {{ filteredList() }} -->
-                <div
-                  v-for="user in filteredList()"
-                  :key="user.id"
-                  :value="user"
-                >
-                  <span><button
-                    class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                    @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)"
-                  >{{
-                    user.name }}</button></span>
-                  <span>
-                    <button
-                      v-if="!usersAdded.find(el => el.id === user.id)"
-                      class="bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="addUser(user)"
-                    >Add</button></span>
-                </div>
+              <!-- only for admins -->
+              <div>
+                <label
+                  for="name"
+                  class="pt-2"
+                >Add users</label>
+                <span class="text-black pr-4">
+                  <input
+                    v-model="input"
+                    type="text"
+                    placeholder="Search users..."
+                    VALYE
+                    required
+                    style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+                  >
+                  <!-- {{ filteredList() }} -->
+                  <div
+                    v-for="user in filteredList()"
+                    :key="user.id"
+                    :value="user"
+                  >
+                    <span><button
+                      class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)"
+                    >{{
+                      user.name }}</button></span>
+                    <span>
+                      <button
+                        v-if="!usersAdded.find(el => el.id === user.id)"
+                        class="bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                        @click="addUser(user)"
+                      >Add</button></span>
+                  </div>
 
-                <div
-                  v-if="input && !allUsers.length"
-                  class="item error"
-                  style="text-align: center;"
-                >
-                  <p>No results found!</p>
-                </div>
-              </span>
-            </div>
+                  <div
+                    v-if="input && !allUsers.length"
+                    class="item error"
+                    style="text-align: center;"
+                  >
+                    <p>No results found!</p>
+                  </div>
+                </span>
+              </div>
               <h3><i class="fas fa-users" /> Users</h3>
               <ul id="users">
                 <li
@@ -270,8 +270,8 @@ export default {
       isVisible: false,
       isVisibleChange: false,
       newPassword: '',
-      cancelBtn: { text: 'cancel', onclick: () => { this.setVisibilityFalse()}, loading: false },
-      okBtn: { text: 'ok', onclick: () => { this.changePassword(); this.setVisibilityFalse()}, loading: false },
+      cancelBtn: { text: 'cancel', onclick: () => { this.setVisibilityFalse();}, loading: false },
+      okBtn: { text: 'ok', onclick: () => { this.changePassword(); this.setVisibilityFalse();}, loading: false },
       chatId: Number(this.$route.query.id),
       connection: SocketioService,
       setup: false,
@@ -419,11 +419,11 @@ export default {
       postBackendWithQueryParams('chat/leaveRoom', undefined, { roomId: this.chatId});
       this.usersAdded.forEach(element => {
 
-if (element.id === this.idUser) {
-  this.usersAdded.splice(this.usersAdded.indexOf(element), 1);
-}
+        if (element.id === this.idUser) {
+          this.usersAdded.splice(this.usersAdded.indexOf(element), 1);
+        }
 
-});
+      });
     },
 
     scrollChatToBottom() {
@@ -431,10 +431,6 @@ if (element.id === this.idUser) {
       console.log('current: ', messageContainer.scrollTop, ' next: ', messageContainer.scrollHeight);
       messageContainer.scrollTop = messageContainer.scrollHeight;
     },
-
-    // setPassword() {
-
-    // },
     async chatFormSubmit(e: any, chatId: number) {
       const msg = e.target.elements.msg;
       const packet = { roomId: chatId, body: (msg.value) };
@@ -481,9 +477,7 @@ if (element.id === this.idUser) {
       if (newAccess !== 'PUBLIC' && newAccess !== 'PRIVATE' && newAccess !== 'PROTECTED')
         return;
       postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess: newAccess, newPassword: this.newPassword});
-      // this.chat.access = 'PRIVATE';
     }
-
   },
 };
 

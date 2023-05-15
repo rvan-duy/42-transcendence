@@ -1,4 +1,4 @@
-  <script setup lang="ts">
+<script setup lang="ts">
 
 const loginWith42 = () => {
   const authUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/auth`;
