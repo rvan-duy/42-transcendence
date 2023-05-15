@@ -1,73 +1,54 @@
 <script setup lang="ts">
-import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests';
+import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests';
 </script>
 
 <template>
   <div class="chat">
+
     <body>
       <div class="join-container">
         <header class="join-header">
           <div style="text-align: center;">
             <span>
-              <img
-                :src="String(getUserPicture())"
-                width="50"
-                height="50"
+              <img :src="String(getUserPicture())" width="50" height="50"
                 style="border-radius: 50%; display:block; margin-left: auto; margin-right: auto;"
-                class="w-11 h-11 shrink-0 grow-0 rounded-full"
-              >
+                class="w-11 h-11 shrink-0 grow-0 rounded-full">
               <figcaption class="text-white text-m">
                 {{ name }}
               </figcaption>
-              <button
-                v-if="!alreadyFriends()"
-                class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
-                @click="addFriend()"
-              >
+              <button v-if="!alreadyFriends()"
+                class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2" @click="addFriend()">
                 Add as friend
               </button>
-              <button
-                v-else-if="alreadyFriends()"
+              <button v-else-if="alreadyFriends()"
                 class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
-                @click="removeFriend()"
-              >
+                @click="removeFriend()">
                 Remove as friend
               </button>
             </span>
           </div>
         </header>
         <main class="join-main">
-          <button
-            class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
-            style="float: right"
-          >
+          <button class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
+            style="float: right">
             Block User
           </button>
-          <button
-            class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full mr-2"
-            style="float: right"
-            @click="goTo('chatroom/AwesomeChat')"
-          >
-            Send message
+          <button class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full mr-2"
+            style="float: right" @click="gotoDM()">
+            Direct message
           </button>
           <label for="status">Status</label>
           <p class="text-black">
             {{ status }}
           </p>
-          <div
-            class="columns-1"
-            style="text-align: center; float: left;"
-          >
+          <div class="columns-1" style="text-align: center; float: left;">
             <span class="p-1">Wins</span>
             <font-awesome-icon icon="award" />
             <p class="text-black">
               1
             </p>
           </div>
-          <div
-            class="columns-1"
-            style="text-align: center; float: center;"
-          >
+          <div class="columns-1" style="text-align: center; float: center;">
             <span class="p-1">Losses</span>
             <font-awesome-icon icon="skull-crossbones" />
             <p class="text-black">
@@ -79,34 +60,17 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
             {{ rank }}
           </p>
           <label for="status">Match History</label>
-          <p
-            v-if="matches_played === 0"
-            class="text-black"
-          >
+          <p v-if="matches_played === 0" class="text-black">
             No matches played yet!
           </p>
           <div v-else-if="matches_played > 0">
-            <div
-              v-for="match in matches"
-              :key="match.id"
-            >
-              <span
-                v-if="match.winnerId === id"
-                class="text-black font-bold"
-              >WON</span>
-              <span
-                v-else
-                class="text-black font-bold"
-              >LOST</span>
+            <div v-for="match in matches" :key="match.id">
+              <span v-if="match.winnerId === id" class="text-black font-bold">WON</span>
+              <span v-else class="text-black font-bold">LOST</span>
               <span class="text-black"> against </span>
-              <span
-                v-if="match.players[0]?.name === name"
-                class="text-black font-bold"
-              >{{ match.players[1]?.name }}</span>
-              <span
-                v-else
-                class="text-black font-bold"
-              >{{ match.players[0]?.name }}</span>
+              <span v-if="match.players[0]?.name === name" class="text-black font-bold">{{ match.players[1]?.name
+              }}</span>
+              <span v-else class="text-black font-bold">{{ match.players[0]?.name }}</span>
             </div>
           </div>
         </main>
@@ -131,13 +95,14 @@ interface User {
 export default {
   data() {
     return {
+      id: 0,
       name: '',
       status: 'Online',
       matches_played: 1,
       newUsername: '',
       rank: 0,
       matches: [
-        {id: 0, score: [] as number[], players: [] as User[], winnerId: 0}
+        { id: 0, score: [] as number[], players: [] as User[], winnerId: 0 }
       ],
       myFriends: [1],
     };
@@ -146,19 +111,22 @@ export default {
     let name: string = '';
     let status: string = '';
     let rank: number = 500;
+    let id: number = 0;
     // let friends: number[] = [];
     await getBackend(`user/id/${Number(this.$route.query.id)}`)
       .then(function (res) {
         return res.json();
       })
       .then(function (data) {
-        name = data.name;
+        id = data.id,
+          name = data.name;
         status = data.status;
         rank = data.elo;
         console.log('friends');
         console.log(data.friends);
         // friends = data.friends;
       });
+    this.id = id;
     this.name = name;
     this.rank = rank;
     this.status = status;
@@ -174,25 +142,27 @@ export default {
   },
   methods: {
     goTo(route: string) {
-      // if (isAuthenticated) {
-      //   this.$router.push('/dashboard')
-      // } else {
-      //   this.$router.push('/login')
       this.$router.push('/' + route);
     },
-    alreadyFriends(): boolean
-    {
+    alreadyFriends(): boolean {
       return (this.myFriends.includes(Number(this.$route.query.id)));
     },
     async addFriend() {
       console.log(Number(this.$route.query.id));
-      await postBackendWithQueryParams('user/befriend', undefined, { id: Number(this.$route.query.id)});
+      await postBackendWithQueryParams('user/befriend', undefined, { id: Number(this.$route.query.id) });
     },
     async removeFriend() {
-      await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id)});
+      await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id) });
     },
-    getUserPicture(): string{
+    getUserPicture(): string {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${Number(this.$route.query.id)}.png`);
+    },
+    async gotoDM() {
+      const dmChat = await getBackend('chat/directMsg?friendId=' + this.id.toString());
+      console.log('first look', dmChat);
+      const chat = await dmChat.json();
+      console.log('private chat', chat);
+      this.goTo('chatroom/direct?id=' + chat.id.toString());
     }
   }
 };
