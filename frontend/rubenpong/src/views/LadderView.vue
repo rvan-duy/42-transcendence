@@ -25,6 +25,7 @@ import { getBackend } from '@/utils/backend-requests';
                 <li
                 v-for="(user, index) in users"
                   :key="user.id"
+                  class="m-2"
                 >
                 <span v-if="index === 0">
                   <font-awesome-icon :icon="['fas', 'crown']" :style="{ color: 'gold' }" />
@@ -34,6 +35,8 @@ import { getBackend } from '@/utils/backend-requests';
                 </span>
                 <span v-if="index === 2">
                   <font-awesome-icon :icon="['fas', 'crown']" :style="{ color: '#cd7f32' }" />
+                </span>
+                <span v-else-if="index > 2" class="ml-4">
                 </span>
                   <span @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)">
                     <!-- <img
@@ -48,7 +51,8 @@ import { getBackend } from '@/utils/backend-requests';
                     </span>
                   </span>
                   <button
-                    class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                    class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full"
+                    style="float: right; padding-bottom: 1px; padding-top: 1px;"
                     @click="goTo('game')"
                   >
                     Invite to game
@@ -69,7 +73,7 @@ interface User {
 export default {
   data() {
     return {
-      users: [{id: 2, name: 'd'}, {id: 2, name: 'd'}, {id: 2, name: 'd'}] as User[],
+      users: [{id: 2, name: 'd'}, {id: 2, name: 'd'}, {id: 2, name: 'd'}, {id: 2, name: 'd'}] as User[],
       idUser: 0,
     };
   },
