@@ -86,6 +86,8 @@ interface.
           <main class="chat-main">
             <div class="chat-sidebar">
               <!-- <div v-if="chat?.access === 'PRIVATE'"> -->
+                <!-- only for admins -->
+              <div > 
               <label
                 for="name"
                 class="pt-2"
@@ -126,7 +128,7 @@ interface.
                   <p>No results found!</p>
                 </div>
               </span>
-              <!-- </div> -->
+            </div>
               <h3><i class="fas fa-users" /> Users</h3>
               <ul id="users">
                 <li
@@ -473,6 +475,7 @@ if (element.id === this.idUser) {
       console.log('change pw' + this.newPassword);
       postBackendWithQueryParams('chat/changePassword', undefined, { roomId: this.chatId, newPassword: this.newPassword });
     },
+    //change access is for setting a password and change password is for changing a password
     changeAccess(newAccess: string) {
       console.log('change access' + newAccess);
       if (newAccess !== 'PUBLIC' && newAccess !== 'PRIVATE' && newAccess !== 'PROTECTED')

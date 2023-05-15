@@ -161,6 +161,7 @@ interface Chat {
   lastId: number;
   password: string;
 }
+
 export default {
   data() {
     return {
@@ -173,20 +174,30 @@ export default {
     };
   },
   async created() {
-    const res = await getBackend('chat/myRooms');
-    this.chats = await res.json() as Chat[];
-    console.log(this.chats);
+    const res = await getBackend('chat/myRooms') .then((response => response.json()))
+      .then((data) => {
+    const myRooms = data.myRooms as Chat[];
+    const available = data.available as Chat[];
+    const chats = myRooms.concat(available);
+    Array.prototype.push.apply(this.chats, chats);
+  });
     await getBackend('user/me')
       .then((response => response.json()))
       .then((data) => {
         this.id = data.id;
-        console.log(this.id);
+        console.log(data);
       });
   },
   methods: {
-    joinAndGo(route: string)
+    async joinAndGo(route: string)
     {
-      postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.selectedChat?.id, userToAdd: this.id});
+      const result = await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.selectedChat?.id, userToAdd: this.id});
+      console.log(result);
+      if (result.statusCode === 403)
+      {
+        alert("Wrong password");
+        return;
+      }
       this.$router.push('/' + route);
     },
     goTo(route: string) {
