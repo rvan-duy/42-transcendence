@@ -33,6 +33,40 @@ export class PrismaRoomService {
     }
   }
 
+  async getOrCreateDirectMessage(myId: number, friendId: number) {
+    try {
+      return this.prisma.room.findFirst({
+        where: {
+          AND: [{
+            ownerId: undefined,
+          },
+          {
+            users: {
+              every: {
+                AND: [
+                  { id: myId },
+                  { id: friendId },
+                ],
+              }
+            }
+          }]
+        },
+      });
+    } catch {
+      return this.createRoom({
+        users: {
+          connect: [
+            {
+              id: myId,
+            },
+            {
+              id: friendId,
+            }]
+        }
+      });
+    }
+  }
+
   async roomWithAdmins(
     RoomWhereUniqueInput: Prisma.RoomWhereUniqueInput,
   ): Promise<any | null> {
