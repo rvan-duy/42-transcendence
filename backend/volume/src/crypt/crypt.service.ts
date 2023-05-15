@@ -13,6 +13,7 @@ export class CryptService {
   }
 
   async comparePassword(password: string, hash: string): Promise<boolean> {
+    console.log('password ' + password);
     if (password === undefined)
       return false;
     return bcrypt.compare(password, hash);

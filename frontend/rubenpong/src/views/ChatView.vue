@@ -56,7 +56,7 @@
                 v-else
                 type="submit"
                 class="btn bg-blue-100"
-                @click="selectedChat?.access !== 'PRIVATE' ? joinAndGo('chatroom/' + selectedChat?.name + '?id=' + selectedChat?.id) : goTo('chatroom/' + selectedChat?.name + '?id=' + selectedChat?.id)"
+                @click="joinAndGo('chatroom/' + selectedChat?.name + '?id=' + selectedChat?.id)"
               >
                 Join Chat
               </button>
@@ -165,6 +165,8 @@ interface Chat {
 export default {
   data() {
     return {
+      myRooms: [] as Chat[],
+      available: [] as Chat[],
       chats: [] as Chat[],
       selectedChat: null as Chat | null,
       chatCreate: false,
@@ -176,9 +178,9 @@ export default {
   async created() {
     const res = await getBackend('chat/myRooms') .then((response => response.json()))
       .then((data) => {
-    const myRooms = data.myRooms as Chat[];
-    const available = data.available as Chat[];
-    const chats = myRooms.concat(available);
+    this.myRooms = data.myRooms as Chat[];
+    this.available = data.available as Chat[];
+    const chats = this.myRooms.concat(this.available);
     Array.prototype.push.apply(this.chats, chats);
   });
     await getBackend('user/me')
@@ -191,13 +193,21 @@ export default {
   methods: {
     async joinAndGo(route: string)
     {
-      const result = await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.selectedChat?.id, userToAdd: this.id});
-      console.log(result);
-      if (result.statusCode === 403)
+      // let returny = 0 as number;
+      if (!this.myRooms.includes(this.selectedChat as Chat))
       {
-        alert("Wrong password");
-        return;
+        console.log('in');
+        const result = await postBackendWithQueryParams('chat/joinRoom', undefined, { roomId: this.selectedChat?.id, password: this.enteredPW});
+        console.log(result);
+        if (result.statusCode === 403)
+        {
+          alert("Wrong password");
+          return;
+        }
+        else
+          this.$router.push('/' + route);
       }
+      console.log('out');
       this.$router.push('/' + route);
     },
     goTo(route: string) {
