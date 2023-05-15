@@ -257,4 +257,22 @@ export class ChatController {
     // remove the kicked user from chat
     this.roomService.kickUser(roomId, kickUserId);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('leaveRoom')
+  async leaveRoom(
+    @Request() req: any,
+    @Query('roomId') roomId: number,
+  ) {
+    const clientId = req.user.id;
+    roomId = Number(roomId);
+
+    // check if the kicked user is not the owner
+    // if (await this.chatService.isOwner(roomId, clientId) === true)
+    //   throw new ForbiddenException('The chat owner cannot leave?');
+
+    // remove the user from chat
+    // does not remove admin status
+    this.roomService.kickUser(roomId, clientId);
+  }
 }

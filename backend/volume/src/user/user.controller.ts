@@ -3,6 +3,7 @@ import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, Api
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
+import { StatusService } from 'src/status/status.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
@@ -10,7 +11,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 @ApiTags('user')
 @ApiUnauthorizedResponse({ description: 'Unauthorized', type: Object })
 export class UserController {
-  constructor(private readonly userService: PrismaUserService) {}
+  constructor(
+    private readonly userService: PrismaUserService,
+    private readonly statusService: StatusService
+  ) {}
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
@@ -111,16 +115,26 @@ export class UserController {
   @ApiQuery({ name: 'withgames'})
   @ApiOkResponse({ description: 'User information', type: Object })
   @ApiNotFoundResponse({ description: 'User with id not found', type: String })
-  async getUserById(@Param('id') id: string, @Response() res: any, @Query('withGames') withGames: boolean = false) {
-    let user;
-
-    if (withGames)
-      user = await this.userService.userWithGames({ id: Number(id) });
+  async getUserById(
+    @Param('id') id: number,
+    @Response() res: any,
+    @Query('withGames') withGames: boolean = false,
+    @Query('withStatus') withStatus: boolean = false
+  ) {
+    id = Number(id);
+    let user: any;
+    if (withGames === true)
+      user = await this.userService.userWithGames({ id: id });
     else
-      user = await this.userService.user({ id: Number(id) });
+      user = await this.userService.user({ id: id });
     
-    if (!user) {
+    if (user === undefined) {
       return res.status(HttpStatus.NOT_FOUND).send(`User with id ${id} not found`);
+    }
+
+    // check status
+    if (withStatus === true) {
+      user.status = this.statusService.getStatus(id);
     }
 
     return res.status(HttpStatus.OK).send(user);

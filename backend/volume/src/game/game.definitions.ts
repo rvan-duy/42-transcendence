@@ -4,6 +4,7 @@ export enum GameMode {
   POWERUP = 'PowerUp',
   FIESTA = 'Fiesta',
   UNMATCHED = 'UnMatched',
+  NOTQUEUED = 'NotQueued'
   }
 
 export enum PaddleInput {

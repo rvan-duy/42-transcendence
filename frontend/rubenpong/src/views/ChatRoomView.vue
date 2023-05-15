@@ -108,7 +108,8 @@ interface.
                   <span><button
                     class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
                     @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)"
-                  >{{ user.name }}</button></span>
+                  >{{
+                    user.name }}</button></span>
                   <span>
                     <button
                       v-if="!usersAdded.find(el => el.id === user.id)"
@@ -287,17 +288,20 @@ export default {
             console.log(data);
             this.idUser = data.id;
             console.log(data.id);
-            this.connection.setupSocketConnection('/chat');
-            this.setupSocketListeners();
             setTimeout(() => {
               this.determineAdmin();
             }, 100);
-            
+
           });
       });
   },
+  mounted() {
+    this.connection.setupSocketConnection('/chat');
+    this.setupSocketListeners();
+  },
   unmounted() {
     this.dropSocketListeners();
+    this.connection.socket.disconnect();
   },
   methods: {
     goTo(route: string) {
@@ -316,7 +320,7 @@ export default {
     },
     determineAdmin() {
       //temporary code
-      console.log('ownerid' + this.chat?.ownerId);
+      console.log('ownerid: ' + this.chat?.ownerId);
       if (this.chat?.ownerId === this.idUser)
         this.isAdmin = true;
       // return (this.chat?.ownerId === this.idUser); // checks if is owner, admin is harder to check
@@ -326,17 +330,17 @@ export default {
       console.log('loadRoom: ', room);
       this.chat = room.chat;
       // this.chat?.ownerId = room.chat.ownerId;
-      console.log('chat: ', room);
       const promises = room.history.map((msg: any) => {
+        console.log(getBackend('user/id/' + msg.authorId));
         return getBackend('user/id/' + msg.authorId)
           .then(res => res.json())
           .then(user => {
             msg.username = user.name;
           });
       });
-      console.log('history messages: ', this.messages);
       await Promise.all(promises);
       this.messages = room.history;
+      console.log('history messages: ', this.messages);
       this.users = room.users;
       Array.prototype.push.apply(this.usersAdded, this.users);
     },
@@ -361,26 +365,26 @@ export default {
     },
 
     async makeAdmin(newAdminId: number) {
-      await postBackend('chat/makeUserAdmin', { roomId: this.chatId, userId: newAdminId});
+      await postBackend('chat/makeUserAdmin', { roomId: this.chatId, userId: newAdminId });
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
 
     async banUser(bannedUserId: number) {
-      postBackendWithQueryParams('chat/banUserFromRoom', undefined, { roomId: this.chatId, banUserId: bannedUserId});
+      postBackendWithQueryParams('chat/banUserFromRoom', undefined, { roomId: this.chatId, banUserId: bannedUserId });
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
       // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
     async kickUser(kickedUserId: number) {
-      postBackendWithQueryParams('chat/kickUserFromRoom', undefined, { roomId: this.chatId, kickUserId: kickedUserId});
+      postBackendWithQueryParams('chat/kickUserFromRoom', undefined, { roomId: this.chatId, kickUserId: kickedUserId });
       this.usersAdded.forEach(element => {
-       
-        if(element.id === kickedUserId) {
-          this.usersAdded.splice(this.usersAdded.indexOf(element),1);
+
+        if (element.id === kickedUserId) {
+          this.usersAdded.splice(this.usersAdded.indexOf(element), 1);
         }
-    
+
       });
 
       // const connection = SocketioService;
@@ -389,7 +393,7 @@ export default {
     },
 
     async muteUser(mutedUserId: number) {
-      postBackendWithQueryParams('chat/muteUserInRoom', undefined, { roomId: this.chatId, muteUserId: mutedUserId});
+      postBackendWithQueryParams('chat/muteUserInRoom', undefined, { roomId: this.chatId, muteUserId: mutedUserId });
 
       // const connection = SocketioService;
       // connection.setupSocketConnection('/chat');
@@ -428,7 +432,7 @@ export default {
     async addUser(user: User) {
       this.usersAdded.push(user);
       // await putBackend('chat/addUserToRoom', { roomId: this.chatId, userToAdd: user.id})
-      await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToAdd: user.id});
+      await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToAdd: user.id });
       // .then((response => response.json()))
       // .then((data) => {
       //   console.log(data);
@@ -450,10 +454,10 @@ export default {
         );
       }
     },
-    getUserPicture(userId: number): string{
+    getUserPicture(userId: number): string {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${userId}.png`);
     }
-    
+
   },
 };
 

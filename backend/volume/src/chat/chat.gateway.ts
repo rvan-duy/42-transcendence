@@ -12,6 +12,7 @@ import { GateService } from 'src/gate/gate.service';
 import { RoomService } from 'src/room/room.service';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
+import { Inject } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
@@ -22,9 +23,9 @@ import { ChatService } from './chat.service';
 })
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(
+    @Inject('chatGate') private readonly chatGate: GateService,
     private msgService: MsgService,
     private roomService: RoomService,
-    private gate: GateService,
     private chatService: ChatService,
     private jwtService: JwtService,
   ){}
@@ -52,12 +53,12 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     // link this socket to the user
     const userId = user.sub;
-    this.gate.addSocket(userId, client);
+    this.chatGate.addSocket(userId, client);
   }
     
   handleDisconnect(client: Socket) {
     // unlink this socket from user
-    this.gate.removeSocket(client);
+    this.chatGate.removeSocket(client);
 
     // remove client from all the rooms its in
     client.rooms.forEach(room => {
@@ -80,7 +81,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       packet.invite = false;
   
     // retrieve the userId of sender
-    const userId = await this.gate.getUserBySocket(client);
+    const userId = await this.chatGate.getUserBySocket(client);
 
     // if muted in channel emit a temp mess to sender that they are muted and return
     if (await this.chatService.mutedCheck(userId, packet.roomId, client) === true)
@@ -106,7 +107,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     // client verification
-    const user = await this.gate.getUserBySocket(client);
+    const user = await this.chatGate.getUserBySocket(client);
     if (false === await this.chatService.isChatter(roomId, user))
       throw new Error('no access or invalid roomId'); // also catches non existing rooms
     
@@ -135,7 +136,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       throw Error('incomplete payload');
 
     // client extraction
-    const userId = await this.gate.getUserBySocket(client);
+    const userId = await this.chatGate.getUserBySocket(client);
   
     // verify that it is either an admin or the client self?
     if (await this.chatService.isAdminOrOwner(roomId, userId) === false
