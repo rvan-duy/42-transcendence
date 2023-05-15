@@ -66,10 +66,8 @@ export class ChatController {
       return ; // you need to be added to this chat
     case Access.PROTECTED:
       if (await this.cryptService.comparePassword(password, room.hashedCode) === false) {
-        console.log('throw');
         throw new ForbiddenException('Incorrect password');
       }
-      console.log('not throw');
       this.roomService.addToChat(userId, roomId);
       return ;
     case Access.PUBLIC:
