@@ -71,7 +71,7 @@ export class ChatController {
       }
       console.log('not throw');
       this.roomService.addToChat(userId, roomId);
-      break ;
+      return ;
     case Access.PUBLIC:
       return ; // not added to public rooms since everyone is part unless kicked / blocked
     case 'invalid':
