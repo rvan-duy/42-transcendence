@@ -4,51 +4,70 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
 
 <template>
   <div class="chat">
-
     <body>
       <div class="join-container">
         <header class="join-header">
           <div style="text-align: center;">
             <span>
-              <img :src="String(getUserPicture())" width="50" height="50"
+              <img
+                :src="String(getUserPicture())"
+                width="50"
+                height="50"
                 style="border-radius: 50%; display:block; margin-left: auto; margin-right: auto;"
-                class="w-11 h-11 shrink-0 grow-0 rounded-full">
+                class="w-11 h-11 shrink-0 grow-0 rounded-full"
+              >
               <figcaption class="text-white text-m">
                 {{ name }}
               </figcaption>
-              <button v-if="!alreadyFriends()"
-                class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2" @click="addFriend()">
+              <button
+                v-if="!alreadyFriends()"
+                class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
+                @click="addFriend()"
+              >
                 Add as friend
               </button>
-              <button v-else-if="alreadyFriends()"
+              <button
+                v-else-if="alreadyFriends()"
                 class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
-                @click="removeFriend()">
+                @click="removeFriend()"
+              >
                 Remove as friend
               </button>
             </span>
           </div>
         </header>
         <main class="join-main">
-          <button class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
-            style="float: right">
+          <button
+            class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
+            style="float: right"
+          >
             Block User
           </button>
-          <button class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full mr-2"
-            style="float: right" @click="gotoDM()">
+          <button
+            class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full mr-2"
+            style="float: right"
+            @click="gotoDM()"
+          >
             Direct message
           </button>
           <label for="status">Status</label>
           <p class="text-black">
             {{ status }}
           </p>
-          <div class="columns-1" style="text-align: center; float: left;">
+          <div
+            class="columns-1"
+            style="text-align: center; float: left;"
+          >
             <span class="p-1">Wins</span>
             <font-awesome-icon icon="award" />
             <p class="text-black">
               1
             </p>
           </div>
-          <div class="columns-1" style="text-align: center; float: center;">
+          <div
+            class="columns-1"
+            style="text-align: center; float: center;"
+          >
             <span class="p-1">Losses</span>
             <font-awesome-icon icon="skull-crossbones" />
             <p class="text-black">
@@ -60,17 +79,35 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
             {{ rank }}
           </p>
           <label for="status">Match History</label>
-          <p v-if="matches_played === 0" class="text-black">
+          <p
+            v-if="matches_played === 0"
+            class="text-black"
+          >
             No matches played yet!
           </p>
           <div v-else-if="matches_played > 0">
-            <div v-for="match in matches" :key="match.id">
-              <span v-if="match.winnerId === id" class="text-black font-bold">WON</span>
-              <span v-else class="text-black font-bold">LOST</span>
+            <div
+              v-for="match in matches"
+              :key="match.id"
+            >
+              <span
+                v-if="match.winnerId === id"
+                class="text-black font-bold"
+              >WON</span>
+              <span
+                v-else
+                class="text-black font-bold"
+              >LOST</span>
               <span class="text-black"> against </span>
-              <span v-if="match.players[0]?.name === name" class="text-black font-bold">{{ match.players[1]?.name
+              <span
+                v-if="match.players[0]?.name === name"
+                class="text-black font-bold"
+              >{{ match.players[1]?.name
               }}</span>
-              <span v-else class="text-black font-bold">{{ match.players[0]?.name }}</span>
+              <span
+                v-else
+                class="text-black font-bold"
+              >{{ match.players[0]?.name }}</span>
             </div>
           </div>
         </main>
@@ -119,7 +156,7 @@ export default {
       })
       .then(function (data) {
         id = data.id,
-          name = data.name;
+        name = data.name;
         status = data.status;
         rank = data.elo;
         console.log('friends');

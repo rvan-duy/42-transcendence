@@ -34,27 +34,25 @@ export class PrismaRoomService {
   }
 
   async getOrCreateDirectMessage(myId: number, friendId: number) {
-    let room: any;
-    try {
-      room = await this.prisma.room.findFirst({
-        where: {
-          AND: [{
-            access: Access.DM
-          },
-          {
-            users: {
-              every: {
-                id: { in: [myId, friendId] }
-              }
-            }
-          }]
+    // find first returns null if none found, never throws an exception
+    const room = await this.prisma.room.findFirst({
+      where: {
+        AND: [{
+          access: Access.DM
         },
-        include: {
-          users: true,
-        }
-      });
-    } catch (error) {
-    }
+        {
+          users: {
+            every: {
+              id: { in: [myId, friendId] }
+            }
+          }
+        }]
+      },
+      include: {
+        users: true,
+      }
+    });
+
     if (room !== null) {
       const hasBothUsers = room.users.some((user) => user.id === myId) && room.users.some((user) => user.id === friendId);
       if (hasBothUsers === false)
@@ -73,7 +71,7 @@ export class PrismaRoomService {
                 }]
             }
           }
-        })
+        });
       return room;
     }
     return this.createRoom({

@@ -13,7 +13,6 @@ import { RoomService } from 'src/room/room.service';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
 import { Inject, NotFoundException } from '@nestjs/common';
-import { NotFoundError } from 'rxjs';
 
 @WebSocketGateway({
   cors: {
