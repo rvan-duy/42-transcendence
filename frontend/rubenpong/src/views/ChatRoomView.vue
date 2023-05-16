@@ -278,6 +278,7 @@ export default {
       setup: false,
       usersAdded: [] as User[],
       allUsers: [] as User[],
+	  chatAdmins: [] as User[],
       input: '',
 
       // input: ''
@@ -298,6 +299,11 @@ export default {
 
           });
       });
+	await getBackend('chat/roomAdmins/' + '?roomId=' +this.chatId)
+		.then(res => res.json())
+		.then((data) => {
+				console.log(`chat Admins: ${data}`);
+			});
   },
   mounted() {
     this.connection.setupSocketConnection('/chat');
