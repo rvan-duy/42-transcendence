@@ -2,6 +2,7 @@
 import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/backend-requests';
 import { Modal } from 'usemodal-vue3';
 import SocketioService from '../services/socketio.service.js';
+import { GameMode } from '@/utils/game-definitions';
 </script>
 
 <!-- • The user should be able to create channels (chat rooms) that can be either public,
@@ -169,7 +170,7 @@ interface.
                   </span>
                   <button
                     class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                    @click="goTo('game')"
+                    @click="inviteSubmit(chatId, GameMode.FIESTA)"
                   >
                     Invite to game
                   </button>
@@ -256,6 +257,16 @@ interface User {
   id: number;
   name: string;
 }
+
+enum InviteStatus {
+    NotInRoom = 'You do not have access to the room you have provided',
+    AlreadyInGame = 'You are already playing an ongoing game',
+    CreatorAlreadyInGame = 'The creator is currently in an ongoing game',
+    InviteAccepted = 'You have accepted the invite',
+    InviteNotFound = 'Unable to find the invite you are trying to accept',
+    InvalidPacket = 'You have sent an invalid packet to the server',
+    Muted = 'You are muted in the provided room',
+  }
 
 export default {
   data() {
@@ -355,12 +366,15 @@ export default {
     async setupSocketListeners() {
       this.connection.socket.on('loadChatBase', this.loadChatBaseListener);
       this.connection.socket.on('receiveNewMsg', this.receiveNewMsgListener);
+      this.connection.socket.on('disableInvite', this.disableInviteListener);
+      this.connection.socket.on('inviteStatus', this.receiveInviteStatusListener);
       // request the chat messages once the listener has been setup
       this.connection.socket.emit('loadRequest', Number(this.$route.query.id));
     },
 
     dropSocketListeners() {
       this.connection.socket.off('loadChatBase', this.loadChatBaseListener);
+      this.connection.socket.off('inviteStatus', this.receiveInviteStatusListener);
       this.connection.socket.off('receiveNewMsg', this.receiveNewMsgListener);
     },
 
@@ -423,12 +437,34 @@ export default {
     },
     async chatFormSubmit(e: any, chatId: number) {
       const msg = e.target.elements.msg;
-      const packet = { roomId: chatId, body: (msg.value) };
+      const packet = { roomId: chatId, body: (msg.value), invite: false };
       SocketioService.socket.emit('sendMsg', packet);
       msg.value = ''; //clears the message text you just entered
       msg.focus(); //focuses on the text input area again after sending
       this.scrollChatToBottom();
     },
+
+    async inviteSubmit(chatId: number, mode: GameMode) {
+      SocketioService.socket.emit('sendInvite', {roomId: chatId, mode: mode} );
+    },
+
+    // disableInviteListener(invite to be disabled/removed ) {
+
+    // },
+
+    receiveInviteStatusListener(inviteStatus: InviteStatus) {
+      if (inviteStatus === InviteStatus.InviteAccepted) {
+        this.goTo('game');
+        return ;
+      }
+      // ToDo: Make visual pop up for user showing the error
+      console.log(`Error accepting invite:\n${inviteStatus}.`);
+    },
+
+    async acceptInvite(mode: GameMode, creatorId: number) {
+      SocketioService.socket.emit('acceptInvite', { roomId: this.chatId, mode: mode, creatorId: creatorId });
+    },
+
     async addUser(user: User) {
       this.usersAdded.push(user);
       // await putBackend('chat/addUserToRoom', { roomId: this.chatId, userToAdd: user.id})

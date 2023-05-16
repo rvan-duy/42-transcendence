@@ -10,6 +10,7 @@ import { PrismaRoomModule } from 'src/room/prisma/prismaRoom.module';
 import { JwtModule } from '@nestjs/jwt';
 import { CryptModule } from 'src/crypt/crypt.module';
 import { ChatController } from './chat.controller';
+import { GameModule } from 'src/game/game.module';
 @Module({
   imports: [MsgModule,
     RoomModule,
@@ -19,6 +20,7 @@ import { ChatController } from './chat.controller';
     PrismaRoomModule,
     JwtModule,
     CryptModule,
+    GameModule,
   ],
   controllers: [ChatController],
   providers: [ChatGateway, ChatService],

@@ -13,6 +13,8 @@ import { RoomService } from 'src/room/room.service';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
 import { Inject } from '@nestjs/common';
+import { MatchmakingService } from 'src/game/matchmaking.service';
+import { InviteStatus } from 'src/game/matchmaking.service';
 
 @WebSocketGateway({
   cors: {
@@ -28,6 +30,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private roomService: RoomService,
     private chatService: ChatService,
     private jwtService: JwtService,
+    private matchmakingService: MatchmakingService,
   ){}
   private server: Server;
 
@@ -72,6 +75,42 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.server.to(room).emit('receiveNewMsg', msg);
   }
     
+  @SubscribeMessage('sendInvite')
+  async handleGameInvite(client: Socket, packet: any) { //roomId: number, mode: GameMode
+    console.log(`packet recieved: ${packet.mode} ${packet.roomId}`);
+    if (packet.roomId === undefined)
+      return ;
+    const userId = await this.chatGate.getUserBySocket(client);
+    if (await this.chatService.isChatter(packet.roomId, userId) === false)
+      return ;
+
+    console.log(`userId of given user: ${userId}`);
+    const msgWithAuthor = await this.matchmakingService.createPrivateGameInvite(userId, packet.mode, packet.roomId);
+
+    // send the message to the connected participants in chat
+    this.spreadMessage(msgWithAuthor, String(packet.roomId));
+  }
+
+  @SubscribeMessage('acceptInvite')
+  async handleAcceptGameInvite(client: Socket, packet: any) { //roomId: number, mode: GameMode, creatorId: number
+    if (packet.roomId === undefined || packet.creatorId === undefined || packet.mode === undefined) {
+      client.emit('inviteStatus', InviteStatus.InvalidPacket);
+      return ;
+    }
+    const userId = await this.chatGate.getUserBySocket(client);
+    if (await this.chatService.isChatter(packet.roomId, userId) === false) {
+      client.emit('inviteStatus', InviteStatus.NotInRoom);
+      return ;
+    }
+    if (await this.chatService.mutedCheck(userId, packet.roomId, client) === true) {
+      client.emit('inviteStatus', InviteStatus.Muted);
+      return ;
+    }
+
+    const inviteStatus = await this.matchmakingService.acceptInvite(userId, packet.creatorId, packet.mode, packet.roomId, this.server);
+    client.emit('inviteStatus', inviteStatus);
+  }
+
   @SubscribeMessage('sendMsg')
   async handleMessage(client: Socket, packet: MsgDto) {
     // input protection
@@ -79,9 +118,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return ;
     if (packet.invite === undefined)
       packet.invite = false;
-  
-    // retrieve the userId of sender
+
+    // retrieve the userId of sender and check if they are in the given room
     const userId = await this.chatGate.getUserBySocket(client);
+    if (await this.chatService.isChatter(packet.roomId, userId) === false)
+      return ;
 
     // if muted in channel emit a temp mess to sender that they are muted and return
     if (await this.chatService.mutedCheck(userId, packet.roomId, client) === true)

@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { GameService } from './game.service';
 import { GameMode } from './game.definitions';
+import { MsgDto, MsgService } from 'src/msg/msg.service';
+import { PrismaUserService } from '../user/prisma/prismaUser.service';
+import { User } from '@prisma/client';
+import { Server } from 'socket.io';
 
 enum Debug { // make sure to seed before
   ENABLED = 0,
@@ -9,11 +13,26 @@ enum Debug { // make sure to seed before
 class PrivateGameInvite {
   creatorId: number;
   mode: GameMode;
+  room: number;
 }
+
+export enum InviteStatus {
+    NotInRoom = 'You do not have access to the room you have provided',
+    AlreadyInGame = 'You are already playing an ongoing game',
+    CreatorAlreadyInGame = 'The creator is currently in an ongoing game',
+    InviteAccepted = 'You have accepted the invite',
+    InviteNotFound = 'Unable to find the invite you are trying to accept',
+    InvalidPacket = 'You have sent an invalid packet to the server',
+    Muted = 'You are muted in the provided room',
+  }
 
 @Injectable()
 export class MatchmakingService {
-  constructor (private gameService: GameService) {
+  constructor (
+              private readonly gameService: GameService,
+              private readonly msgService: MsgService,
+              private readonly prismaUserService: PrismaUserService,
+  ) {
   }
 
   queueNormal: number[] = [];
@@ -98,42 +117,56 @@ export class MatchmakingService {
     this.checkAndMatchPlayers(this.queueFiesta, GameMode.FIESTA);
   }
 
-  createPrivateGameInvite(creatorId: number, mode: GameMode) {
-    // some logic stuff & things
-    console.log(`${creatorId} created an invite to the gamemode ${mode}`);
-    let newInvite: PrivateGameInvite;
+  async createPrivateGameInvite(creatorId: number, mode: GameMode, roomId: number) {
+    const creator: User = await this.prismaUserService.user({ id: creatorId });
+    const msgBody: string = `${creator.name} invited you to play a ${mode} game`;
+    console.log(msgBody);
+    const newInvite: PrivateGameInvite = {
+      creatorId: creator.id,
+      mode: mode,
+      room: roomId,
+    };
+    const inviteMsg: MsgDto = {
+      id: 0,
+      roomId: roomId,
+      body: msgBody,
+      authorId: creator.id,
+      invite: true,
+    };
 
-    newInvite.creatorId = creatorId;
-    newInvite.mode = mode;
     this.privateGameInvites.push(newInvite);
+    return (this.msgService.handleIncomingMsg(inviteMsg));
   }
 
-  removePrivateGameInvite(inviteIndex: number) {
+  removePrivateGameInvite(inviteIndex: number, roomId: number, chatServer: Server) {
 
     // make sure to set the boolean inside all other chat invites to false
   
+    chatServer.to(String(roomId)).emit('disableInvite', this.privateGameInvites[inviteIndex]);
     this.privateGameInvites.splice(inviteIndex, 1);
   }
 
   // returns true if the invite was accepted successfully, else return false
-  acceptInvite(acceptingUserId: number, creatorId: number, mode: GameMode) {
+  acceptInvite(acceptingUserId: number, creatorId: number, mode: GameMode, roomId: number, chatServer: Server) {
     console.log(`${acceptingUserId} accepted a game invite from ${creatorId}`);
 
-    if (this.gameService.isUserInGame(acceptingUserId) || this.gameService.isUserInGame(creatorId))
-      return (false);
+    if (this.gameService.isUserInGame(acceptingUserId))
+      return (InviteStatus.AlreadyInGame);
+    if (this.gameService.isUserInGame(creatorId))
+      return (InviteStatus.CreatorAlreadyInGame);
 
     for (let index = 0; index < this.privateGameInvites.length; index++) {
       const invite = this.privateGameInvites[index];
 
-      if (invite.creatorId === creatorId && invite.mode === mode)
+      if (invite.creatorId === creatorId && invite.mode === mode && invite.room === roomId)
       {
         this.removePlayerFromQueue(creatorId);
         this.removePlayerFromQueue(acceptingUserId);
-        this.removePrivateGameInvite(index);
+        this.removePrivateGameInvite(index, roomId, chatServer);
         this.gameService.createGame(creatorId, acceptingUserId, mode);
-        return (true);
+        return (InviteStatus.InviteAccepted);
       }
     }
-    return (false);
+    return (InviteStatus.InviteNotFound);
   }
 }
