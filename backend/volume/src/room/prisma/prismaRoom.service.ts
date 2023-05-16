@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { Room, Prisma } from '@prisma/client';
+import { Room, Prisma, Access } from '@prisma/client';
 
 @Injectable()
 export class PrismaRoomService {
@@ -31,6 +31,62 @@ export class PrismaRoomService {
     } catch {
       return undefined;
     }
+  }
+
+  async getOrCreateDirectMessage(myId: number, friendId: number) {
+    // find first returns null if none found, never throws an exception
+    const room = await this.prisma.room.findFirst({
+      where: {
+        AND: [{
+          access: Access.DM
+        },
+        {
+          users: {
+            every: {
+              id: { in: [myId, friendId] }
+            }
+          }
+        }]
+      },
+      include: {
+        users: true,
+      }
+    });
+
+    if (room !== null) {
+      const hasBothUsers = room.users.some((user) => user.id === myId) && room.users.some((user) => user.id === friendId);
+      if (hasBothUsers === false)
+        await this.prisma.room.update({
+          where: {
+            id: room.id,
+          },
+          data: {
+            users: {
+              connect: [
+                {
+                  id: myId,
+                },
+                {
+                  id: friendId,
+                }]
+            }
+          }
+        });
+      return room;
+    }
+    return this.createRoom({
+      name: 'direct-message',
+      access: Access.DM,
+      users: {
+        connect: [
+          {
+            id: myId,
+          },
+          {
+            id: friendId,
+          }]
+      },
+    });
   }
 
   async roomWithAdmins(

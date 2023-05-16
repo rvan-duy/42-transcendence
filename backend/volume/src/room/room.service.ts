@@ -97,6 +97,10 @@ export class RoomService {
     });
   }
 
+  async getDirectMsg(myId: number, friendId: number) {
+    return await this.prismaRoom.getOrCreateDirectMessage(myId, friendId);
+  }
+
   // fetches all users of this chatroom
   async getRoomUsers(roomId: number){
     const roomAndUsers = await this.prismaRoom.RoomWithUsers({id: roomId});

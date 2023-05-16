@@ -101,6 +101,22 @@ export class ChatController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Get('directMsg')
+  async getDM(
+    @Request() req: any,
+    @Query('friendId') friendId: number,
+  ) {
+    friendId = Number(friendId);
+    const clientId = req.user.id;
+
+    // TODO: check if is blocked
+
+    // get and return the dm
+    const room = await this.roomService.getDirectMsg(clientId, friendId);
+    return room;
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Get('roomUsers')
   async getUsersInRoom(
     @Request() req: any,

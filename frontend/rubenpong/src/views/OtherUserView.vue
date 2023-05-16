@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests';
+import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests';
 </script>
 
 <template>
@@ -46,9 +46,9 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
           <button
             class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full mr-2"
             style="float: right"
-            @click="goTo('chatroom/AwesomeChat')"
+            @click="gotoDM()"
           >
-            Send message
+            Direct message
           </button>
           <label for="status">Status</label>
           <p class="text-black">
@@ -102,7 +102,8 @@ import { getBackend, postBackendWithQueryParams} from '@/utils/backend-requests'
               <span
                 v-if="match.players[0]?.name === name"
                 class="text-black font-bold"
-              >{{ match.players[1]?.name }}</span>
+              >{{ match.players[1]?.name
+              }}</span>
               <span
                 v-else
                 class="text-black font-bold"
@@ -131,13 +132,14 @@ interface User {
 export default {
   data() {
     return {
+      id: 0,
       name: '',
       status: 'Online',
       matches_played: 1,
       newUsername: '',
       rank: 0,
       matches: [
-        {id: 0, score: [] as number[], players: [] as User[], winnerId: 0}
+        { id: 0, score: [] as number[], players: [] as User[], winnerId: 0 }
       ],
       myFriends: [1],
     };
@@ -146,12 +148,14 @@ export default {
     let name: string = '';
     let status: string = '';
     let rank: number = 500;
+    let id: number = 0;
     // let friends: number[] = [];
     await getBackend(`user/id/${Number(this.$route.query.id)}`)
       .then(function (res) {
         return res.json();
       })
       .then(function (data) {
+        id = data.id,
         name = data.name;
         status = data.status;
         rank = data.elo;
@@ -159,6 +163,7 @@ export default {
         console.log(data.friends);
         // friends = data.friends;
       });
+    this.id = id;
     this.name = name;
     this.rank = rank;
     this.status = status;
@@ -174,25 +179,27 @@ export default {
   },
   methods: {
     goTo(route: string) {
-      // if (isAuthenticated) {
-      //   this.$router.push('/dashboard')
-      // } else {
-      //   this.$router.push('/login')
       this.$router.push('/' + route);
     },
-    alreadyFriends(): boolean
-    {
+    alreadyFriends(): boolean {
       return (this.myFriends.includes(Number(this.$route.query.id)));
     },
     async addFriend() {
       console.log(Number(this.$route.query.id));
-      await postBackendWithQueryParams('user/befriend', undefined, { id: Number(this.$route.query.id)});
+      await postBackendWithQueryParams('user/befriend', undefined, { id: Number(this.$route.query.id) });
     },
     async removeFriend() {
-      await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id)});
+      await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id) });
     },
-    getUserPicture(): string{
+    getUserPicture(): string {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${Number(this.$route.query.id)}.png`);
+    },
+    async gotoDM() {
+      const dmChat = await getBackend('chat/directMsg?friendId=' + this.id.toString());
+      console.log('first look', dmChat);
+      const chat = await dmChat.json();
+      console.log('private chat', chat);
+      this.goTo('chatroom/direct?id=' + chat.id.toString());
     }
   }
 };

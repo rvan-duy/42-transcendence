@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { User, Prisma } from '@prisma/client';
+import { User, Prisma, Access } from '@prisma/client';
 
 @Injectable()
 export class PrismaUserService {
@@ -75,7 +75,13 @@ export class PrismaUserService {
     return this.prisma.user.findUnique({
       where: userWhereUniqueInput,
       include: {
-        rooms: true,
+        rooms: {
+          where: {
+            NOT: {
+              access: Access.DM,
+            }
+          }
+        }
       }
     }).catch(() => {
       return undefined;

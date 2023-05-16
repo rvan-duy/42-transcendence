@@ -12,7 +12,7 @@ import { GateService } from 'src/gate/gate.service';
 import { RoomService } from 'src/room/room.service';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
-import { Inject } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
 
 @WebSocketGateway({
   cors: {
@@ -109,7 +109,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     // client verification
     const user = await this.chatGate.getUserBySocket(client);
     if (false === await this.chatService.isChatter(roomId, user))
-      throw new Error('no access or invalid roomId'); // also catches non existing rooms
+      throw new NotFoundException('no access or invalid roomId'); // also catches non existing rooms
     
     // wait for all the items for current chat
     const [users, chatHistory, chatData] = await Promise.all([

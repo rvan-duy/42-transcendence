@@ -55,7 +55,8 @@ interface.
                 v-if="chat?.access === 'PUBLIC'"
                 class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
                 @click="isVisible = true"
-              > Set / Change Password</span>
+              > Set
+                / Change Password</span>
               <Modal
                 v-model:visible="isVisible"
                 class="text-black"
@@ -270,8 +271,8 @@ export default {
       isVisible: false,
       isVisibleChange: false,
       newPassword: '',
-      cancelBtn: { text: 'cancel', onclick: () => { this.setVisibilityFalse();}, loading: false },
-      okBtn: { text: 'ok', onclick: () => { this.changePassword(); this.setVisibilityFalse();}, loading: false },
+      cancelBtn: { text: 'cancel', onclick: () => { this.setVisibilityFalse(); }, loading: false },
+      okBtn: { text: 'ok', onclick: () => { this.changePassword(); this.setVisibilityFalse(); }, loading: false },
       chatId: Number(this.$route.query.id),
       connection: SocketioService,
       setup: false,
@@ -325,17 +326,14 @@ export default {
       return new Date(timestamp).toLocaleTimeString('nl-NL');
     },
     determineAdmin() {
-      //temporary code
       console.log('ownerid: ' + this.chat?.ownerId);
       if (this.chat?.ownerId === this.idUser)
         this.isAdmin = true;
-      // return (this.chat?.ownerId === this.idUser); // checks if is owner, admin is harder to check
-      // maybe easier to alow a backend call for this? let me know if that is needed
+      // TODO: need to know if admin too?
     },
     async loadChatBaseListener(room: any) {
       console.log('loadRoom: ', room);
       this.chat = room.chat;
-      // this.chat?.ownerId = room.chat.ownerId;
       const promises = room.history.map((msg: any) => {
         console.log(getBackend('user/id/' + msg.authorId));
         return getBackend('user/id/' + msg.authorId)
@@ -372,16 +370,10 @@ export default {
 
     async makeAdmin(newAdminId: number) {
       await postBackend('chat/makeUserAdmin', { roomId: this.chatId, userId: newAdminId });
-      // const connection = SocketioService;
-      // connection.setupSocketConnection('/chat');
-      // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
 
     async banUser(bannedUserId: number) {
       postBackendWithQueryParams('chat/banUserFromRoom', undefined, { roomId: this.chatId, banUserId: bannedUserId });
-      // const connection = SocketioService;
-      // connection.setupSocketConnection('/chat');
-      // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
     async kickUser(kickedUserId: number) {
       postBackendWithQueryParams('chat/kickUserFromRoom', undefined, { roomId: this.chatId, kickUserId: kickedUserId });
@@ -392,18 +384,9 @@ export default {
         }
 
       });
-
-      // const connection = SocketioService;
-      // connection.setupSocketConnection('/chat');
-      // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
-
     async muteUser(mutedUserId: number) {
       postBackendWithQueryParams('chat/muteUserInRoom', undefined, { roomId: this.chatId, muteUserId: mutedUserId });
-
-      // const connection = SocketioService;
-      // connection.setupSocketConnection('/chat');
-      // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
 
     confirmAndGo(message: string, f: Function, param: any) {
@@ -416,7 +399,7 @@ export default {
     },
     leaveChat() {
       console.log('leave');
-      postBackendWithQueryParams('chat/leaveRoom', undefined, { roomId: this.chatId});
+      postBackendWithQueryParams('chat/leaveRoom', undefined, { roomId: this.chatId });
       this.usersAdded.forEach(element => {
 
         if (element.id === this.idUser) {
@@ -441,13 +424,7 @@ export default {
     },
     async addUser(user: User) {
       this.usersAdded.push(user);
-      // await putBackend('chat/addUserToRoom', { roomId: this.chatId, userToAdd: user.id})
       await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToAdd: user.id });
-      // .then((response => response.json()))
-      // .then((data) => {
-      //   console.log(data);
-      // }
-      // );
     },
     async getUsers() {
       await getBackend('user/all').then(res => res.json())
@@ -476,7 +453,7 @@ export default {
       console.log('change access' + newAccess);
       if (newAccess !== 'PUBLIC' && newAccess !== 'PRIVATE' && newAccess !== 'PROTECTED')
         return;
-      postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess: newAccess, newPassword: this.newPassword});
+      postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess: newAccess, newPassword: this.newPassword });
     }
   },
 };
