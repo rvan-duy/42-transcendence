@@ -156,7 +156,7 @@ interface.
                     Channel Owner
                   </span>
                   <span
-                    v-if="user.id !== chat?.ownerId"
+                    v-if="determineAdmin(user.id)"
                     class="text-green-200 text-xs p-1"
                   >
                     Admin
@@ -293,7 +293,7 @@ export default {
             this.idUser = data.id;
             console.log(data.id);
             setTimeout(() => {
-              this.determineAdmin();
+              this.amIAdmin();
             }, 100);
 
           });
@@ -325,10 +325,14 @@ export default {
     toLocale(timestamp: any) {
       return new Date(timestamp).toLocaleTimeString('nl-NL');
     },
-    determineAdmin() {
-      console.log('ownerid: ' + this.chat?.ownerId);
+    amIAdmin() {
       if (this.chat?.ownerId === this.idUser)
         this.isAdmin = true;
+      // TODO: need to know if admin too?
+    },
+    determineAdmin(query_id: number) {
+      if (query_id === this.chat?.ownerId)
+        return true;
       // TODO: need to know if admin too?
     },
     async loadChatBaseListener(room: any) {
