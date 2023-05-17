@@ -278,7 +278,7 @@ export default {
       setup: false,
       usersAdded: [] as User[],
       allUsers: [] as User[],
-	  chatAdmins: [] as number[],
+      chatAdmins: [] as number[],
       input: '',
 
       // input: ''
@@ -299,13 +299,13 @@ export default {
 
           });
       });
-	await getBackend('chat/roomAdmins/' + '?roomId=' +this.chatId)
-		.then(res => res.json())
-		.then((data) => {
-				data.forEach(user => {
-					this.chatAdmins.push(user.id);
-				});
-			});
+    await getBackend('chat/roomAdmins/' + '?roomId=' +this.chatId)
+      .then(res => res.json())
+      .then((data) => {
+        data.forEach(user => {
+          this.chatAdmins.push(user.id);
+        });
+      });
   },
   mounted() {
     this.connection.setupSocketConnection('/chat');
