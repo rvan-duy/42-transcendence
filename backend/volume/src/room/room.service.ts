@@ -108,8 +108,19 @@ export class RoomService {
   }
 
   async getRoomAdmins(roomId: number){
-	console.log(`room.service.ts 111: getRoomAdmins roomId === ${roomId}`);
-    const roomAndUsers = await this.prismaRoom.roomWithAdmins({id: roomId});
+	// console.log(`room.service.ts 111: getRoomAdmins roomId === ${roomId}`);
+    let roomAndUsers = await this.prismaRoom.roomWithAdmins({id: roomId})
+	// console.log(`room.service.ts 113: getRoomAdmins roomAndUsers === ${roomAndUsers}`);
+	// console.log(`room.service.ts 113: getRoomAdmins typeof(roomAndUsers) === ${typeof(roomAndUsers)}`);
+	// console.log("wtf1");
+	// console.log(`r&a: ${roomAndUsers?.admin[0]}`);
+	// console.log((roomAndUsers?.admin[0]).json());
+	// console.log(`r&a type: ${typeof(roomAndUsers?.admin[0])}`);
+	// console.log(`r&a: ${roomAndUsers?.admin[0].id}`);
+	// console.log(`r&a type: ${typeof(roomAndUsers?.admin[0].id)}`); // === number
+	// // let fuckedUp = await roomAndUsers.json();
+	// // console.log(`room.service.ts 116: getRoomAdmins roomAndUsers === ${fuckedUp}`);
+	// console.log("wtf2");
     return(roomAndUsers?.admin);
   }
 
