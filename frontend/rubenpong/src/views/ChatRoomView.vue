@@ -278,7 +278,7 @@ export default {
       setup: false,
       usersAdded: [] as User[],
       allUsers: [] as User[],
-	  chatAdmins: [] as User[],
+	  chatAdmins: [] as number[],
       input: '',
 
       // input: ''
@@ -302,7 +302,9 @@ export default {
 	await getBackend('chat/roomAdmins/' + '?roomId=' +this.chatId)
 		.then(res => res.json())
 		.then((data) => {
-				console.log(`chat Admins: ${data}`);
+				data.forEach(user => {
+					this.chatAdmins.push(user.id);
+				});
 			});
   },
   mounted() {
@@ -334,12 +336,14 @@ export default {
     amIAdmin() {
       if (this.chat?.ownerId === this.idUser)
         this.isAdmin = true;
-      // TODO: need to know if admin too?
+      if (this.chatAdmins.includes(this.idUser))
+        this.isAdmin = true;
     },
     determineAdmin(query_id: number) {
       if (query_id === this.chat?.ownerId)
         return true;
-      // TODO: need to know if admin too?
+      if (this.chatAdmins.includes(query_id))
+        return true;
     },
     async loadChatBaseListener(room: any) {
       console.log('loadRoom: ', room);
