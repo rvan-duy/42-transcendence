@@ -110,7 +110,7 @@ export class RoomService {
   async getRoomAdmins(roomId: number){
 	console.log(`room.service.ts 111: getRoomAdmins roomId === ${roomId}`);
     const roomAndUsers = await this.prismaRoom.roomWithAdmins({id: roomId});
-    return(roomAndUsers?.users);
+    return(roomAndUsers?.admin);
   }
 
   async getRoomById(roomId: number) {
