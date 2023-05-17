@@ -145,8 +145,8 @@ export class ChatController {
       throw new Error('no access or invalid roomId'); // also catches non existing rooms
 
     try {
-      const roomIncludingAdmins = await this.roomService.getRoomAdmins(roomId);
-      return roomIncludingAdmins.admin;
+      const admins = await this.roomService.getRoomAdmins(roomId);
+      return admins;
     } catch {
       throw new InternalServerErrorException('Failed to fetch admins for room');
     }
