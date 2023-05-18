@@ -31,7 +31,6 @@ interface.
             <h1 class="text-xl">
               {{ $route.params.id }}
             </h1>
-            {{ $route.query.id }}
             <div style="text-align: right;">
               <button
                 class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs m-3"
@@ -39,20 +38,8 @@ interface.
               >
                 Leave Chat
               </button>
-              <div v-if="chat?.access === 'PROTECTED'">
-                <!-- <span
-                  class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                  @click="confirmAndGo('change the password: ' + $route.params.id, changeAccess, 'PRIVATE')"changePassword
-                >Change
-                  Password</span> -->
-                <span
-                  class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                  @click="confirmAndGo('delete the password and make the chat private: ' + $route.params.id, changeAccess, 'PRIVATE')"
-                >Delete
-                  Password</span>
-              </div>
               <span
-                v-if="chat?.access === 'PUBLIC'"
+                v-if="chat?.access === 'PUBLIC' || chat?.access === 'PROTECTED'"
                 class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
                 @click="isVisible = true"
               > Set
@@ -272,7 +259,7 @@ export default {
       isVisibleChange: false,
       newPassword: '',
       cancelBtn: { text: 'cancel', onclick: () => { this.setVisibilityFalse(); }, loading: false },
-      okBtn: { text: 'ok', onclick: () => { this.changePassword(); this.setVisibilityFalse(); }, loading: false },
+      okBtn: { text: 'ok', onclick: () => { this.clickOk() }, loading: false },
       chatId: Number(this.$route.query.id),
       connection: SocketioService,
       setup: false,
@@ -298,6 +285,18 @@ export default {
 
           });
       });
+      try {
+  const response = await getBackend('chat/roomAdmins/?roomId=' + this.$route.query.id);
+  
+  if (response.ok) {
+    const data = await response;
+    console.log('admin', data);
+  } else {
+    // console.error('Request failed with status:', response.status);
+  }
+} catch (error) {
+  console.error(error);
+}
   },
   mounted() {
     this.connection.setupSocketConnection('/chat');
@@ -308,6 +307,14 @@ export default {
     this.connection.socket.disconnect();
   },
   methods: {
+    clickOk() {
+      console.log(this.chat?.access);
+      if (this.chat?.access === 'PUBLIC')
+        this.changeAccess('PROTECTED')
+      else
+        this.changePassword();
+      this.setVisibilityFalse(); 
+    },
     setVisibilityFalse() {
       this.isVisible = false;
     },
@@ -444,16 +451,28 @@ export default {
     getUserPicture(userId: number): string {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${userId}.png`);
     },
-    changePassword() {
+    async changePassword() {
       console.log('change pw' + this.newPassword);
-      postBackendWithQueryParams('chat/changePassword', undefined, { roomId: this.chatId, newPassword: this.newPassword });
+      const result = await postBackendWithQueryParams('chat/changePassword', undefined, { roomId: this.chatId, newPassword: this.newPassword });
+      console.log(result);
+      if (result.statusCode === 403)
+      {
+        alert('You have to be an admin for this action.');
+        return;
+      }
     },
     //change access is for setting a password and change password is for changing a password
-    changeAccess(newAccess: string) {
+    async changeAccess(newAccess: string) {
       console.log('change access' + newAccess);
       if (newAccess !== 'PUBLIC' && newAccess !== 'PRIVATE' && newAccess !== 'PROTECTED')
         return;
-      postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess: newAccess, newPassword: this.newPassword });
+      const result = await postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess: newAccess, newPassword: this.newPassword });
+      console.log(result);
+      if (result.statusCode === 403)
+      {
+        alert('You have to be in the channel for this action.');
+        return;
+      }
     }
   },
 };
