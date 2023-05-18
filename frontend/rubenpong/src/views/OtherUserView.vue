@@ -199,7 +199,7 @@ export default {
       console.log('first look', dmChat);
       const chat = await dmChat.json();
       console.log('private chat', chat);
-      this.goTo('chatroom/direct?id=' + chat.id.toString());
+      this.goTo('chatroom/'+ this.name + '?id=' + chat.id.toString());
     }
   }
 };

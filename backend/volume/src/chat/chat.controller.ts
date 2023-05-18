@@ -299,7 +299,7 @@ export class ChatController {
     @Query('roomId') roomId: number,
     @Query('newPassword') newPassword: string,
   ) {
-    const clientId = req.user.id;
+    const clientId = Number(req.user.id);
     roomId = Number(roomId);
 
     // only alow the chat owner and admins to change chat password
