@@ -156,7 +156,7 @@ interface.
                     Channel Owner
                   </span>
                   <span
-                    v-if="user.id !== chat?.ownerId"
+                    v-if="determineAdmin(user.id)"
                     class="text-green-200 text-xs p-1"
                   >
                     Admin
@@ -278,6 +278,7 @@ export default {
       setup: false,
       usersAdded: [] as User[],
       allUsers: [] as User[],
+      chatAdmins: [] as number[],
       input: '',
 
       // input: ''
@@ -293,10 +294,17 @@ export default {
             this.idUser = data.id;
             console.log(data.id);
             setTimeout(() => {
-              this.determineAdmin();
+              this.amIAdmin();
             }, 100);
 
           });
+      });
+    await getBackend('chat/roomAdmins/' + '?roomId=' +this.chatId)
+      .then(res => res.json())
+      .then((data) => {
+        data.forEach(user => {
+          this.chatAdmins.push(user.id);
+        });
       });
   },
   mounted() {
@@ -325,11 +333,17 @@ export default {
     toLocale(timestamp: any) {
       return new Date(timestamp).toLocaleTimeString('nl-NL');
     },
-    determineAdmin() {
-      console.log('ownerid: ' + this.chat?.ownerId);
+    amIAdmin() {
       if (this.chat?.ownerId === this.idUser)
         this.isAdmin = true;
-      // TODO: need to know if admin too?
+      if (this.chatAdmins.includes(this.idUser))
+        this.isAdmin = true;
+    },
+    determineAdmin(query_id: number) {
+      if (query_id === this.chat?.ownerId)
+        return true;
+      if (this.chatAdmins.includes(query_id))
+        return true;
     },
     async loadChatBaseListener(room: any) {
       console.log('loadRoom: ', room);
