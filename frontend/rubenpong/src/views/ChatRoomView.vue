@@ -258,7 +258,7 @@ export default {
       isVisibleChange: false,
       newPassword: '',
       cancelBtn: { text: 'cancel', onclick: () => { this.setVisibilityFalse(); }, loading: false },
-      okBtn: { text: 'ok', onclick: () => { this.clickOk() }, loading: false },
+      okBtn: { text: 'ok', onclick: () => { this.clickOk(); }, loading: false },
       chatId: Number(this.$route.query.id),
       connection: SocketioService,
       setup: false,
@@ -305,10 +305,10 @@ export default {
     clickOk() {
       console.log(this.chat?.access);
       if (this.chat?.access === 'PUBLIC')
-        this.changeAccess('PROTECTED')
+        this.changeAccess('PROTECTED');
       else
         this.changePassword();
-      this.setVisibilityFalse(); 
+      this.setVisibilityFalse();
     },
     setVisibilityFalse() {
       this.isVisible = false;
