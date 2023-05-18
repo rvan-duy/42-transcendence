@@ -38,8 +38,9 @@ interface.
               >
                 Leave Chat
               </button>
+              <span v-if="isOwner">
               <span
-                v-if="(chat?.access === 'PUBLIC' || chat?.access === 'PROTECTED') && isAdmin"
+                v-if="chat?.access === 'PUBLIC' || chat?.access === 'PROTECTED'"
                 class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
                 @click="isVisible = true"
               > Set
@@ -65,6 +66,12 @@ interface.
                   > </span>
                 </div>
               </Modal>
+              <span
+                v-if="chat?.access === 'PROTECTED'"
+                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                @click="confirmAndGo('delete password, and make public chat: ' + $route.params.id, changeAccess, 'PUBLIC')"
+              > Delete Password</span>
+            </span>
               <span
                 class="btn ml-3"
                 @click="goTo('chat')"
@@ -164,7 +171,7 @@ interface.
                   </button>
 
                   <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
-                  <div v-if="isAdmin && user.id !== idUser">
+                  <div v-if="isAdmin && user.id !== idUser && !determineAdmin(user.id)">
                     <button
                       class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
                       @click="confirmAndGo('ban ' + user.name, banUser, user.id)"
@@ -254,11 +261,12 @@ export default {
       users: [] as User[],
       idUser: null,
       isAdmin: false,
+      isOwner: false,
       isVisible: false,
       isVisibleChange: false,
       newPassword: '',
       cancelBtn: { text: 'cancel', onclick: () => { this.setVisibilityFalse(); }, loading: false },
-      okBtn: { text: 'ok', onclick: () => { this.clickOk(); }, loading: false },
+      okBtn: { text: 'ok', onclick: () => { this.clickOk() }, loading: false },
       chatId: Number(this.$route.query.id),
       connection: SocketioService,
       setup: false,
@@ -308,7 +316,7 @@ export default {
         this.changeAccess('PROTECTED');
       else
         this.changePassword();
-      this.setVisibilityFalse();
+      this.setVisibilityFalse(); 
     },
     setVisibilityFalse() {
       this.isVisible = false;
@@ -329,7 +337,10 @@ export default {
     },
     amIAdmin() {
       if (this.chat?.ownerId === this.idUser)
+      {
         this.isAdmin = true;
+        this.isOwner = true;
+      }
       if (this.chatAdmins.includes(this.idUser))
         this.isAdmin = true;
     },
@@ -337,6 +348,10 @@ export default {
       if (query_id === this.chat?.ownerId)
         return true;
       if (this.chatAdmins.includes(query_id))
+        return true;
+    },
+    determineOwner(query_id: number) {
+      if (query_id === this.chat?.ownerId)
         return true;
     },
     async loadChatBaseListener(room: any) {
@@ -477,7 +492,10 @@ export default {
         return;
       }
       else
-        alert('Password set succesfully.');
+      {
+        alert('Access changed succesfully.');
+        this.chat.access = newAccess;
+      }
     }
   },
 };
