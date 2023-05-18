@@ -1,3 +1,6 @@
+import { GameMode as PrismaGameMode } from "@prisma/client";
+import { error } from "console";
+
 export enum GameMode {
   NORMAL = 'Normal',
   FREEMOVE = 'FreeMove',
@@ -6,6 +9,36 @@ export enum GameMode {
   UNMATCHED = 'UnMatched',
   NOTQUEUED = 'NotQueued'
   }
+
+export function toPrismaGameMode(mode: GameMode): PrismaGameMode {
+  switch (mode) {
+    case GameMode.NORMAL:
+      return (PrismaGameMode.NORMAL);
+    case GameMode.FREEMOVE:
+      return (PrismaGameMode.FREEMOVE);
+    case GameMode.POWERUP:
+      return (PrismaGameMode.POWERUP);
+    case GameMode.FIESTA:
+      return (PrismaGameMode.FIESTA);
+    default:
+      throw new error(`Undefined GameMode: ${mode}`);
+  }
+}
+
+export function toGameMode(mode: PrismaGameMode): GameMode {
+  switch (mode) {
+    case PrismaGameMode.NORMAL:
+      return (GameMode.NORMAL);
+    case PrismaGameMode.FREEMOVE:
+      return (GameMode.FREEMOVE);
+    case PrismaGameMode.POWERUP:
+      return (GameMode.POWERUP);
+    case PrismaGameMode.FIESTA:
+      return (GameMode.FIESTA);
+    default:
+      throw new error(`Undefined GameMode: ${mode}`);
+  }
+}
 
 export enum PaddleInput {
   UP = 'ArrowUp',

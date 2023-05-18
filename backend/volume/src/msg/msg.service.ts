@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { GameMode, Msg } from '@prisma/client';
 import { PrismaMsgService } from 'src/msg/prisma/prismaMsg.service';
 
 export interface MsgDto {
@@ -7,6 +8,7 @@ export interface MsgDto {
   body: string;
   authorId: number;
   invite: boolean;
+  mode: GameMode;
 }
 
 @Injectable()
@@ -33,6 +35,23 @@ export class MsgService {
     );
   }
 
+  async updateInvite(messageId: number, roomId: number, msg: string) {
+    this.prismaMsg.updateMsg(
+      {
+        where: {
+          roomId_id: {
+            id: messageId,
+            roomId: roomId,
+          },
+        },
+        data: {
+          body: msg,
+          invite: false,
+        }
+      },
+    );
+  }
+
   async verifyAuthor(roomId: number, msgId: number, authorId: number) {
     const msg = await this.prismaMsg.Msg({roomId_id: {
       id: msgId,
@@ -41,7 +60,7 @@ export class MsgService {
     return msg.authorId === authorId;
   }
 
-  async getChatHistory(roomId: number): Promise<MsgDto[]> {
+  async getChatHistory(roomId: number): Promise<Msg[]> {
     return this.prismaMsg.Msgs({
       where: {
         roomId: roomId,

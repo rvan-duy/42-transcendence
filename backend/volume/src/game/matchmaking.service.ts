@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { GameService } from './game.service';
-import { GameMode } from './game.definitions';
+import { GameMode, toGameMode, toPrismaGameMode } from './game.definitions';
 import { MsgDto, MsgService } from 'src/msg/msg.service';
 import { PrismaUserService } from '../user/prisma/prismaUser.service';
 import { User } from '@prisma/client';
@@ -24,6 +24,7 @@ export enum InviteStatus {
     InviteNotFound = 'Unable to find the invite you are trying to accept',
     InvalidPacket = 'You have sent an invalid packet to the server',
     Muted = 'You are muted in the provided room',
+    OwnInvite = 'You cannot accept your own invite',
   }
 
 @Injectable()
@@ -40,6 +41,12 @@ export class MatchmakingService {
   queuePowerUp: number[] = [];
   queueFiesta: number[] = [];
   privateGameInvites: PrivateGameInvite[] = [];
+
+  chatServer: Server;
+
+  setChatServer(chatServer: Server) {
+    this.chatServer = chatServer;
+  }
 
   // returns the queue the user is in or NotQueued
   isUserQueued(userId: number) {
@@ -132,38 +139,39 @@ export class MatchmakingService {
       body: msgBody,
       authorId: creator.id,
       invite: true,
+      mode: toPrismaGameMode(mode),
     };
 
     this.privateGameInvites.push(newInvite);
-    return (this.msgService.handleIncomingMsg(inviteMsg));
+    return (await this.msgService.handleIncomingMsg(inviteMsg));
   }
 
-  removePrivateGameInvite(inviteIndex: number, roomId: number, chatServer: Server) {
-
-    // make sure to set the boolean inside all other chat invites to false
-  
-    chatServer.to(String(roomId)).emit('disableInvite', this.privateGameInvites[inviteIndex]);
+  removePrivateGameInvite(inviteIndex: number, inviteMessage: MsgDto) {
+    this.chatServer.to(String(inviteMessage.roomId)).emit('disableInvite', this.privateGameInvites[inviteIndex]);
     this.privateGameInvites.splice(inviteIndex, 1);
+    this.msgService.updateInvite(inviteMessage.id, inviteMessage.roomId, 'This invite has already been accepted');
   }
 
   // returns true if the invite was accepted successfully, else return false
-  acceptInvite(acceptingUserId: number, creatorId: number, mode: GameMode, roomId: number, chatServer: Server) {
-    console.log(`${acceptingUserId} accepted a game invite from ${creatorId}`);
+  acceptInvite(acceptingUserId: number, inviteMessage: MsgDto) {
+    console.log(`${acceptingUserId} accepted a game invite from ${inviteMessage.authorId}`);
 
+    if (acceptingUserId === inviteMessage.authorId)
+      return (InviteStatus.OwnInvite);
     if (this.gameService.isUserInGame(acceptingUserId))
       return (InviteStatus.AlreadyInGame);
-    if (this.gameService.isUserInGame(creatorId))
+    if (this.gameService.isUserInGame(inviteMessage.authorId))
       return (InviteStatus.CreatorAlreadyInGame);
 
     for (let index = 0; index < this.privateGameInvites.length; index++) {
       const invite = this.privateGameInvites[index];
 
-      if (invite.creatorId === creatorId && invite.mode === mode && invite.room === roomId)
+      if (invite.creatorId === inviteMessage.authorId && invite.mode === toGameMode(inviteMessage.mode) && invite.room === inviteMessage.roomId)
       {
-        this.removePlayerFromQueue(creatorId);
+        this.removePlayerFromQueue(inviteMessage.authorId);
         this.removePlayerFromQueue(acceptingUserId);
-        this.removePrivateGameInvite(index, roomId, chatServer);
-        this.gameService.createGame(creatorId, acceptingUserId, mode);
+        this.removePrivateGameInvite(index, inviteMessage);
+        this.gameService.createGame(inviteMessage.authorId, acceptingUserId, toGameMode(inviteMessage.mode));
         return (InviteStatus.InviteAccepted);
       }
     }

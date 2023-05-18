@@ -210,9 +210,33 @@ interface.
                 <p class="meta">
                   {{ message.username }} <span>{{ toLocale(message.timestamp) }}</span>
                 </p>
-                <p class="text">
+                <p
+                  v-if="message.invite === false"
+                  class="text"
+                >
+                  <!-- if the message is not an invite -->
                   {{ message.body }}
                 </p>
+                <p
+                  v-else-if="message.invite === true && message.authorId === idUser"
+                  class="text"
+                >
+                  <!-- if the invite is from yourself -->
+                  {{ `You have invited this room to play a game` }}
+                </p>
+                <p
+                  v-else
+                  class="text"
+                >
+                  {{ message.body }}
+                </p>
+                <button
+                  v-if="message.invite === true && message.authorId !== idUser"
+                  class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs m-3"
+                  @click="acceptInvite(message.id)"
+                >
+                  accept invite
+                </button>
               </div>
             </div>
           </main>
@@ -461,8 +485,9 @@ export default {
       console.log(`Error accepting invite:\n${inviteStatus}.`);
     },
 
-    async acceptInvite(mode: GameMode, creatorId: number) {
-      SocketioService.socket.emit('acceptInvite', { roomId: this.chatId, mode: mode, creatorId: creatorId });
+    async acceptInvite(messageId: number) {
+      console.log(`messageId: ${messageId}`);
+      SocketioService.socket.emit('acceptInvite', { roomId: this.chatId, messageId: messageId });
     },
 
     async addUser(user: User) {

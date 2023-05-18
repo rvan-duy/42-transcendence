@@ -15,6 +15,7 @@ import { ChatService } from './chat.service';
 import { Inject } from '@nestjs/common';
 import { MatchmakingService } from 'src/game/matchmaking.service';
 import { InviteStatus } from 'src/game/matchmaking.service';
+import { PrismaMsgService } from 'src/msg/prisma/prismaMsg.service';
 
 @WebSocketGateway({
   cors: {
@@ -26,11 +27,12 @@ import { InviteStatus } from 'src/game/matchmaking.service';
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     @Inject('chatGate') private readonly chatGate: GateService,
-    private msgService: MsgService,
-    private roomService: RoomService,
-    private chatService: ChatService,
-    private jwtService: JwtService,
-    private matchmakingService: MatchmakingService,
+    private readonly msgService: MsgService,
+    private readonly roomService: RoomService,
+    private readonly chatService: ChatService,
+    private readonly jwtService: JwtService,
+    private readonly matchmakingService: MatchmakingService,
+    private readonly prismaMsgService: PrismaMsgService,
   ){}
   private server: Server;
 
@@ -38,6 +40,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
   afterInit(server: Server) {
     this.server = server;
+	this.matchmakingService.setChatServer(server);
   }
   
   async handleConnection(client: Socket) {
@@ -85,29 +88,44 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return ;
 
     console.log(`userId of given user: ${userId}`);
-    const msgWithAuthor = await this.matchmakingService.createPrivateGameInvite(userId, packet.mode, packet.roomId);
+    const msgWithAuthor = await this.matchmakingService.createPrivateGameInvite(userId, packet.mode, packet.roomId) as MsgDto;
 
     // send the message to the connected participants in chat
     this.spreadMessage(msgWithAuthor, String(packet.roomId));
   }
 
+  private async getInviteMessage(roomId: number, messageId: number) {
+    return ( await this.prismaMsgService.Msg({roomId_id: {
+      id: messageId,
+      roomId: roomId,
+    }}));
+  }
+
   @SubscribeMessage('acceptInvite')
-  async handleAcceptGameInvite(client: Socket, packet: any) { //roomId: number, mode: GameMode, creatorId: number
-    if (packet.roomId === undefined || packet.creatorId === undefined || packet.mode === undefined) {
+  async handleAcceptGameInvite(client: Socket, packet: any) { //roomId: number, messageId: number
+    if (packet.roomId === undefined || packet.messageId === undefined) {
       client.emit('inviteStatus', InviteStatus.InvalidPacket);
       return ;
     }
     const userId = await this.chatGate.getUserBySocket(client);
+    // check if the user is connected to the room
     if (await this.chatService.isChatter(packet.roomId, userId) === false) {
       client.emit('inviteStatus', InviteStatus.NotInRoom);
       return ;
     }
+    // check if the user is muted
     if (await this.chatService.mutedCheck(userId, packet.roomId, client) === true) {
       client.emit('inviteStatus', InviteStatus.Muted);
       return ;
     }
 
-    const inviteStatus = await this.matchmakingService.acceptInvite(userId, packet.creatorId, packet.mode, packet.roomId, this.server);
+    // get the message which stores the invite information from the database
+    const msg: MsgDto = await this.getInviteMessage(packet.roomId, packet.messageId);
+    if (msg === null || msg.invite == false) {
+      client.emit('inviteStatus', InviteStatus.InviteNotFound);
+    }
+
+    const inviteStatus = await this.matchmakingService.acceptInvite(userId, msg);
     client.emit('inviteStatus', inviteStatus);
   }
 
