@@ -39,7 +39,7 @@ interface.
                 Leave Chat
               </button>
               <span
-                v-if="chat?.access === 'PUBLIC' || chat?.access === 'PROTECTED'"
+                v-if="(chat?.access === 'PUBLIC' || chat?.access === 'PROTECTED') && isAdmin"
                 class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
                 @click="isVisible = true"
               > Set
@@ -74,8 +74,7 @@ interface.
           <main class="chat-main">
             <div class="chat-sidebar">
               <!-- <div v-if="chat?.access === 'PRIVATE'"> -->
-              <!-- only for admins -->
-              <div>
+              <div v-if="isAdmin">
                 <label
                   for="name"
                   class="pt-2"
@@ -143,7 +142,7 @@ interface.
                     Channel Owner
                   </span>
                   <span
-                    v-if="user.id !== chat?.ownerId"
+                    v-if="determineAdmin(user.id)"
                     class="text-green-200 text-xs p-1"
                   >
                     Admin
@@ -265,6 +264,7 @@ export default {
       setup: false,
       usersAdded: [] as User[],
       allUsers: [] as User[],
+      chatAdmins: [] as number[],
       input: '',
 
       // input: ''
@@ -280,23 +280,18 @@ export default {
             this.idUser = data.id;
             console.log(data.id);
             setTimeout(() => {
-              this.determineAdmin();
+              this.amIAdmin();
             }, 100);
 
           });
       });
-      try {
-  const response = await getBackend('chat/roomAdmins/?roomId=' + this.$route.query.id);
-  
-  if (response.ok) {
-    const data = await response;
-    console.log('admin', data);
-  } else {
-    // console.error('Request failed with status:', response.status);
-  }
-} catch (error) {
-  console.error(error);
-}
+    await getBackend('chat/roomAdmins/' + '?roomId=' +this.chatId)
+      .then(res => res.json())
+      .then((data) => {
+        data.forEach(user => {
+          this.chatAdmins.push(user.id);
+        });
+      });
   },
   mounted() {
     this.connection.setupSocketConnection('/chat');
@@ -332,11 +327,17 @@ export default {
     toLocale(timestamp: any) {
       return new Date(timestamp).toLocaleTimeString('nl-NL');
     },
-    determineAdmin() {
-      console.log('ownerid: ' + this.chat?.ownerId);
+    amIAdmin() {
       if (this.chat?.ownerId === this.idUser)
         this.isAdmin = true;
-      // TODO: need to know if admin too?
+      if (this.chatAdmins.includes(this.idUser))
+        this.isAdmin = true;
+    },
+    determineAdmin(query_id: number) {
+      if (query_id === this.chat?.ownerId)
+        return true;
+      if (this.chatAdmins.includes(query_id))
+        return true;
     },
     async loadChatBaseListener(room: any) {
       console.log('loadRoom: ', room);
@@ -460,6 +461,8 @@ export default {
         alert('You have to be an admin for this action.');
         return;
       }
+      else
+        alert('Password changed succesfully.');
     },
     //change access is for setting a password and change password is for changing a password
     async changeAccess(newAccess: string) {
@@ -473,6 +476,8 @@ export default {
         alert('You have to be in the channel for this action.');
         return;
       }
+      else
+        alert('Password set succesfully.');
     }
   },
 };
