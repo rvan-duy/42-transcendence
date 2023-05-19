@@ -40,6 +40,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
           <button
             class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
             style="float: right"
+            @click="blockUser()"
           >
             Block User
           </button>
@@ -187,6 +188,10 @@ export default {
     async addFriend() {
       console.log(Number(this.$route.query.id));
       await postBackendWithQueryParams('user/befriend', undefined, { id: Number(this.$route.query.id) });
+    },
+    async blockUser() {
+      console.log(`blocking: ${Number(this.$route.query.id)}`);
+      await postBackendWithQueryParams('user/block', undefined, { id: Number(this.$route.query.id) });
     },
     async removeFriend() {
       await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id) });

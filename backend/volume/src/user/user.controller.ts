@@ -236,8 +236,10 @@ export class UserController {
   @Post('block')
   async handleBlock(@Request() req: any, @Query('id') userId: number) {
     const myId = req.user.id;
+    console.log(`${myId} is blocking ${userId}`);
     // add to block on this side
     const meAsUser = await this.userService.user(myId);
+    console.log(`me as user: ${meAsUser}`);
     meAsUser.blocked.push(userId);
     this.userService.updateUser({
       where: {
