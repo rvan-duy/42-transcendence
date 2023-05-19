@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/backend-requests';
+import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests';
 import { Modal } from 'usemodal-vue3';
 import SocketioService from '../services/socketio.service.js';
 </script>
@@ -39,39 +39,39 @@ interface.
                 Leave Chat
               </button>
               <span v-if="isOwner">
-              <span
-                v-if="chat?.access === 'PUBLIC' || chat?.access === 'PROTECTED'"
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                @click="isVisible = true"
-              > Set
-                / Change Password</span>
-              <Modal
-                v-model:visible="isVisible"
-                class="text-black"
-                style="text-align: left;"
-                :cancel-button="cancelBtn"
-                :ok-button="okBtn"
-                :title="'Set Password'"
-              >
-                <div>
-                  <label>This will make sure the channel cannot be entered without the correct password.</label>
-                  <span class="text-black pr-4"><input
-                    v-model="newPassword"
-                    VALYE
-                    type="text"
-                    name="username"
-                    placeholder="Enter password..."
-                    required
-                    style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-                  > </span>
-                </div>
-              </Modal>
-              <span
-                v-if="chat?.access === 'PROTECTED'"
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                @click="confirmAndGo('delete password, and make public chat: ' + $route.params.id, changeAccess, 'PUBLIC')"
-              > Delete Password</span>
-            </span>
+                <span
+                  v-if="chat?.access === 'PUBLIC' || chat?.access === 'PROTECTED'"
+                  class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                  @click="isVisible = true"
+                > Set
+                  / Change Password</span>
+                <Modal
+                  v-model:visible="isVisible"
+                  class="text-black"
+                  style="text-align: left;"
+                  :cancel-button="cancelBtn"
+                  :ok-button="okBtn"
+                  :title="'Set Password'"
+                >
+                  <div>
+                    <label>This will make sure the channel cannot be entered without the correct password.</label>
+                    <span class="text-black pr-4"><input
+                      v-model="newPassword"
+                      VALYE
+                      type="text"
+                      name="username"
+                      placeholder="Enter password..."
+                      required
+                      style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+                    > </span>
+                  </div>
+                </Modal>
+                <span
+                  v-if="chat?.access === 'PROTECTED'"
+                  class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                  @click="confirmAndGo('delete password, and make public chat: ' + $route.params.id, changeAccess, 'PUBLIC')"
+                > Delete Password</span>
+              </span>
               <span
                 class="btn ml-3"
                 @click="goTo('chat')"
@@ -164,7 +164,8 @@ interface.
                       @click="confirmAndGo('make ' + user.name + ' Admin', makeAdmin, user.id)"
                     >Make Admin</button>
                   </span>
-                  <button v-if="user.id !== idUser"
+                  <button
+                    v-if="user.id !== idUser"
                     class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
                     @click="goTo('game')"
                   >
@@ -267,7 +268,7 @@ export default {
       isVisibleChange: false,
       newPassword: '',
       cancelBtn: { text: 'cancel', onclick: () => { this.setVisibilityFalse(); }, loading: false },
-      okBtn: { text: 'ok', onclick: () => { this.clickOk() }, loading: false },
+      okBtn: { text: 'ok', onclick: () => { this.clickOk(); }, loading: false },
       chatId: Number(this.$route.query.id),
       connection: SocketioService,
       setup: false,
@@ -317,7 +318,7 @@ export default {
         this.changeAccess('PROTECTED');
       else
         this.changePassword();
-      this.setVisibilityFalse(); 
+      this.setVisibilityFalse();
     },
     setVisibilityFalse() {
       this.isVisible = false;

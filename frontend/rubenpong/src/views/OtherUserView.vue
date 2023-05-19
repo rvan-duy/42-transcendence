@@ -80,7 +80,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
           </p>
           <label for="status">Match History</label>
           <p
-            v-if="matches_played === 0"
+            v-if="matches.length === 0"
             class="text-black"
           >
             No matches played yet!
@@ -145,33 +145,16 @@ export default {
     };
   },
   async created() {
-    let name: string = '';
-    let status: string = '';
-    let rank: number = 500;
-    let id: number = 0;
     // let friends: number[] = [];
-    await getBackend(`user/id/${Number(this.$route.query.id)}`)
-      .then(function (res) {
-        return res.json();
-      })
-      .then(function (data) {
-        id = data.id,
-        name = data.name;
-        status = data.status;
-        rank = data.elo;
-        console.log('friends');
-        console.log(data.friends);
-        // friends = data.friends;
-      });
-    this.id = id;
-    this.name = name;
-    this.rank = rank;
-    // this.myFriends = friends;
-    await getBackend('user/id/' + this.id + '?withGames=true&withStatus=true')
+    await getBackend('user/id/' + this.$route.query.id + '?withGames=true&withStatus=true')
       .then(res => res.json())
-      .then(user => {
-        this.matches = user?.games;
-        this.status = user.status;
+      .then(data => {
+        this.id = data.id,
+        this.name = data.name;
+        this.rank = data.elo;
+        this.matches = data.games;
+        this.status = data.status;
+        // friends = data.friends;
       });
   },
   methods: {

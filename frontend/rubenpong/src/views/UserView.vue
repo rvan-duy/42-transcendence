@@ -174,7 +174,7 @@ export default {
         console.log('data');
         console.log(data);
       });
-      await getBackend('user/id/' + this.id + '?withGames=true&withStatus=true')
+    await getBackend('user/id/' + this.id + '?withGames=true&withStatus=true')
       .then(res => res.json())
       .then(user => {
         this.matches = user?.games;
