@@ -166,15 +166,12 @@ export default {
     this.id = id;
     this.name = name;
     this.rank = rank;
-    this.status = status;
-    this.status = 'Online';
     // this.myFriends = friends;
-    await getBackend('user/id/' + Number(this.$route.query.id) + '?withGames=true')
+    await getBackend('user/id/' + this.id + '?withGames=true&withStatus=true')
       .then(res => res.json())
       .then(user => {
-        console.log('user');
-        console.log(user);
-        this.matches = user.games;
+        this.matches = user?.games;
+        this.status = user.status;
       });
   },
   methods: {

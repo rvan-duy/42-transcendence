@@ -109,36 +109,33 @@ export class UserController {
     return res.status(HttpStatus.OK).send(friends);
   }
 
-  @Get('id/:id')
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Get user information for user with id'})
-  @ApiQuery({ name: 'withgames'})
-  @ApiOkResponse({ description: 'User information', type: Object })
-  @ApiNotFoundResponse({ description: 'User with id not found', type: String })
-  async getUserById(
-    @Param('id') id: number,
-    @Response() res: any,
-    @Query('withGames') withGames: boolean = false,
-    @Query('withStatus') withStatus: boolean = false
-  ) {
-    id = Number(id);
-    let user: any;
-    if (withGames === true)
-      user = await this.userService.userWithGames({ id: id });
-    else
-      user = await this.userService.user({ id: id });
-    
-    if (user === undefined) {
-      return res.status(HttpStatus.NOT_FOUND).send(`User with id ${id} not found`);
-    }
+@Get('id/:id')
+@UseGuards(JwtAuthGuard)
+@ApiOperation({ summary: 'Get user information for user with id' })
+@ApiOkResponse({ description: 'User information', type: Object })
+@ApiNotFoundResponse({ description: 'User with id not found', type: String })
+async getUserById(
+  @Param('id') id: number,
+  @Response() res: any,
+  @Query('withGames') withGames: boolean = false,
+  @Query('withStatus') withStatus: boolean = false
+) {
+  id = Number(id);
+  let user: any;
 
-    // check status
-    if (withStatus === true) {
-      user.status = this.statusService.getStatus(id);
-    }
-
-    return res.status(HttpStatus.OK).send(user);
+  if (withGames) {
+    user = await this.userService.userWithGames({ id: id });
+  } else {
+    user = await this.userService.user({ id: id });
   }
+  if (user === undefined) {
+    return res.status(HttpStatus.NOT_FOUND).send(`User with id ${id} not found`);
+  }
+  if (withStatus) {
+    user.status = await this.statusService.getStatus(id);
+  }
+  return res.status(HttpStatus.OK).send(user);
+}
 
   @Get('all')
   @UseGuards(JwtAuthGuard)

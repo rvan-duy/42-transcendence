@@ -176,9 +176,14 @@ export class ChatController {
     @Query('userId') userId: number,
   ) {
     const clientId = req.user.id;
+    console.log(req);
     userId = Number(userId);
     roomId = Number(roomId);
     // is the sender is not the chat owner leave it intact and return and error
+    // console.log('roomId', roomId);
+    // console.log('userId', userId);
+    // console.log('clientId', clientId);
+
     if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner is alowed to promote to admin');
 
@@ -303,7 +308,7 @@ export class ChatController {
     roomId = Number(roomId);
 
     // only alow the chat owner and admins to change chat password
-    if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
+    if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to change the password');
 
     // passcode will be hashed in changePassword
@@ -327,7 +332,7 @@ export class ChatController {
       newPassword = undefined;
 
     // only alow the chat owner and admins to change chat password
-    if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
+    if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to change the access level');
 
     // change chat type to protected instead?

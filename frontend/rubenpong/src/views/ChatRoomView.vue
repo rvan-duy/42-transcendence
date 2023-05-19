@@ -128,6 +128,7 @@ interface.
                 <li
                   v-for="user in usersAdded"
                   :key="user.id"
+                  class="m-1"
                 >
                   <span @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)">
                     <img
@@ -155,7 +156,7 @@ interface.
                     Admin
                   </span>
                   <span
-                    v-if="user.id !== chat?.ownerId && idUser === chat?.ownerId"
+                    v-else-if="user.id !== chat?.ownerId && idUser === chat?.ownerId"
                     class="text-green-200 text-xs p-1"
                   >
                     <button
@@ -163,7 +164,7 @@ interface.
                       @click="confirmAndGo('make ' + user.name + ' Admin', makeAdmin, user.id)"
                     >Make Admin</button>
                   </span>
-                  <button
+                  <button v-if="user.id !== idUser"
                     class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
                     @click="goTo('game')"
                   >
@@ -171,7 +172,7 @@ interface.
                   </button>
 
                   <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
-                  <div v-if="isAdmin && user.id !== idUser && !determineAdmin(user.id)">
+                  <div v-if="isAdmin && user.id !== idUser && !determineOwner(user.id)">
                     <button
                       class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
                       @click="confirmAndGo('ban ' + user.name, banUser, user.id)"
@@ -392,7 +393,8 @@ export default {
     },
 
     async makeAdmin(newAdminId: number) {
-      await postBackend('chat/makeUserAdmin', { roomId: this.chatId, userId: newAdminId });
+      await postBackendWithQueryParams('chat/makeUserAdmin', undefined, { roomId: this.chatId, userId: newAdminId });
+      this.chatAdmins.push(newAdminId);
     },
 
     async banUser(bannedUserId: number) {
