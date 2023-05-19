@@ -21,7 +21,17 @@ export class AuthService {
    * @returns The user's data, if the user exists in the database
    */
   async validateUser(intraId: number, name: string): Promise<any> {
-    return await this.prismaUserService.findOrCreateUser({intraId, name});
+    let user;
+  
+    do {
+      user = await this.prismaUserService.findOrCreateUser({ intraId, name });
+  
+      if (user === undefined) {
+        name += 'Ruben';
+      }
+    } while (user === undefined);
+  
+    return user;
   }
 
   /**
