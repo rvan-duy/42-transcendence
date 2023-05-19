@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Post, Request, Response, UseGuards, HttpStatus, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
-import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
@@ -109,34 +109,31 @@ export class UserController {
     return res.status(HttpStatus.OK).send(friends);
   }
 
-  @Get('id/:id')
-  @UseGuards(JwtAuthGuard)
-  @ApiOperation({ summary: 'Get user information for user with id'})
-  @ApiQuery({ name: 'withgames'})
-  @ApiOkResponse({ description: 'User information', type: Object })
-  @ApiNotFoundResponse({ description: 'User with id not found', type: String })
+@Get('id/:id')
+@UseGuards(JwtAuthGuard)
+@ApiOperation({ summary: 'Get user information for user with id' })
+@ApiOkResponse({ description: 'User information', type: Object })
+@ApiNotFoundResponse({ description: 'User with id not found', type: String })
   async getUserById(
-    @Param('id') id: number,
-    @Response() res: any,
-    @Query('withGames') withGames: boolean = false,
-    @Query('withStatus') withStatus: boolean = false
+  @Param('id') id: number,
+  @Response() res: any,
+  @Query('withGames') withGames: boolean = false,
+  @Query('withStatus') withStatus: boolean = false
   ) {
     id = Number(id);
     let user: any;
-    if (withGames === true)
+
+    if (withGames) {
       user = await this.userService.userWithGames({ id: id });
-    else
+    } else {
       user = await this.userService.user({ id: id });
-    
+    }
     if (user === undefined) {
       return res.status(HttpStatus.NOT_FOUND).send(`User with id ${id} not found`);
     }
-
-    // check status
-    if (withStatus === true) {
-      user.status = this.statusService.getStatus(id);
+    if (withStatus) {
+      user.status = await this.statusService.getStatus(id);
     }
-
     return res.status(HttpStatus.OK).send(user);
   }
 
@@ -144,12 +141,12 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Get all users' })
   @ApiOkResponse({ description: 'Users found', type: [Object] })
-  async getUsers(@Response() res: any) {
-    const users = await this.userService.users({});
-    if (users === undefined)
-      throw Error('users not found');
-    return res.status(HttpStatus.OK).send(users);
-  }
+async getUsers(@Response() res: any) {
+  const users = await this.userService.users({});
+  if (users === undefined)
+    throw Error('users not found');
+  return res.status(HttpStatus.OK).send(users);
+}
   
   // is this user blocked by other user?
   // do not do anything maybe return a negative response

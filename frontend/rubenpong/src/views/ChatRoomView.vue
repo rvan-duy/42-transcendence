@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/backend-requests';
+import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests';
 import { Modal } from 'usemodal-vue3';
 import SocketioService from '../services/socketio.service.js';
 </script>
@@ -38,33 +38,40 @@ interface.
               >
                 Leave Chat
               </button>
-              <span
-                v-if="(chat?.access === 'PUBLIC' || chat?.access === 'PROTECTED') && isAdmin"
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                @click="isVisible = true"
-              > Set
-                / Change Password</span>
-              <Modal
-                v-model:visible="isVisible"
-                class="text-black"
-                style="text-align: left;"
-                :cancel-button="cancelBtn"
-                :ok-button="okBtn"
-                :title="'Set Password'"
-              >
-                <div>
-                  <label>This will make sure the channel cannot be entered without the correct password.</label>
-                  <span class="text-black pr-4"><input
-                    v-model="newPassword"
-                    VALYE
-                    type="text"
-                    name="username"
-                    placeholder="Enter password..."
-                    required
-                    style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-                  > </span>
-                </div>
-              </Modal>
+              <span v-if="isOwner">
+                <span
+                  v-if="chat?.access === 'PUBLIC' || chat?.access === 'PROTECTED'"
+                  class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                  @click="isVisible = true"
+                > Set
+                  / Change Password</span>
+                <Modal
+                  v-model:visible="isVisible"
+                  class="text-black"
+                  style="text-align: left;"
+                  :cancel-button="cancelBtn"
+                  :ok-button="okBtn"
+                  :title="'Set Password'"
+                >
+                  <div>
+                    <label>This will make sure the channel cannot be entered without the correct password.</label>
+                    <span class="text-black pr-4"><input
+                      v-model="newPassword"
+                      VALYE
+                      type="text"
+                      name="username"
+                      placeholder="Enter password..."
+                      required
+                      style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+                    > </span>
+                  </div>
+                </Modal>
+                <span
+                  v-if="chat?.access === 'PROTECTED'"
+                  class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
+                  @click="confirmAndGo('delete password, and make public chat: ' + $route.params.id, changeAccess, 'PUBLIC')"
+                > Delete Password</span>
+              </span>
               <span
                 class="btn ml-3"
                 @click="goTo('chat')"
@@ -121,6 +128,7 @@ interface.
                 <li
                   v-for="user in usersAdded"
                   :key="user.id"
+                  class="m-1"
                 >
                   <span @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)">
                     <img
@@ -148,7 +156,7 @@ interface.
                     Admin
                   </span>
                   <span
-                    v-if="user.id !== chat?.ownerId && idUser === chat?.ownerId"
+                    v-else-if="user.id !== chat?.ownerId && idUser === chat?.ownerId"
                     class="text-green-200 text-xs p-1"
                   >
                     <button
@@ -157,6 +165,7 @@ interface.
                     >Make Admin</button>
                   </span>
                   <button
+                    v-if="user.id !== idUser"
                     class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
                     @click="goTo('game')"
                   >
@@ -164,7 +173,7 @@ interface.
                   </button>
 
                   <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
-                  <div v-if="isAdmin && user.id !== idUser">
+                  <div v-if="isAdmin && user.id !== idUser && !determineOwner(user.id)">
                     <button
                       class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
                       @click="confirmAndGo('ban ' + user.name, banUser, user.id)"
@@ -254,6 +263,7 @@ export default {
       users: [] as User[],
       idUser: null,
       isAdmin: false,
+      isOwner: false,
       isVisible: false,
       isVisibleChange: false,
       newPassword: '',
@@ -329,7 +339,10 @@ export default {
     },
     amIAdmin() {
       if (this.chat?.ownerId === this.idUser)
+      {
         this.isAdmin = true;
+        this.isOwner = true;
+      }
       if (this.chatAdmins.includes(this.idUser))
         this.isAdmin = true;
     },
@@ -337,6 +350,10 @@ export default {
       if (query_id === this.chat?.ownerId)
         return true;
       if (this.chatAdmins.includes(query_id))
+        return true;
+    },
+    determineOwner(query_id: number) {
+      if (query_id === this.chat?.ownerId)
         return true;
     },
     async loadChatBaseListener(room: any) {
@@ -377,7 +394,8 @@ export default {
     },
 
     async makeAdmin(newAdminId: number) {
-      await postBackend('chat/makeUserAdmin', { roomId: this.chatId, userId: newAdminId });
+      await postBackendWithQueryParams('chat/makeUserAdmin', undefined, { roomId: this.chatId, userId: newAdminId });
+      this.chatAdmins.push(newAdminId);
     },
 
     async banUser(bannedUserId: number) {
@@ -477,7 +495,10 @@ export default {
         return;
       }
       else
-        alert('Password set succesfully.');
+      {
+        alert('Access changed succesfully.');
+        this.chat.access = newAccess;
+      }
     }
   },
 };
