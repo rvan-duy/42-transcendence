@@ -180,9 +180,6 @@ export class ChatController {
     userId = Number(userId);
     roomId = Number(roomId);
     // is the sender is not the chat owner leave it intact and return and error
-    // console.log('roomId', roomId);
-    // console.log('userId', userId);
-    // console.log('clientId', clientId);
 
     if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner is alowed to promote to admin');
