@@ -80,16 +80,23 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     
   @SubscribeMessage('sendInvite')
   async handleGameInvite(client: Socket, packet: any) { //roomId: number, mode: GameMode
-    console.log(`packet recieved: ${packet.mode} ${packet.roomId}`);
-    if (packet.roomId === undefined)
+    if (packet.roomId === undefined || packet.mode === undefined) {
+      client.emit('createInviteError', 'You have sent an invalid packet');
       return ;
+    }
     const userId = await this.chatGate.getUserBySocket(client);
-    if (await this.chatService.isChatter(packet.roomId, userId) === false)
+    if (await this.chatService.isChatter(packet.roomId, userId) === false) {
+      client.emit('createInviteError', 'You do not have access to the given room');
       return ;
+    }
 
     console.log(`userId of given user: ${userId}`);
     const msgWithAuthor = await this.matchmakingService.createPrivateGameInvite(userId, packet.mode, packet.roomId) as MsgDto;
 
+    if (msgWithAuthor === undefined) {
+      client.emit('createInviteError', 'There already is a pending invite');
+      return ;
+    }
     // send the message to the connected participants in chat
     this.spreadMessage(msgWithAuthor, String(packet.roomId));
   }

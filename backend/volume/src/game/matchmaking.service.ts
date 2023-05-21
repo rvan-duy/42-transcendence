@@ -14,7 +14,10 @@ class PrivateGameInvite {
   creatorId: number;
   mode: GameMode;
   room: number;
+  timeCreated: number;
 }
+
+const minTimeSinceLastGameInvite: number = 90000; // in milliseconds
 
 export enum InviteStatus {
     NotInRoom = 'You do not have access to the room you have provided',
@@ -124,6 +127,19 @@ export class MatchmakingService {
     this.checkAndMatchPlayers(this.queueFiesta, GameMode.FIESTA);
   }
 
+  private inviteAlreadyExists(newInvite: PrivateGameInvite) {
+    for (let index = 0; index < this.privateGameInvites.length; index++) {
+      const invite = this.privateGameInvites[index];
+
+      if (newInvite.creatorId === invite.creatorId &&
+          newInvite.mode === invite.mode &&
+          newInvite.room === invite.room &&
+          newInvite.timeCreated - invite.timeCreated < minTimeSinceLastGameInvite)
+        return (true);
+    }
+    return (false);
+  }
+
   async createPrivateGameInvite(creatorId: number, mode: GameMode, roomId: number) {
     const creator: User = await this.prismaUserService.user({ id: creatorId });
     const msgBody: string = `${creator.name} invited you to play a ${mode} game`;
@@ -132,6 +148,7 @@ export class MatchmakingService {
       creatorId: creator.id,
       mode: mode,
       room: roomId,
+      timeCreated: new Date().getTime(),
     };
     const inviteMsg: MsgDto = {
       id: 0,
@@ -141,6 +158,10 @@ export class MatchmakingService {
       invite: true,
       mode: toPrismaGameMode(mode),
     };
+
+    // prevents a user from spamming a chat with game invites
+    if (this.inviteAlreadyExists(newInvite))
+      return (undefined);
 
     this.privateGameInvites.push(newInvite);
     return (await this.msgService.handleIncomingMsg(inviteMsg));

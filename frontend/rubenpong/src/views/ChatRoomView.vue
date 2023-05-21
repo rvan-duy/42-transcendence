@@ -380,6 +380,22 @@ export default {
       Array.prototype.push.apply(this.usersAdded, this.users);
     },
 
+    createInviteErrorListener(message: string) {
+      // ToDo: Make error pop up
+      console.log(message);
+    },
+
+    editMessageListener(msg: any) {
+      for (let index = 0; index < this.messages.length; index++) {
+        let message = this.messages[index];
+        
+        if (message.id === msg.id) {
+          message = msg;
+          return ;
+        }
+      }
+    },
+
     receiveNewMsgListener(msg: any) {
       console.log('msg: ', msg);
       msg.username = msg.author.name;
@@ -390,16 +406,19 @@ export default {
     async setupSocketListeners() {
       this.connection.socket.on('loadChatBase', this.loadChatBaseListener);
       this.connection.socket.on('receiveNewMsg', this.receiveNewMsgListener);
-      this.connection.socket.on('disableInvite', this.disableInviteListener);
       this.connection.socket.on('inviteStatus', this.receiveInviteStatusListener);
+      this.connection.socket.on('updateMessage', this.editMessageListener);
+      this.connection.socket.on('editMessage', this.createInviteErrorListener);
       // request the chat messages once the listener has been setup
       this.connection.socket.emit('loadRequest', Number(this.$route.query.id));
     },
-
+    
     dropSocketListeners() {
       this.connection.socket.off('loadChatBase', this.loadChatBaseListener);
       this.connection.socket.off('inviteStatus', this.receiveInviteStatusListener);
       this.connection.socket.off('receiveNewMsg', this.receiveNewMsgListener);
+      this.connection.socket.off('inviteAlreadyExists', this.createInviteErrorListener);
+      this.connection.socket.off('editMessage', this.editMessageListener);
     },
 
     async makeAdmin(newAdminId: number) {
