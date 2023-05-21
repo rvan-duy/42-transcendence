@@ -122,6 +122,15 @@
               >{{ match.players[0]?.name }}</span>
             </div>
           </div>
+          <br><br>
+          <div>
+            <button
+              class="bg-blue-500 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-full"
+              @click="navigateToAuthenticationSettings"
+            >
+              Manage Authentication Settings
+            </button>
+          </div>
         </main>
       </div>
     </body>
@@ -158,7 +167,6 @@ export default {
       matches: [
         {id: 0, score: [] as number[], players: [] as User[], winnerId: 0}
       ],
-      // matches: [{player1: 'Oswin', player2: 'Alice', won: 'Alice'}, {player1: 'Alice', player2: 'Ruben', won: 'Ruben'}],
       image: null,
     };
   },
@@ -216,6 +224,9 @@ export default {
         .catch((error) => {
           console.log(error);
         });
+    },
+    navigateToAuthenticationSettings() {
+      this.$router.push('/authentication-settings');
     },
   },
 };
