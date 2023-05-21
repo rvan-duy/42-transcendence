@@ -15,11 +15,6 @@ const toggleSecret = () => {
 
 <template>
   <div>
-    <div>
-      <p class="text-center">
-        Scan this QR code with your authenticator app:
-      </p>
-    </div>
     <div
       id="imageContainer"
       class="flex justify-center items-center"
