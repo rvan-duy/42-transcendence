@@ -41,7 +41,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
   afterInit(server: Server) {
     this.server = server;
-	  this.matchmakingService.setChatServer(server);
+    this.matchmakingService.setChatServer(server);
     const expireInviteInterval: number = 60000; // Every minute
     setInterval(function() {this.matchmakingService.expireOldInvites();}.bind(this), expireInviteInterval);
   }
@@ -130,7 +130,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
 
     // get the message which stores the invite information from the database
     const msg: Msg = await this.getInviteMessage(packet.roomId, packet.messageId);
-    if (msg === null || msg.invite == false) {
+    if (msg === null || msg.invite === false) {
       client.emit('inviteStatus', InviteStatus.InviteNotFound);
     }
 
