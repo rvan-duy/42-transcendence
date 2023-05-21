@@ -6,6 +6,7 @@ import UserView from '@/views/UserView.vue';
 import OtherUserView from '@/views/OtherUserView.vue';
 import SearchUserView from '@/views/SearchUserView.vue';
 import LadderView from '@/views/LadderView.vue';
+import AuthenticationSettingsView from '@/views/AuthenticationSettingsView.vue';
 
 const routes = [
   {
@@ -57,6 +58,11 @@ const routes = [
     name: 'ladder',
     component: LadderView,
   },
+  {
+    path: '/authentication-settings',
+    name: 'authentication-settings',
+    component: AuthenticationSettingsView,
+  }
 ];
 
 export default routes.map(route => {
