@@ -16,6 +16,7 @@ import { Inject } from '@nestjs/common';
 import { MatchmakingService } from 'src/game/matchmaking.service';
 import { InviteStatus } from 'src/game/matchmaking.service';
 import { PrismaMsgService } from 'src/msg/prisma/prismaMsg.service';
+import { Msg } from '@prisma/client';
 
 @WebSocketGateway({
   cors: {
@@ -40,7 +41,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
   afterInit(server: Server) {
     this.server = server;
-	this.matchmakingService.setChatServer(server);
+	  this.matchmakingService.setChatServer(server);
+    const expireInviteInterval: number = 60000; // Every minute
+    setInterval(function() {this.matchmakingService.expireOldInvites();}.bind(this), expireInviteInterval);
   }
   
   async handleConnection(client: Socket) {
@@ -90,7 +93,6 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return ;
     }
 
-    console.log(`userId of given user: ${userId}`);
     const msgWithAuthor = await this.matchmakingService.createPrivateGameInvite(userId, packet.mode, packet.roomId) as MsgDto;
 
     if (msgWithAuthor === undefined) {
@@ -127,7 +129,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     }
 
     // get the message which stores the invite information from the database
-    const msg: MsgDto = await this.getInviteMessage(packet.roomId, packet.messageId);
+    const msg: Msg = await this.getInviteMessage(packet.roomId, packet.messageId);
     if (msg === null || msg.invite == false) {
       client.emit('inviteStatus', InviteStatus.InviteNotFound);
     }

@@ -3,7 +3,7 @@ import { GameService } from './game.service';
 import { GameMode, toGameMode, toPrismaGameMode } from './game.definitions';
 import { MsgDto, MsgService } from 'src/msg/msg.service';
 import { PrismaUserService } from '../user/prisma/prismaUser.service';
-import { User } from '@prisma/client';
+import { Msg, User } from '@prisma/client';
 import { Server } from 'socket.io';
 
 enum Debug { // make sure to seed before
@@ -15,9 +15,11 @@ class PrivateGameInvite {
   mode: GameMode;
   room: number;
   timeCreated: number;
+  inviteMsg: Msg;
 }
 
-const minTimeSinceLastGameInvite: number = 90000; // in milliseconds
+const minTimeSinceLastGameInvite: number = 90000; // 1.5 minutes in milliseconds
+const inviteExpirationTime: number = 300000; // 5 minutes in milliseconds
 
 export enum InviteStatus {
     NotInRoom = 'You do not have access to the room you have provided',
@@ -68,7 +70,8 @@ export class MatchmakingService {
   addPlayerToQueue(mode: GameMode, userId: number) {
     this.removePlayerFromQueue(userId);
 
-    console.log(`Adding user ${userId} to a queue`);
+    if (Debug.ENABLED)
+      console.log(`Adding user ${userId} to a queue`);
     if (mode === GameMode.NORMAL)
       this.queueNormal.push(userId);
     else if (mode === GameMode.FREEMOVE)
@@ -81,7 +84,8 @@ export class MatchmakingService {
 
   // removed the player from a queue if they are inside of one
   removePlayerFromQueue(userId: number) {
-    console.log(`Removing user: ${userId} from the queue`);
+    if (Debug.ENABLED)
+      console.log(`Removing user: ${userId} from the queue`);
     if (this.checkAndRemoveFromArray(this.queueNormal, userId))
       return;
     if (this.checkAndRemoveFromArray(this.queueFreeMove, userId))
@@ -114,13 +118,15 @@ export class MatchmakingService {
 
     const player2 = arr.pop();
     const player1 = arr.pop();
-    console.log(`Created a game of ${mode} with players ${player1} and ${player2}`);
+    if (Debug.ENABLED)
+      console.log(`Created a game of ${mode} with players ${player1} and ${player2}`);
     this.gameService.createGame(player1, player2, mode);
   }
 
   // checks all the queues if any games can be created
   checkForMatches() {
-    // console.log(`Checking for matches current players searching: normal ${this.queueNormal} freeMove ${this.queueFreeMove} powerUp ${this.queuePowerUp} fiesta: ${this.queueFiesta}`);
+    // if (Debug.ENABLED)
+      // console.log(`Checking for matches current players searching: normal ${this.queueNormal} freeMove ${this.queueFreeMove} powerUp ${this.queuePowerUp} fiesta: ${this.queueFiesta}`);
     this.checkAndMatchPlayers(this.queueNormal, GameMode.NORMAL);
     this.checkAndMatchPlayers(this.queueFreeMove, GameMode.FREEMOVE);
     this.checkAndMatchPlayers(this.queuePowerUp, GameMode.POWERUP);
@@ -140,15 +146,70 @@ export class MatchmakingService {
     return (false);
   }
 
+  private editPrivateGameInviteDatabase(editedMessage: Msg) {
+    this.msgService.updateMessage(editedMessage.id, editedMessage.roomId, editedMessage.body, editedMessage.invite);
+  }
+
+  private editPrivateGameInviteFrontend(newMessage: Msg) {
+    this.chatServer.emit('editMessage', newMessage);
+  }
+
+  private editOldMessage(oldMessage: Msg, newBody: string, isInvite: boolean) {
+    const editedMessage: Msg = {
+      id: oldMessage.id,
+      roomId: oldMessage.roomId,
+      body: newBody,
+      authorId: oldMessage.authorId,
+      invite: isInvite,
+      timestamp: oldMessage.timestamp,
+      mode: oldMessage.mode,
+    };
+
+    if (Debug.ENABLED)
+      console.log(`Editing the old message: ${oldMessage} to ${editedMessage}`);
+    this.editPrivateGameInviteFrontend(editedMessage);
+    this.editPrivateGameInviteDatabase(editedMessage);
+  }
+
+  private expireOldInvite(inviteToExpire: PrivateGameInvite, indexOfInvite: number) {
+    this.editOldMessage(inviteToExpire.inviteMsg, 'This invite has expired.', false);
+    this.removePrivateGameInvite(indexOfInvite);
+  }
+
+  private checkOlderInvitesForExpiration(newInvite: PrivateGameInvite) {
+    for (let index = 0; index < this.privateGameInvites.length; index++) {
+      const invite = this.privateGameInvites[index];
+      
+      if (invite.creatorId === newInvite.creatorId && invite.room === newInvite.room) {
+        if (Debug.ENABLED)
+          console.log('expiring invite');
+        this.expireOldInvite(invite, index);
+        return ;
+      }
+    }
+  }
+
+  expireOldInvites() {
+    const currentTime: number = new Date().getTime();
+    if (Debug.ENABLED)
+      console.log('checking for invite expirations');
+    for (let index = 0; index < this.privateGameInvites.length; index++) {
+      const invite = this.privateGameInvites[index];
+      
+      if (currentTime - invite.timeCreated > inviteExpirationTime)
+        this.expireOldInvite(invite, index);
+    }
+  }
+
   async createPrivateGameInvite(creatorId: number, mode: GameMode, roomId: number) {
     const creator: User = await this.prismaUserService.user({ id: creatorId });
     const msgBody: string = `${creator.name} invited you to play a ${mode} game`;
-    console.log(msgBody);
-    const newInvite: PrivateGameInvite = {
+    let newInvite: PrivateGameInvite = {
       creatorId: creator.id,
       mode: mode,
       room: roomId,
       timeCreated: new Date().getTime(),
+      inviteMsg: undefined,
     };
     const inviteMsg: MsgDto = {
       id: 0,
@@ -163,36 +224,38 @@ export class MatchmakingService {
     if (this.inviteAlreadyExists(newInvite))
       return (undefined);
 
+    const newInviteMessage: Msg = await this.msgService.handleIncomingMsg(inviteMsg);
+
+    // Store the created message and check if there are any older invites to be expired
+    newInvite.inviteMsg = newInviteMessage;
+    this.checkOlderInvitesForExpiration(newInvite);
     this.privateGameInvites.push(newInvite);
-    return (await this.msgService.handleIncomingMsg(inviteMsg));
+    return (newInviteMessage);
   }
 
-  removePrivateGameInvite(inviteIndex: number, inviteMessage: MsgDto) {
-    this.chatServer.to(String(inviteMessage.roomId)).emit('disableInvite', this.privateGameInvites[inviteIndex]);
+  removePrivateGameInvite(inviteIndex: number) {
     this.privateGameInvites.splice(inviteIndex, 1);
-    this.msgService.updateInvite(inviteMessage.id, inviteMessage.roomId, 'This invite has already been accepted');
   }
 
-  // returns true if the invite was accepted successfully, else return false
-  acceptInvite(acceptingUserId: number, inviteMessage: MsgDto) {
-    console.log(`${acceptingUserId} accepted a game invite from ${inviteMessage.authorId}`);
-
-    if (acceptingUserId === inviteMessage.authorId)
+  // returns the invite status
+  acceptInvite(acceptingUserId: number, chatInviteMessage: Msg) {
+    if (acceptingUserId === chatInviteMessage.authorId)
       return (InviteStatus.OwnInvite);
     if (this.gameService.isUserInGame(acceptingUserId))
       return (InviteStatus.AlreadyInGame);
-    if (this.gameService.isUserInGame(inviteMessage.authorId))
+    if (this.gameService.isUserInGame(chatInviteMessage.authorId))
       return (InviteStatus.CreatorAlreadyInGame);
 
     for (let index = 0; index < this.privateGameInvites.length; index++) {
       const invite = this.privateGameInvites[index];
 
-      if (invite.creatorId === inviteMessage.authorId && invite.mode === toGameMode(inviteMessage.mode) && invite.room === inviteMessage.roomId)
+      if (invite.creatorId === chatInviteMessage.authorId && invite.mode === toGameMode(chatInviteMessage.mode) && invite.room === chatInviteMessage.roomId)
       {
-        this.removePlayerFromQueue(inviteMessage.authorId);
+        this.removePlayerFromQueue(chatInviteMessage.authorId);
         this.removePlayerFromQueue(acceptingUserId);
-        this.removePrivateGameInvite(index, inviteMessage);
-        this.gameService.createGame(inviteMessage.authorId, acceptingUserId, toGameMode(inviteMessage.mode));
+        this.removePrivateGameInvite(index);
+        this.editOldMessage(chatInviteMessage, 'This invite has already been accepted', false);
+        this.gameService.createGame(chatInviteMessage.authorId, acceptingUserId, toGameMode(chatInviteMessage.mode));
         return (InviteStatus.InviteAccepted);
       }
     }

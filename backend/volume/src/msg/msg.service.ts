@@ -35,7 +35,7 @@ export class MsgService {
     );
   }
 
-  async updateInvite(messageId: number, roomId: number, msg: string) {
+  async updateMessage(messageId: number, roomId: number, newBody: string, isInvite: boolean) {
     this.prismaMsg.updateMsg(
       {
         where: {
@@ -45,8 +45,8 @@ export class MsgService {
           },
         },
         data: {
-          body: msg,
-          invite: false,
+          body: newBody,
+          invite: isInvite,
         }
       },
     );

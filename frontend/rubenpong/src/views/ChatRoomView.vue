@@ -319,10 +319,7 @@ export default {
       .then((res) => {
         res.json()
           .then((data) => {
-            console.log('check');
-            console.log(data);
             this.idUser = data.id;
-            console.log(data.id);
             setTimeout(() => {
               this.determineAdmin();
             }, 100);
@@ -366,7 +363,6 @@ export default {
       this.chat = room.chat;
       // this.chat?.ownerId = room.chat.ownerId;
       const promises = room.history.map((msg: any) => {
-        console.log(getBackend('user/id/' + msg.authorId));
         return getBackend('user/id/' + msg.authorId)
           .then(res => res.json())
           .then(user => {
@@ -375,7 +371,6 @@ export default {
       });
       await Promise.all(promises);
       this.messages = room.history;
-      console.log('history messages: ', this.messages);
       this.users = room.users;
       Array.prototype.push.apply(this.usersAdded, this.users);
     },
@@ -385,19 +380,18 @@ export default {
       console.log(message);
     },
 
-    editMessageListener(msg: any) {
+    async editMessageListener(editedMessage: any) { // ToDo: find a way to set the username in the backend instead of reusing the old name?
       for (let index = 0; index < this.messages.length; index++) {
-        let message = this.messages[index];
-        
-        if (message.id === msg.id) {
-          message = msg;
+        if (this.messages[index].id === editedMessage.id) {
+          const userName: string = this.messages[index].username;
+          this.messages[index] = editedMessage;
+          this.messages[index].username = userName;
           return ;
         }
       }
     },
 
     receiveNewMsgListener(msg: any) {
-      console.log('msg: ', msg);
       msg.username = msg.author.name;
       this.addMessage(msg);
       // this.scrollChatToBottom();
@@ -407,8 +401,8 @@ export default {
       this.connection.socket.on('loadChatBase', this.loadChatBaseListener);
       this.connection.socket.on('receiveNewMsg', this.receiveNewMsgListener);
       this.connection.socket.on('inviteStatus', this.receiveInviteStatusListener);
-      this.connection.socket.on('updateMessage', this.editMessageListener);
-      this.connection.socket.on('editMessage', this.createInviteErrorListener);
+      this.connection.socket.on('editMessage', this.editMessageListener);
+      this.connection.socket.on('createInviteError', this.createInviteErrorListener);
       // request the chat messages once the listener has been setup
       this.connection.socket.emit('loadRequest', Number(this.$route.query.id));
     },
@@ -417,7 +411,7 @@ export default {
       this.connection.socket.off('loadChatBase', this.loadChatBaseListener);
       this.connection.socket.off('inviteStatus', this.receiveInviteStatusListener);
       this.connection.socket.off('receiveNewMsg', this.receiveNewMsgListener);
-      this.connection.socket.off('inviteAlreadyExists', this.createInviteErrorListener);
+      this.connection.socket.off('createInviteError', this.createInviteErrorListener);
       this.connection.socket.off('editMessage', this.editMessageListener);
     },
 
@@ -505,7 +499,6 @@ export default {
     },
 
     async acceptInvite(messageId: number) {
-      console.log(`messageId: ${messageId}`);
       SocketioService.socket.emit('acceptInvite', { roomId: this.chatId, messageId: messageId });
     },
 
