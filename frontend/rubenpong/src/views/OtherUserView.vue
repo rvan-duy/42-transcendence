@@ -141,11 +141,16 @@ export default {
       matches: [
         { id: 0, score: [] as number[], players: [] as User[], winnerId: 0 }
       ],
-      myFriends: [1],
+      myFriends: [],
     };
   },
   async created() {
-    // let friends: number[] = [];
+    await getBackend('user/me')
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        this.myFriends = data.friends;
+      });
     await getBackend('user/id/' + this.$route.query.id + '?withGames=true&withStatus=true')
       .then(res => res.json())
       .then(data => {
@@ -154,7 +159,6 @@ export default {
         this.rank = data.elo;
         this.matches = data.games;
         this.status = data.status;
-        // friends = data.friends;
       });
   },
   methods: {
@@ -162,10 +166,11 @@ export default {
       this.$router.push('/' + route);
     },
     alreadyFriends(): boolean {
-      return (this.myFriends.includes(Number(this.$route.query.id)));
+      let friend: boolean = this.myFriends.includes(Number(this.$route.query.id));
+      console.log(friend);
+      return (friend);
     },
     async addFriend() {
-      console.log(Number(this.$route.query.id));
       await postBackendWithQueryParams('user/befriend', undefined, { id: Number(this.$route.query.id) });
     },
     async removeFriend() {

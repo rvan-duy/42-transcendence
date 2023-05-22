@@ -158,6 +158,7 @@ async getUsers(@Response() res: any) {
   async handleFriendRequest(@Request() req: any, @Query('id') userId: number) {
     const myId = Number(req.user.id);
     userId = Number(userId);
+    console.log('myid, userid', myId, userId);
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
     if (otherAsUser === undefined || meAsUser === undefined)
@@ -171,6 +172,7 @@ async getUsers(@Response() res: any) {
       meAsUser.friends.push(userId);
       meAsUser.pending.splice(meAsUser.pending.indexOf(userId), 1); // removes the pending request
       otherAsUser.friends.push(myId);
+      console.log('measuser', meAsUser);
       const updateCatcher = await this.userService.updateUser({
         where: {
           id: myId,
@@ -265,5 +267,19 @@ async getUsers(@Response() res: any) {
         blocked: meAsUser.blocked,
       },
     });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('onlyFriends')
+  async getOnlyFriends(@Request() req: any) {
+    const myId = req.user.id;
+
+    let onlyFriends = await this.userService.onlyFriends(myId);
+
+    for (const item of onlyFriends) {
+      item.status = await this.statusService.getStatus(item.id);
+    }
+    
+    return onlyFriends;
   }
 }
