@@ -275,8 +275,8 @@ async getUsers(@Response() res: any) {
     const myId = req.user.id;
     const pending = req.user.pending;
 
-    let onlyFriends = await this.userService.onlyFriends(myId);
-    let onlyPending = await this.userService.onlyPending(pending);
+    const onlyFriends = await this.userService.onlyFriends(myId);
+    const onlyPending = await this.userService.onlyPending(pending);
 
     for (const item of onlyFriends) {
       item.status = await this.statusService.getStatus(item.id);

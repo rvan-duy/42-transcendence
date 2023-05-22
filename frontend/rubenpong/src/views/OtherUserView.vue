@@ -166,7 +166,7 @@ export default {
       this.$router.push('/' + route);
     },
     alreadyFriends(): boolean {
-      let friend: boolean = this.myFriends.includes(Number(this.$route.query.id));
+      const friend: boolean = this.myFriends.includes(Number(this.$route.query.id));
       console.log(friend);
       return (friend);
     },
