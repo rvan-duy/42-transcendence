@@ -38,6 +38,8 @@ model User {
   pending   Int[] // ids
   friends   Int[] // ids
   blocked   Int[] // ids
+  wins      Int @default(0)
+  losses    Int @default(0)
   elo       Int     @default(500)
   rooms     Room[]
   admin     Room[]  @relation("admin")

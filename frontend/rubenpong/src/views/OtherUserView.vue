@@ -61,7 +61,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
             <span class="p-1">Wins</span>
             <font-awesome-icon icon="award" />
             <p class="text-black">
-              1
+              {{wins}}
             </p>
           </div>
           <div
@@ -71,7 +71,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
             <span class="p-1">Losses</span>
             <font-awesome-icon icon="skull-crossbones" />
             <p class="text-black">
-              0
+              {{ losses }}
             </p>
           </div>
           <label for="status">Ranking</label>
@@ -128,6 +128,8 @@ interface User {
   elo: number;
   twoFactor: boolean;
   secret: string;
+  wins: number;
+  losses: number;
 }
 export default {
   data() {
@@ -142,6 +144,8 @@ export default {
         { id: 0, score: [] as number[], players: [] as User[], winnerId: 0 }
       ],
       myFriends: [],
+      wins: 0 as number,
+      losses: 0 as number,
     };
   },
   async created() {
@@ -159,6 +163,8 @@ export default {
         this.rank = data.elo;
         this.matches = data.games;
         this.status = data.status;
+        this.wins = data.wins;
+        this.losses = data.losses;
       });
   },
   methods: {
@@ -172,9 +178,12 @@ export default {
     },
     async addFriend() {
       await postBackendWithQueryParams('user/befriend', undefined, { id: Number(this.$route.query.id) });
+      this.myFriends.push(Number(this.$route.query.id));
     },
     async removeFriend() {
       await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id) });
+      const index = this.myFriends.indexOf(Number(this.$route.query.id));
+      this.myFriends.splice(index, 1);
     },
     getUserPicture(): string {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${Number(this.$route.query.id)}.png`);

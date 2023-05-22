@@ -118,22 +118,29 @@ export class GameService {
   private async scored(game: GameData) {
     const ball = game.ball;
     let scoringPlayer: PlayerDefinitions;
+    let losingPlayer: PlayerDefinitions;
 
     if (game.ball.x - game.ball.radius <= 0) {
       scoringPlayer = PlayerDefinitions.PLAYER2;
+      losingPlayer = PlayerDefinitions.PLAYER1;
       game.score[scoringPlayer]++;
     }
     else {
       scoringPlayer = PlayerDefinitions.PLAYER1;
+      losingPlayer = PlayerDefinitions.PLAYER2;
       game.score[scoringPlayer]++;
     }
 
     if (game.score[scoringPlayer] === game.pointsToWin ) {
       const winningPlayer: Player = game.players[scoringPlayer];
+      const loserPlayer: Player = game.players[losingPlayer];
 
       game.isFinished = true;
       game.emitToRoom('Winner', winningPlayer.name);
       this.storeGameInfo(game, winningPlayer);
+      this.storeWinnerInfo(game, winningPlayer);
+      this.storeLoserInfo(game, loserPlayer);
+
     }
     ball.x = MapSize.WIDTH / 2;
     ball.y = MapSize.HEIGHT / 2;
@@ -204,6 +211,32 @@ export class GameService {
         }],
       },
       winnerId: winningPlayer.userId
+    });
+  }
+
+  private storeWinnerInfo(game: GameData, winningPlayer: Player) {
+    this.prismaUserService.updateUser({
+      where: {
+        id: winningPlayer.userId
+      },
+      data: {
+        wins: {
+          increment: 1
+        }
+      }
+    });
+  }
+
+  private storeLoserInfo(game: GameData, losingPlayer: Player) {
+    this.prismaUserService.updateUser({
+      where: {
+        id: losingPlayer.userId
+      },
+      data: {
+        losses: {
+          increment: 1
+        }
+      }
     });
   }
 

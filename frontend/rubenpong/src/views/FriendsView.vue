@@ -134,7 +134,8 @@ export default {
       await postBackendWithQueryParams('user/befriend', undefined, { id: user.id });
       this.friends.push(user);
       const index = this.pending.indexOf(user);
-      this.pending.splice(index, 1); },
+      this.pending.splice(index, 1);
+    },
   },
 };
 </script>
