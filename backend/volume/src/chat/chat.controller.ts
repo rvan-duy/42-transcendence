@@ -273,7 +273,7 @@ export class ChatController {
       throw new ForbiddenException('Only chat owner or admin is alowed to kick users from chat');
 
     // check if the kicked user is not the owner or admin
-    if (await this.chatService.isAdminOrOwner(roomId, kickUserId) === true)
+    if (await this.chatService.isOwner(roomId, kickUserId) === true)
       throw new ForbiddenException('The chat owner cannot be kicked');
 
     // remove the kicked user from chat
