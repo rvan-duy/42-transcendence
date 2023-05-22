@@ -273,13 +273,18 @@ async getUsers(@Response() res: any) {
   @Get('onlyFriends')
   async getOnlyFriends(@Request() req: any) {
     const myId = req.user.id;
+    const pending = req.user.pending;
 
     let onlyFriends = await this.userService.onlyFriends(myId);
+    let onlyPending = await this.userService.onlyPending(pending);
 
     for (const item of onlyFriends) {
       item.status = await this.statusService.getStatus(item.id);
     }
-    
-    return onlyFriends;
+    for (const item of onlyPending) {
+      item.status = await this.statusService.getStatus(item.id);
+    }
+
+    return {onlyFriends, onlyPending};
   }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getBackend } from '@/utils/backend-requests';
+import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests';
 </script>
 
 <template>
@@ -10,12 +10,47 @@ import { getBackend } from '@/utils/backend-requests';
             <h1><i class="fas fa-smile" /> OnlyFriends</h1>
         </header>
         <main class="join-main">
+            <div v-if="pending.length > 0">
+                <h1>Pending friend requests</h1>
+                <ul id="users">
+                    <li
+                    v-for="user in pending"
+                    :key="user.id"
+                    class="mt-6"
+                    >
+                
+                    <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
+                        <img
+                        :src="String(getUserPicture(user.id))"
+                        width="30"
+                        height="30"
+                        style="border-radius: 50%; display:block;  vertical-align: center; float: left;"
+                        class="w-11 h-11 shrink-0 grow-0 rounded-full"
+                        >
+                    </span>
+                    <span class="text-white text-xs p-1">
+                      {{ user.name }}
+                    </span>
+                    <button
+                class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
+                @click="addFriend(user)"
+              >
+                Add as friend
+              </button>
+
+                    <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
+                    </li>
+                </ul>
+            </div>
+            <div>
+            <h1 class="mt-8">Friends</h1>
             <ul id="users">
                 <li
                   v-for="user in friends"
                   :key="user.id"
                   class="mt-6"
                 >
+              
                   <span @click="goTo('otheruser/' + user.name + '?id=' + user.id)">
                     <img
                       :src="String(getUserPicture(user.id))"
@@ -47,6 +82,7 @@ import { getBackend } from '@/utils/backend-requests';
                   <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
                 </li>
               </ul>
+            </div>
         </main>
       </div>
     </body>
@@ -64,6 +100,7 @@ export default {
   data() {
     return {
       friends: [] as User[],
+      pending: [] as User[],
     };
   },
   async created() {
@@ -71,7 +108,8 @@ export default {
       .then((res) => {
         res.json()
           .then((data) => {
-            this.friends = data;
+            this.friends = data.onlyFriends;
+            this.pending = data.onlyPending;
             console.log(data);
           });
       });
@@ -83,6 +121,11 @@ export default {
     getUserPicture(userId: number): string {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${userId}.png`);
     },
+    async addFriend(user: User) {
+      await postBackendWithQueryParams('user/befriend', undefined, { id: user.id });
+      this.friends.push(user);
+      const index = this.pending.indexOf(user);
+        this.pending.splice(index, 1);    },
   },
 };
 </script>

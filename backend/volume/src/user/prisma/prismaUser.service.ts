@@ -119,4 +119,13 @@ export class PrismaUserService {
     });
   }
 
+  async onlyPending(userIds: number[]): Promise<any>{
+    return this.users({
+      where: {
+        id: {
+          in: userIds
+        }
+      }
+    });
+  }
 }
