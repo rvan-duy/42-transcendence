@@ -93,7 +93,7 @@
           </div>
           <label for="status">Match History</label>
           <p
-            v-if="matches_played === 0"
+            v-if="matches.length === 0"
             class="text-black"
           >
             No matches played yet!
