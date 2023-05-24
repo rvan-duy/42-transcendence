@@ -173,15 +173,16 @@ async getUsers(@Response() res: any) {
       meAsUser.pending.splice(meAsUser.pending.indexOf(userId), 1); // removes the pending request
       otherAsUser.friends.push(myId);
       console.log('measuser', meAsUser);
-      const updateCatcher = await this.userService.updateUser({
+      this.userService.updateUser({
         where: {
           id: myId,
         },
         data: {
           friends: meAsUser.friends,
+		  pending: meAsUser.pending,
         }
       });
-	  const updatefriend = await this.userService.updateUser({
+	  this.userService.updateUser({
         where: {
           id: userId,
         },
@@ -189,8 +190,6 @@ async getUsers(@Response() res: any) {
           friends: otherAsUser.friends,
         }
       });
-      if (updateCatcher === undefined)
-        throw Error('friendship could not be established');
       return ; // well done you are now friends
     }
     // I LEFT HERE WITH CHECKING
