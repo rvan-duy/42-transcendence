@@ -16,22 +16,22 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
 							<figcaption class="text-white text-m">
 								{{ name }}
 							</figcaption>
-							<button v-if="relationshipStatus() === RelationshipStatus.Strangers"
+							<button v-if="relationStatus === RelationshipStatus.Strangers"
 								class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
 								@click="addFriend()">
 								Add as friend
 							</button>
-							<button v-else-if="relationshipStatus() === RelationshipStatus.Friends"
+							<button v-else-if="relationStatus === RelationshipStatus.Friends"
 								class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
 								@click="removeFriend()">
 								Remove as friend
 							</button>
-							<button v-else-if="relationshipStatus() === RelationshipStatus.Pending"
+							<button v-else-if="relationStatus === RelationshipStatus.Pending"
 								class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
 								@click="removeFriend()">
 								Pending (cancel)
 							</button>
-							<button v-else-if="relationshipStatus() === RelationshipStatus.Accept"
+							<button v-else-if="relationStatus === RelationshipStatus.Accept"
 								class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
 								@click="addFriend()">
 								Accept
@@ -117,6 +117,7 @@ export default {
 		return {
 			me: {} as User,
 			them: {} as User,
+			relationStatus: RelationshipStatus.Strangers,
 			id: 0,
 			name: '',
 			status: 'Online',
@@ -147,6 +148,7 @@ export default {
 				this.matches = data.games;
 				this.status = data.status;
 			});
+		this.relationStatus = this.relationshipStatus();
 	},
 	methods: {
 		goTo(route: string) {
@@ -164,16 +166,13 @@ export default {
 		async addFriend() {
 			const ret = await postBackendWithQueryParams('user/befriend', undefined, { id: Number(this.$route.query.id) });
 			if (ret.status === "friend")
-				this.me.friends.push(Number(this.$route.query.id));
+				this.relationStatus = RelationshipStatus.Friends;
 			else if (ret.status === "pending")
-				this.them.pending.push(Number(this.$route.query.id));
+				this.relationStatus = RelationshipStatus.Pending;
 		},
 		async removeFriend() {
 			const ret = await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id) });
-			if (ret.status === 'unFriended')
-				this.myFriends.splice(this.myFriends.indexOf(Number(this.$route.query.id)), 1);
-			else if (ret.status === 'unPended')
-				this.them.pending.splice(this.them.pending.indexOf(this.me.id), 1);
+			this.relationStatus = RelationshipStatus.Strangers;
 		},
 		async cancelPending() {
 			//  you can not cancel yet
