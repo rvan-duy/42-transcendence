@@ -181,6 +181,14 @@ async getUsers(@Response() res: any) {
           friends: meAsUser.friends,
         }
       });
+	  const updatefriend = await this.userService.updateUser({
+        where: {
+          id: userId,
+        },
+        data: {
+          friends: otherAsUser.friends,
+        }
+      });
       if (updateCatcher === undefined)
         throw Error('friendship could not be established');
       return ; // well done you are now friends
