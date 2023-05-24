@@ -179,10 +179,10 @@ async getUsers(@Response() res: any) {
         },
         data: {
           friends: meAsUser.friends,
-		  pending: meAsUser.pending,
+          pending: meAsUser.pending,
         }
       });
-	  this.userService.updateUser({
+      this.userService.updateUser({
         where: {
           id: userId,
         },
@@ -190,11 +190,11 @@ async getUsers(@Response() res: any) {
           friends: otherAsUser.friends,
         }
       });
-      return {status: "friend"}; // well done you are now friends
+      return {status: 'friend'}; // well done you are now friends
     }
     // I LEFT HERE WITH CHECKING
-	if (otherAsUser.pending.includes(myId))
-		return ;
+    if (otherAsUser.pending.includes(myId))
+      return ;
     otherAsUser.pending.push(myId);
     const updateCatcher = await this.userService.updateUser({
       where: {
@@ -206,7 +206,7 @@ async getUsers(@Response() res: any) {
     });
     if (updateCatcher === undefined)
       throw Error('friendship could not be established');
-    return {status: "pending"}; // wait till they accept your request (spannend!)
+    return {status: 'pending'}; // wait till they accept your request (spannend!)
   }
 
   // not needed
@@ -218,18 +218,18 @@ async getUsers(@Response() res: any) {
     userId = Number(userId);
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
-	if (otherAsUser.pending.includes(myId)) {
-		otherAsUser.pending.splice(otherAsUser.pending.indexOf(myId), 1);
-		this.userService.updateUser({
-			where: {
-				id: userId,
-			},
-			data: {
-				pending: otherAsUser.pending,
-			}
-		});
-		return {status: 'unPended'};
-	}
+    if (otherAsUser.pending.includes(myId)) {
+      otherAsUser.pending.splice(otherAsUser.pending.indexOf(myId), 1);
+      this.userService.updateUser({
+        where: {
+          id: userId,
+        },
+        data: {
+          pending: otherAsUser.pending,
+        }
+      });
+      return {status: 'unPended'};
+    }
     if (meAsUser.friends.includes(userId) === false)
       return ; // you are not friends!
     meAsUser.friends.splice(meAsUser.friends.indexOf(userId), 1); // removes the friend :(
@@ -250,7 +250,7 @@ async getUsers(@Response() res: any) {
         friends: otherAsUser.friends,
       }
     });
-	return {status: "unFriended"};
+    return {status: 'unFriended'};
   }
 
   @UseGuards(JwtAuthGuard)
