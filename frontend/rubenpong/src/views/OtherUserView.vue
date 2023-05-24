@@ -16,15 +16,25 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
 							<figcaption class="text-white text-m">
 								{{ name }}
 							</figcaption>
-							<button v-if="!alreadyFriends()"
+							<button v-if="relationshipStatus() === RelationshipStatus.Strangers"
 								class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
 								@click="addFriend()">
 								Add as friend
 							</button>
-							<button v-else-if="alreadyFriends()"
+							<button v-else-if="relationshipStatus() === RelationshipStatus.Friends"
 								class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
 								@click="removeFriend()">
 								Remove as friend
+							</button>
+							<button v-else-if="relationshipStatus() === RelationshipStatus.Pending"
+								class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
+								@click="cancelPending()">
+								Pending (cancel)
+							</button>
+							<button v-else-if="relationshipStatus() === RelationshipStatus.Accept"
+								class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
+								@click="addFriend()">
+								Accept
 							</button>
 						</span>
 					</div>
@@ -86,6 +96,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
 enum RelationshipStatus {
 	Friends = 'FRIENDS',
 	Pending = 'PENDING',
+	Accept = 'ACCEPT',
 	Strangers = 'STRANGERS',
 }
 
@@ -105,6 +116,7 @@ export default {
 	data() {
 		return {
 			me: {} as User,
+			them: {} as User,
 			id: 0,
 			name: '',
 			status: 'Online',
@@ -128,6 +140,7 @@ export default {
 		await getBackend('user/id/' + this.$route.query.id + '?withGames=true&withStatus=true')
 			.then(res => res.json())
 			.then(data => {
+				this.them = data;
 				this.id = data.id,
 					this.name = data.name;
 				this.rank = data.elo;
@@ -148,7 +161,9 @@ export default {
 			if (this.myFriends.includes(Number(this.$route.query.id)))
 				return (RelationshipStatus.Friends);
 			if (this.me.pending.includes(Number(this.$route.query.id)))
-				return (RelationshipStatus.Pending);
+				return (RelationshipStatus.Accept);
+			if (this.them.pending.includes(this.me.id))
+				return (RelationshipStatus.Pending)
 			return (RelationshipStatus.Strangers);
 		},
 		async addFriend() {
@@ -160,6 +175,10 @@ export default {
 		},
 		async removeFriend() {
 			await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id) });
+			this.myFriends.splice(this.myFriends.indexOf(Number(this.$route.query.id)), 1);
+		},
+		async cancelPending() {
+			//  you can not cancel yet
 		},
 		getUserPicture(): string {
 			return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${Number(this.$route.query.id)}.png`);

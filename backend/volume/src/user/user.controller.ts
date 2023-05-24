@@ -238,6 +238,7 @@ async getUsers(@Response() res: any) {
         friends: otherAsUser.friends,
       }
     });
+	return {status: "unFriended"};
   }
 
   @UseGuards(JwtAuthGuard)
