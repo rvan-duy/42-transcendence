@@ -190,7 +190,7 @@ async getUsers(@Response() res: any) {
           friends: otherAsUser.friends,
         }
       });
-      return ; // well done you are now friends
+      return {status: "friend"}; // well done you are now friends
     }
     // I LEFT HERE WITH CHECKING
 	if (otherAsUser.pending.includes(myId))
@@ -206,7 +206,7 @@ async getUsers(@Response() res: any) {
     });
     if (updateCatcher === undefined)
       throw Error('friendship could not be established');
-    return ; // wait till they accept your request (spannend!)
+    return {status: "pending"}; // wait till they accept your request (spannend!)
   }
 
   // not needed
