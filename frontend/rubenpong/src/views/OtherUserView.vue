@@ -28,7 +28,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
 							</button>
 							<button v-else-if="relationshipStatus() === RelationshipStatus.Pending"
 								class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
-								@click="cancelPending()">
+								@click="removeFriend()">
 								Pending (cancel)
 							</button>
 							<button v-else-if="relationshipStatus() === RelationshipStatus.Accept"
@@ -152,15 +152,10 @@ export default {
 		goTo(route: string) {
 			this.$router.push('/' + route);
 		},
-		alreadyFriends(): boolean {
-			const friend: boolean = this.myFriends.includes(Number(this.$route.query.id));
-			console.log(friend);
-			return (friend);
-		},
 		relationshipStatus(): RelationshipStatus {
 			if (this.myFriends.includes(Number(this.$route.query.id)))
 				return (RelationshipStatus.Friends);
-			if (this.me.pending.includes(Number(this.$route.query.id)))
+			if (this.me.pending.includes(this.them.id))
 				return (RelationshipStatus.Accept);
 			if (this.them.pending.includes(this.me.id))
 				return (RelationshipStatus.Pending)
@@ -171,11 +166,14 @@ export default {
 			if (ret.status === "friend")
 				this.me.friends.push(Number(this.$route.query.id));
 			else if (ret.status === "pending")
-				this.me.pending.push(Number(this.$route.query.id));
+				this.them.pending.push(Number(this.$route.query.id));
 		},
 		async removeFriend() {
-			await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id) });
-			this.myFriends.splice(this.myFriends.indexOf(Number(this.$route.query.id)), 1);
+			const ret = await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id) });
+			if (ret.status === 'unFriended')
+				this.myFriends.splice(this.myFriends.indexOf(Number(this.$route.query.id)), 1);
+			else if (ret.status === 'unPended')
+				this.them.pending.splice(this.them.pending.indexOf(this.me.id), 1);
 		},
 		async cancelPending() {
 			//  you can not cancel yet

@@ -218,6 +218,18 @@ async getUsers(@Response() res: any) {
     userId = Number(userId);
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
+	if (otherAsUser.pending.includes(myId)) {
+		otherAsUser.pending.splice(otherAsUser.pending.indexOf(myId), 1);
+		this.userService.updateUser({
+			where: {
+				id: userId,
+			},
+			data: {
+				pending: otherAsUser.pending,
+			}
+		});
+		return {status: 'unPended'};
+	}
     if (meAsUser.friends.includes(userId) === false)
       return ; // you are not friends!
     meAsUser.friends.splice(meAsUser.friends.indexOf(userId), 1); // removes the friend :(
