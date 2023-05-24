@@ -194,6 +194,8 @@ async getUsers(@Response() res: any) {
       return ; // well done you are now friends
     }
     // I LEFT HERE WITH CHECKING
+	if (otherAsUser.pending.includes(myId))
+		return ;
     otherAsUser.pending.push(myId);
     const updateCatcher = await this.userService.updateUser({
       where: {
