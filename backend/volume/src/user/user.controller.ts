@@ -158,6 +158,7 @@ async getUsers(@Response() res: any) {
   async handleFriendRequest(@Request() req: any, @Query('id') userId: number) {
     const myId = Number(req.user.id);
     userId = Number(userId);
+    console.log('myid, userid', myId, userId);
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
     if (otherAsUser === undefined || meAsUser === undefined)
@@ -171,19 +172,29 @@ async getUsers(@Response() res: any) {
       meAsUser.friends.push(userId);
       meAsUser.pending.splice(meAsUser.pending.indexOf(userId), 1); // removes the pending request
       otherAsUser.friends.push(myId);
-      const updateCatcher = await this.userService.updateUser({
+      console.log('measuser', meAsUser);
+      this.userService.updateUser({
         where: {
           id: myId,
         },
         data: {
           friends: meAsUser.friends,
+          pending: meAsUser.pending,
         }
       });
-      if (updateCatcher === undefined)
-        throw Error('friendship could not be established');
-      return ; // well done you are now friends
+      this.userService.updateUser({
+        where: {
+          id: userId,
+        },
+        data: {
+          friends: otherAsUser.friends,
+        }
+      });
+      return {status: 'friend'}; // well done you are now friends
     }
     // I LEFT HERE WITH CHECKING
+    if (otherAsUser.pending.includes(myId))
+      return ;
     otherAsUser.pending.push(myId);
     const updateCatcher = await this.userService.updateUser({
       where: {
@@ -195,7 +206,7 @@ async getUsers(@Response() res: any) {
     });
     if (updateCatcher === undefined)
       throw Error('friendship could not be established');
-    return ; // wait till they accept your request (spannend!)
+    return {status: 'pending'}; // wait till they accept your request (spannend!)
   }
 
   // not needed
@@ -207,6 +218,18 @@ async getUsers(@Response() res: any) {
     userId = Number(userId);
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
+    if (otherAsUser.pending.includes(myId)) {
+      otherAsUser.pending.splice(otherAsUser.pending.indexOf(myId), 1);
+      this.userService.updateUser({
+        where: {
+          id: userId,
+        },
+        data: {
+          pending: otherAsUser.pending,
+        }
+      });
+      return {status: 'unPended'};
+    }
     if (meAsUser.friends.includes(userId) === false)
       return ; // you are not friends!
     meAsUser.friends.splice(meAsUser.friends.indexOf(userId), 1); // removes the friend :(
@@ -227,6 +250,7 @@ async getUsers(@Response() res: any) {
         friends: otherAsUser.friends,
       }
     });
+    return {status: 'unFriended'};
   }
 
   @UseGuards(JwtAuthGuard)
@@ -265,5 +289,24 @@ async getUsers(@Response() res: any) {
         blocked: meAsUser.blocked,
       },
     });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('onlyFriends')
+  async getOnlyFriends(@Request() req: any) {
+    const myId = req.user.id;
+    const pending = req.user.pending;
+
+    const onlyFriends = await this.userService.onlyFriends(myId);
+    const onlyPending = await this.userService.onlyPending(pending);
+
+    for (const item of onlyFriends) {
+      item.status = await this.statusService.getStatus(item.id);
+    }
+    for (const item of onlyPending) {
+      item.status = await this.statusService.getStatus(item.id);
+    }
+
+    return {onlyFriends, onlyPending};
   }
 }
