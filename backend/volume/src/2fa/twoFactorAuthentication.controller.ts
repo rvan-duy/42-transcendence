@@ -10,9 +10,9 @@ import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, Api
 @ApiUnauthorizedResponse({ description: 'Unauthorized', type: Object })
 export class TwoFactorAuthenticationController {
   constructor(
-      private readonly twoFactorAuthenticationService: TwoFactorAuthenticationService,
-      private readonly authService: AuthService,
-  ) {}
+    private readonly twoFactorAuthenticationService: TwoFactorAuthenticationService,
+    private readonly authService: AuthService,
+  ) { }
 
   @Get('generate')
   @UseGuards(JwtAuthGuard)
@@ -60,7 +60,7 @@ export class TwoFactorAuthenticationController {
     summary: 'Turn off two-factor authentication for current user',
     description: 'Verifies the two-factor code provided by the user against the generated secret. If the code is verified, turns off two-factor authentication for the user.'
   })
-  @ApiOkResponse({ description: 'Two-factor authentication turned on', type: String })
+  @ApiOkResponse({ description: 'Two-factor authentication turned off', type: String })
   @ApiBadRequestResponse({ description: 'Two-factor authentication verification failed', type: String })
   async turnOffTwoFactorAuthentication(@Request() req: any, @Response() res: any) {
     const isVerified = await this.twoFactorAuthenticationService.verifyTwoFactorCode(req.user.id, req.body.code);
@@ -85,7 +85,7 @@ export class TwoFactorAuthenticationController {
     if (isVerified === false) {
       return res.status(HttpStatus.FORBIDDEN).send('Two-factor authentication verification failed');
     }
-  
+
     const loggedUser = await this.authService.login(req.user, true);
     res.clearCookie('jwt');
     res.cookie('jwt', loggedUser.access_token, {
