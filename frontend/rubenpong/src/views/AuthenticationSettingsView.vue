@@ -16,6 +16,10 @@ import GenerateSecretButtonVue from '@/components/buttons/GenerateSecretButton.v
         <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full" @click="submitCode">
           Turn on Two Factor Authentication
         </button>
+        <br>
+        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full" @click="">
+          Turn off Two Factor Authentication (TODO)
+        </button>
       </form>
     </div>
   </div>
@@ -33,12 +37,14 @@ export default {
   methods: {
     async submitCode() {
       await postBackend('2fa/turn-on', { "code": this.code })
-        .then(() => {
-          this.$router.push({ name: 'user' });
+        .then((response) => {
+          if (response.status !== 200) {
+            alert('Invalid code');
+          }
+          else {
+            this.$router.push({ name: 'user' });
+          }
         })
-        .catch((error) => {
-          console.log(error);
-        });
     },
   },
 }
