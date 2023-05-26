@@ -10,8 +10,14 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
           <h1><i class="fas fa-smile" /> OnlyFriends</h1>
         </header>
         <main class="join-main">
-          <div v-if="pending.length > 0">
+          <div>
             <h1>Pending friend requests</h1>
+            <p
+             v-if="pending.length === 0"
+              class="text-black"
+            >
+              No friend requests yet!
+            </p>
             <ul id="users">
               <li
                 v-for="user in pending"
@@ -45,6 +51,12 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
             <h1 class="mt-8">
               Friends
             </h1>
+            <p
+             v-if="friends.length === 0"
+              class="text-black"
+            >
+              No friends yet!
+            </p>
             <ul id="users">
               <li
                 v-for="user in friends"
