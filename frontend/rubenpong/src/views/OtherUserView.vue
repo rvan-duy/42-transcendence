@@ -20,18 +20,32 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
                 {{ name }}
               </figcaption>
               <button
-                v-if="!alreadyFriends()"
+                v-if="relationStatus === RelationshipStatus.Strangers"
                 class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
                 @click="addFriend()"
               >
                 Add as friend
               </button>
               <button
-                v-else-if="alreadyFriends()"
+                v-else-if="relationStatus === RelationshipStatus.Friends"
                 class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
                 @click="removeFriend()"
               >
                 Remove as friend
+              </button>
+              <button
+                v-else-if="relationStatus === RelationshipStatus.Pending"
+                class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
+                @click="removeFriend()"
+              >
+                Pending (cancel)
+              </button>
+              <button
+                v-else-if="relationStatus === RelationshipStatus.Accept"
+                class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
+                @click="addFriend()"
+              >
+                Accept
               </button>
             </span>
           </div>
@@ -102,7 +116,8 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
               <span
                 v-if="match.players[0]?.name === name"
                 class="text-black font-bold"
-              >{{ match.players[1]?.name
+              >{{
+                match.players[1]?.name
               }}</span>
               <span
                 v-else
@@ -117,21 +132,31 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
 </template>
 
 <script lang="ts">
+enum RelationshipStatus {
+	Friends = 'FRIENDS',
+	Pending = 'PENDING',
+	Accept = 'ACCEPT',
+	Strangers = 'STRANGERS',
+}
+
 interface User {
-  id: number;
-  intraId: number;
-  name: string;
-  status: string;
-  pending: [];
-  friends: [];
-  blocked: [];
-  elo: number;
-  twoFactor: boolean;
-  secret: string;
+	id: number;
+	intraId: number;
+	name: string;
+	status: string;
+	pending: [];
+	friends: [];
+	blocked: [];
+	elo: number;
+	twoFactor: boolean;
+	secret: string;
 }
 export default {
   data() {
     return {
+      me: {} as User,
+      them: {} as User,
+      relationStatus: RelationshipStatus.Strangers,
       id: 0,
       name: '',
       status: 'Online',
@@ -149,32 +174,47 @@ export default {
       .then(res => res.json())
       .then(data => {
         console.log(data);
+        this.me = data;
         this.myFriends = data.friends;
       });
     await getBackend('user/id/' + this.$route.query.id + '?withGames=true&withStatus=true')
       .then(res => res.json())
       .then(data => {
+        this.them = data;
         this.id = data.id,
         this.name = data.name;
         this.rank = data.elo;
         this.matches = data.games;
         this.status = data.status;
       });
+    this.relationStatus = this.relationshipStatus();
   },
   methods: {
     goTo(route: string) {
       this.$router.push('/' + route);
     },
-    alreadyFriends(): boolean {
-      const friend: boolean = this.myFriends.includes(Number(this.$route.query.id));
-      console.log(friend);
-      return (friend);
+    relationshipStatus(): RelationshipStatus {
+      if (this.myFriends.includes(Number(this.$route.query.id)))
+        return (RelationshipStatus.Friends);
+      if (this.me.pending.includes(this.them.id))
+        return (RelationshipStatus.Accept);
+      if (this.them.pending.includes(this.me.id))
+        return (RelationshipStatus.Pending);
+      return (RelationshipStatus.Strangers);
     },
     async addFriend() {
-      await postBackendWithQueryParams('user/befriend', undefined, { id: Number(this.$route.query.id) });
+      const ret = await postBackendWithQueryParams('user/befriend', undefined, { id: Number(this.$route.query.id) });
+      if (ret.status === 'friend')
+        this.relationStatus = RelationshipStatus.Friends;
+      else if (ret.status === 'pending')
+        this.relationStatus = RelationshipStatus.Pending;
     },
     async removeFriend() {
       await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id) });
+      this.relationStatus = RelationshipStatus.Strangers;
+    },
+    async cancelPending() {
+      //  you can not cancel yet
     },
     getUserPicture(): string {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${Number(this.$route.query.id)}.png`);
@@ -184,7 +224,7 @@ export default {
       console.log('first look', dmChat);
       const chat = await dmChat.json();
       console.log('private chat', chat);
-      this.goTo('chatroom/'+ this.name + '?id=' + chat.id.toString());
+      this.goTo('chatroom/' + this.name + '?id=' + chat.id.toString());
     }
   }
 };
@@ -192,14 +232,14 @@ export default {
 
 <style src="../assets/chat.css">
 @media (min-width: 1024px) {
-  .chat {
-    min-height: 100vh;
-    align-items: center;
-  }
+	.chat {
+		min-height: 100vh;
+		align-items: center;
+	}
 }
 
 .custom-file-upload {
-  border: 1px solid #ccc;
-  border-radius: 50%;
+	border: 1px solid #ccc;
+	border-radius: 50%;
 }
 </style>
