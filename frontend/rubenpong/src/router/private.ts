@@ -6,6 +6,7 @@ import UserView from '@/views/UserView.vue';
 import OtherUserView from '@/views/OtherUserView.vue';
 import SearchUserView from '@/views/SearchUserView.vue';
 import LadderView from '@/views/LadderView.vue';
+import FriendsView from '@/views/FriendsView.vue';
 
 const routes = [
   {
@@ -56,6 +57,11 @@ const routes = [
     path: '/ladder',
     name: 'ladder',
     component: LadderView,
+  },
+  {
+    path: '/friends',
+    name: 'friends',
+    component: FriendsView,
   },
 ];
 

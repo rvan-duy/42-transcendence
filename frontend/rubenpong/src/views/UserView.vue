@@ -93,7 +93,7 @@
           </div>
           <label for="status">Match History</label>
           <p
-            v-if="matches_played === 0"
+            v-if="matches.length === 0"
             class="text-black"
           >
             No matches played yet!
@@ -151,7 +151,7 @@ export default {
       name: '',
       id: 0,
       backendPictureUrl: '',
-      status: 'Online',
+      status: '',
       matches_played: 1,
       newUsername: '',
       elo: 500,
@@ -174,12 +174,11 @@ export default {
         console.log('data');
         console.log(data);
       });
-    await getBackend('user/id/' + this.id + '?withGames=true')
+    await getBackend('user/id/' + this.id + '?withGames=true&withStatus=true')
       .then(res => res.json())
       .then(user => {
-        console.log('user');
-        console.log(user);
-        this.matches = user.games;
+        this.matches = user?.games;
+        this.status = user.status;
       });
   },
   methods: {

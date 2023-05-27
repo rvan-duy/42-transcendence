@@ -31,7 +31,7 @@
                   </option>
                 </select>
               </div>
-              <div v-if="selectedChat?.access === 'PROTECTED'">
+              <div v-if="selectedChat?.access === 'PROTECTED' && !myRooms.includes(selectedChat)">
                 <label for="name">Password</label>
                 <span class="text-black pr-4"><input
                   id="username"
@@ -42,11 +42,11 @@
                   placeholder="Enter password..."
                   required
                   style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-                > </span>
+                ></span>
               </div>
               <!-- We need a backend check to see if password is valid, but I implemented a frontend check to make user check whether they typed a password if one is required -->
               <button
-                v-if="selectedChat == NULL || (selectedChat?.access === 'PROTECTED' && enteredPW === '')"
+                v-if="selectedChat == NULL || (selectedChat?.access === 'PROTECTED' && enteredPW === '' && !myRooms.includes(selectedChat))"
                 type="submit"
                 class="btn bg-blue-100"
               >

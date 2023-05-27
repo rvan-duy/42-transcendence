@@ -145,8 +145,8 @@ export class ChatController {
       throw new Error('no access or invalid roomId'); // also catches non existing rooms
 
     try {
-      const roomIncludingAdmins = await this.roomService.getRoomAdmins(roomId);
-      return roomIncludingAdmins.admin;
+      const admins = await this.roomService.getRoomAdmins(roomId);
+      return admins;
     } catch {
       throw new InternalServerErrorException('Failed to fetch admins for room');
     }
@@ -176,9 +176,11 @@ export class ChatController {
     @Query('userId') userId: number,
   ) {
     const clientId = req.user.id;
+    console.log(req);
     userId = Number(userId);
     roomId = Number(roomId);
     // is the sender is not the chat owner leave it intact and return and error
+
     if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner is alowed to promote to admin');
 
@@ -271,7 +273,7 @@ export class ChatController {
       throw new ForbiddenException('Only chat owner or admin is alowed to kick users from chat');
 
     // check if the kicked user is not the owner or admin
-    if (await this.chatService.isAdminOrOwner(roomId, kickUserId) === true)
+    if (await this.chatService.isOwner(roomId, kickUserId) === true)
       throw new ForbiddenException('The chat owner cannot be kicked');
 
     // remove the kicked user from chat
@@ -299,11 +301,11 @@ export class ChatController {
     @Query('roomId') roomId: number,
     @Query('newPassword') newPassword: string,
   ) {
-    const clientId = req.user.id;
+    const clientId = Number(req.user.id);
     roomId = Number(roomId);
 
     // only alow the chat owner and admins to change chat password
-    if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
+    if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to change the password');
 
     // passcode will be hashed in changePassword
@@ -327,7 +329,7 @@ export class ChatController {
       newPassword = undefined;
 
     // only alow the chat owner and admins to change chat password
-    if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
+    if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to change the access level');
 
     // change chat type to protected instead?
