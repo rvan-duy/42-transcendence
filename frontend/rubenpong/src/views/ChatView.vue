@@ -46,7 +46,7 @@
               </div>
               <!-- We need a backend check to see if password is valid, but I implemented a frontend check to make user check whether they typed a password if one is required -->
               <button
-                v-if="selectedChat == NULL || (selectedChat?.access === 'PROTECTED' && enteredPW === '' && !myRooms.includes(selectedChat))"
+                v-if="selectedChat == null || (selectedChat?.access === 'PROTECTED' && enteredPW === '' && !myRooms.includes(selectedChat))"
                 type="submit"
                 class="btn bg-blue-100"
               >
@@ -128,7 +128,7 @@
               {{ newChat }}
 
               <button
-                v-if="newChat.name == NULL || newChat.access === undefined || ( newChat.access === 'PROTECTED'&& newChat.password == NULL)"
+                v-if="newChat.name == null || newChat.access === undefined || ( newChat.access === 'PROTECTED'&& newChat.password == NULL)"
                 type="submit"
                 class="btn bg-blue-100"
               >
@@ -160,6 +160,10 @@ interface Chat {
   access: string;
   lastId: number;
   password: string;
+}
+
+enum Debug {
+  ENABLED = 0,
 }
 
 export default {
@@ -195,7 +199,8 @@ export default {
       if (!this.myRooms.includes(this.selectedChat as Chat))
       {
         const result = await postBackendWithQueryParams('chat/joinRoom', undefined, { roomId: this.selectedChat?.id, password: this.enteredPW});
-        console.log(result);
+        if (Debug.ENABLED)
+          console.log(result);
         if (result.statusCode === 403)
         {
           alert('Wrong password');
@@ -207,7 +212,8 @@ export default {
       this.$router.push('/' + route);
     },
     goTo(route: string) {
-      console.log('/' + route);
+      if (Debug.ENABLED)
+        console.log('/' + route);
       this.$router.push('/' + route);
     },
     async createChat(newChat: Chat) {

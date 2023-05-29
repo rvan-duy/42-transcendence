@@ -280,6 +280,10 @@ interface User {
   name: string;
 }
 
+enum Debug {
+  ENABLED = 0,
+}
+
 enum InviteStatus {
     NotInRoom = 'You do not have access to the room you have provided',
     AlreadyInGame = 'You are already playing an ongoing game',
@@ -345,7 +349,8 @@ export default {
   },
   methods: {
     clickOk() {
-      console.log(this.chat?.access);
+      if (Debug.ENABLED)
+        console.log(this.chat?.access);
       if (this.chat?.access === 'PUBLIC')
         this.changeAccess('PROTECTED');
       else
@@ -389,7 +394,8 @@ export default {
         return true;
     },
     async loadChatBaseListener(room: any) {
-      console.log('loadRoom: ', room);
+      if (Debug.ENABLED)
+        console.log('loadRoom: ', room);
       this.chat = room.chat;
       const promises = room.history.map((msg: any) => {
         return getBackend('user/id/' + msg.authorId)
@@ -468,14 +474,17 @@ export default {
 
     confirmAndGo(message: string, f: Function, param: any) {
       if (confirm('Are you sure you want to ' + message + '?') === true) {
-        console.log('You pressed OK!');
+        if (Debug.ENABLED)
+          console.log('You pressed OK!');
         f(param);
       } else {
-        console.log('You canceled!');
+        if (Debug.ENABLED)
+          console.log('You canceled!');
       }
     },
     leaveChat() {
-      console.log('leave');
+      if (Debug.ENABLED)
+        console.log('leave');
       postBackendWithQueryParams('chat/leaveRoom', undefined, { roomId: this.chatId });
       this.usersAdded.forEach(element => {
 
@@ -488,7 +497,8 @@ export default {
 
     scrollChatToBottom() {
       const messageContainer = this.$refs.messageContainer as HTMLElement;
-      console.log('current: ', messageContainer.scrollTop, ' next: ', messageContainer.scrollHeight);
+      if (Debug.ENABLED)
+        console.log('current: ', messageContainer.scrollTop, ' next: ', messageContainer.scrollHeight);
       messageContainer.scrollTop = messageContainer.scrollHeight;
     },
     async chatFormSubmit(e: any, chatId: number) {
@@ -544,9 +554,11 @@ export default {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${userId}.png`);
     },
     async changePassword() {
-      console.log('change pw' + this.newPassword);
+      if (Debug.ENABLED)
+        console.log('change pw' + this.newPassword);
       const result = await postBackendWithQueryParams('chat/changePassword', undefined, { roomId: this.chatId, newPassword: this.newPassword });
-      console.log(result);
+      if (Debug.ENABLED)
+        console.log(result);
       if (result.statusCode === 403)
       {
         alert('You have to be an admin for this action.');
@@ -557,11 +569,13 @@ export default {
     },
     //change access is for setting a password and change password is for changing a password
     async changeAccess(newAccess: string) {
-      console.log('change access' + newAccess);
+      if (Debug.ENABLED)
+        console.log('change access' + newAccess);
       if (newAccess !== 'PUBLIC' && newAccess !== 'PRIVATE' && newAccess !== 'PROTECTED')
         return;
       const result = await postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess: newAccess, newPassword: this.newPassword });
-      console.log(result);
+      if (Debug.ENABLED)
+        console.log(result);
       if (result.statusCode === 403)
       {
         alert('You have to be in the channel for this action.');

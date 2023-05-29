@@ -144,6 +144,10 @@ interface User {
   secret: string;
 }
 
+enum Debug {
+  ENABLED = 0,
+}
+
 export default {
   data()
   {
@@ -171,8 +175,10 @@ export default {
         this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.png`;
         this.elo = data.elo;
         this.status = 'Online';
-        console.log('data');
-        console.log(data);
+        if (Debug.ENABLED) {
+          console.log('data');
+          console.log(data);
+        }
       });
     await getBackend('user/id/' + this.id + '?withGames=true&withStatus=true')
       .then(res => res.json())
