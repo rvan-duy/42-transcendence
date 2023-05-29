@@ -1,5 +1,4 @@
 import {
-  SubscribeMessage,
   WebSocketGateway,
   OnGatewayInit,
   OnGatewayConnection,
@@ -36,7 +35,7 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     let user;
     try {
       user = await this.jwtService.verify(
-      client.handshake.auth.token, { secret: process.env.JWT_SECRET }
+        client.handshake.auth.token, { secret: process.env.JWT_SECRET }
       );
     } catch(err) {
       client.emit('FailedToAuthenticate');
