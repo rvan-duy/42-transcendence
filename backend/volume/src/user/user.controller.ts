@@ -257,6 +257,7 @@ async getUsers(@Response() res: any) {
   @Post('block')
   async handleBlock(@Request() req: any, @Query('id') userId: number) {
     const myId = req.user.id;
+    userId = Number(userId);
     // add to block on this side
     const meAsUser = await this.userService.user(myId);
     meAsUser.blocked.push(userId);
