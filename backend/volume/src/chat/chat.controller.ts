@@ -39,7 +39,7 @@ export class ChatController {
     @Query('access') access: Access = Access.PUBLIC,
     @Body() body: any,
   ) {
-	const password = body?.password ?? undefined;
+    const password = body?.password ?? undefined;
     if (password === undefined && access === Access.PROTECTED)
       throw new HttpException('password left undefined for protected chat', HttpStatus.BAD_REQUEST);
 
@@ -60,13 +60,13 @@ export class ChatController {
     @Query('roomId') roomId: number,
     @Body() body: any,
   ) {
-	const password = body?.password ?? undefined;
+    const password = body?.password ?? undefined;
     const userId = req.user.id;
     roomId = Number(roomId);
     const room = await this.prismaRoomService.Room({id: roomId});
     switch (room?.access || 'invalid') {
     case Access.PRIVATE:
-		throw new ForbiddenException('You need to be added ot this room');
+      throw new ForbiddenException('You need to be added ot this room');
     case Access.PROTECTED:
       if (await this.cryptService.comparePassword(password, room.hashedCode) === false) {
         throw new ForbiddenException('Incorrect password');
@@ -300,7 +300,7 @@ export class ChatController {
     @Query('roomId') roomId: number,
     @Body() body: any,
   ) {
-	const newPassword = body?.password ?? undefined;
+    const newPassword = body?.password ?? undefined;
     const clientId = Number(req.user.id);
     roomId = Number(roomId);
 
@@ -320,7 +320,7 @@ export class ChatController {
     @Query('newAccess') newAccess: Access,
     @Body() body: any,
   ) {
-	let newPassword = body?.password ?? undefined;
+    let newPassword = body?.password ?? undefined;
     const clientId = req.user.id;
     roomId = Number(roomId);
 
