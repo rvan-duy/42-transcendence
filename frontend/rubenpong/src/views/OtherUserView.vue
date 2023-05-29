@@ -139,6 +139,10 @@ enum RelationshipStatus {
 	Strangers = 'STRANGERS',
 }
 
+enum Debug {
+  ENABLED = 0,
+}
+
 interface User {
 	id: number;
 	intraId: number;
@@ -173,7 +177,8 @@ export default {
     await getBackend('user/me')
       .then(res => res.json())
       .then(data => {
-        console.log(data);
+        if (Debug.ENABLED)
+          console.log(data);
         this.me = data;
         this.myFriends = data.friends;
       });
@@ -221,9 +226,11 @@ export default {
     },
     async gotoDM() {
       const dmChat = await getBackend('chat/directMsg?friendId=' + this.id.toString());
-      console.log('first look', dmChat);
+      if (Debug.ENABLED)
+        console.log('first look', dmChat);
       const chat = await dmChat.json();
-      console.log('private chat', chat);
+      if (Debug.ENABLED)
+        console.log('private chat', chat);
       this.goTo('chatroom/' + this.name + '?id=' + chat.id.toString());
     }
   }

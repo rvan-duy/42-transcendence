@@ -2,6 +2,7 @@
 import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests';
 import { Modal } from 'usemodal-vue3';
 import SocketioService from '../services/socketio.service.js';
+import { GameMode } from '@/utils/game-definitions';
 </script>
 
 <!-- • The user should be able to create channels (chat rooms) that can be either public,
@@ -167,7 +168,7 @@ interface.
                   <button
                     v-if="user.id !== idUser"
                     class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                    @click="goTo('game')"
+                    @click="inviteSubmit(chatId, GameMode.FIESTA)"
                   >
                     Invite to game
                   </button>
@@ -207,9 +208,33 @@ interface.
                 <p class="meta">
                   {{ message.username }} <span>{{ toLocale(message.timestamp) }}</span>
                 </p>
-                <p class="text">
+                <p
+                  v-if="message.invite === false"
+                  class="text"
+                >
+                  <!-- if the message is not an invite -->
                   {{ message.body }}
                 </p>
+                <p
+                  v-else-if="message.invite === true && message.authorId === idUser"
+                  class="text"
+                >
+                  <!-- if the invite is from yourself -->
+                  {{ `You have invited this room to play a game` }}
+                </p>
+                <p
+                  v-else
+                  class="text"
+                >
+                  {{ message.body }}
+                </p>
+                <button
+                  v-if="message.invite === true && message.authorId !== idUser"
+                  class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs m-3"
+                  @click="acceptInvite(message.id)"
+                >
+                  accept invite
+                </button>
               </div>
             </div>
           </main>
@@ -255,6 +280,20 @@ interface User {
   name: string;
 }
 
+enum Debug {
+  ENABLED = 0,
+}
+
+enum InviteStatus {
+    NotInRoom = 'You do not have access to the room you have provided',
+    AlreadyInGame = 'You are already playing an ongoing game',
+    CreatorAlreadyInGame = 'The creator is currently in an ongoing game',
+    InviteAccepted = 'You have accepted the invite',
+    InviteNotFound = 'Unable to find the invite you are trying to accept',
+    InvalidPacket = 'You have sent an invalid packet to the server',
+    Muted = 'You are muted in the provided room',
+  }
+
 export default {
   data() {
     return {
@@ -285,10 +324,7 @@ export default {
       .then((res) => {
         res.json()
           .then((data) => {
-            console.log('check');
-            console.log(data);
             this.idUser = data.id;
-            console.log(data.id);
             setTimeout(() => {
               this.amIAdmin();
             }, 100);
@@ -313,7 +349,8 @@ export default {
   },
   methods: {
     clickOk() {
-      console.log(this.chat?.access);
+      if (Debug.ENABLED)
+        console.log(this.chat?.access);
       if (this.chat?.access === 'PUBLIC')
         this.changeAccess('PROTECTED');
       else
@@ -357,10 +394,10 @@ export default {
         return true;
     },
     async loadChatBaseListener(room: any) {
-      console.log('loadRoom: ', room);
+      if (Debug.ENABLED)
+        console.log('loadRoom: ', room);
       this.chat = room.chat;
       const promises = room.history.map((msg: any) => {
-        console.log(getBackend('user/id/' + msg.authorId));
         return getBackend('user/id/' + msg.authorId)
           .then(res => res.json())
           .then(user => {
@@ -369,13 +406,27 @@ export default {
       });
       await Promise.all(promises);
       this.messages = room.history;
-      console.log('history messages: ', this.messages);
       this.users = room.users;
       Array.prototype.push.apply(this.usersAdded, this.users);
     },
 
+    createInviteErrorListener(message: string) {
+      // ToDo: Make error pop up
+      console.log(message);
+    },
+
+    async editMessageListener(editedMessage: any) { // ToDo: find a way to set the username in the backend instead of reusing the old name?
+      for (let index = 0; index < this.messages.length; index++) {
+        if (this.messages[index].id === editedMessage.id) {
+          const userName: string = this.messages[index].username;
+          this.messages[index] = editedMessage;
+          this.messages[index].username = userName;
+          return ;
+        }
+      }
+    },
+
     receiveNewMsgListener(msg: any) {
-      console.log('msg: ', msg);
       msg.username = msg.author.name;
       this.addMessage(msg);
       // this.scrollChatToBottom();
@@ -384,13 +435,19 @@ export default {
     async setupSocketListeners() {
       this.connection.socket.on('loadChatBase', this.loadChatBaseListener);
       this.connection.socket.on('receiveNewMsg', this.receiveNewMsgListener);
+      this.connection.socket.on('inviteStatus', this.receiveInviteStatusListener);
+      this.connection.socket.on('editMessage', this.editMessageListener);
+      this.connection.socket.on('createInviteError', this.createInviteErrorListener);
       // request the chat messages once the listener has been setup
       this.connection.socket.emit('loadRequest', Number(this.$route.query.id));
     },
-
+    
     dropSocketListeners() {
       this.connection.socket.off('loadChatBase', this.loadChatBaseListener);
+      this.connection.socket.off('inviteStatus', this.receiveInviteStatusListener);
       this.connection.socket.off('receiveNewMsg', this.receiveNewMsgListener);
+      this.connection.socket.off('createInviteError', this.createInviteErrorListener);
+      this.connection.socket.off('editMessage', this.editMessageListener);
     },
 
     async makeAdmin(newAdminId: number) {
@@ -417,14 +474,17 @@ export default {
 
     confirmAndGo(message: string, f: Function, param: any) {
       if (confirm('Are you sure you want to ' + message + '?') === true) {
-        console.log('You pressed OK!');
+        if (Debug.ENABLED)
+          console.log('You pressed OK!');
         f(param);
       } else {
-        console.log('You canceled!');
+        if (Debug.ENABLED)
+          console.log('You canceled!');
       }
     },
     leaveChat() {
-      console.log('leave');
+      if (Debug.ENABLED)
+        console.log('leave');
       postBackendWithQueryParams('chat/leaveRoom', undefined, { roomId: this.chatId });
       this.usersAdded.forEach(element => {
 
@@ -437,17 +497,40 @@ export default {
 
     scrollChatToBottom() {
       const messageContainer = this.$refs.messageContainer as HTMLElement;
-      console.log('current: ', messageContainer.scrollTop, ' next: ', messageContainer.scrollHeight);
+      if (Debug.ENABLED)
+        console.log('current: ', messageContainer.scrollTop, ' next: ', messageContainer.scrollHeight);
       messageContainer.scrollTop = messageContainer.scrollHeight;
     },
     async chatFormSubmit(e: any, chatId: number) {
       const msg = e.target.elements.msg;
-      const packet = { roomId: chatId, body: (msg.value) };
+      const packet = { roomId: chatId, body: (msg.value), invite: false };
       SocketioService.socket.emit('sendMsg', packet);
       msg.value = ''; //clears the message text you just entered
       msg.focus(); //focuses on the text input area again after sending
       this.scrollChatToBottom();
     },
+
+    async inviteSubmit(chatId: number, mode: GameMode) {
+      SocketioService.socket.emit('sendInvite', {roomId: chatId, mode: mode} );
+    },
+
+    // disableInviteListener(invite to be disabled/removed ) {
+
+    // },
+
+    receiveInviteStatusListener(inviteStatus: InviteStatus) {
+      if (inviteStatus === InviteStatus.InviteAccepted) {
+        this.goTo('game');
+        return ;
+      }
+      // ToDo: Make visual pop up for user showing the error
+      console.log(`Error accepting invite:\n${inviteStatus}.`);
+    },
+
+    async acceptInvite(messageId: number) {
+      SocketioService.socket.emit('acceptInvite', { roomId: this.chatId, messageId: messageId });
+    },
+
     async addUser(user: User) {
       this.usersAdded.push(user);
       await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToAdd: user.id });
@@ -471,9 +554,11 @@ export default {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${userId}.png`);
     },
     async changePassword() {
-      console.log('change pw' + this.newPassword);
+      if (Debug.ENABLED)
+        console.log('change pw' + this.newPassword);
       const result = await postBackendWithQueryParams('chat/changePassword', undefined, { roomId: this.chatId, newPassword: this.newPassword });
-      console.log(result);
+      if (Debug.ENABLED)
+        console.log(result);
       if (result.statusCode === 403)
       {
         alert('You have to be an admin for this action.');
@@ -484,11 +569,13 @@ export default {
     },
     //change access is for setting a password and change password is for changing a password
     async changeAccess(newAccess: string) {
-      console.log('change access' + newAccess);
+      if (Debug.ENABLED)
+        console.log('change access' + newAccess);
       if (newAccess !== 'PUBLIC' && newAccess !== 'PRIVATE' && newAccess !== 'PROTECTED')
         return;
       const result = await postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess: newAccess, newPassword: this.newPassword });
-      console.log(result);
+      if (Debug.ENABLED)
+        console.log(result);
       if (result.statusCode === 403)
       {
         alert('You have to be in the channel for this action.');
