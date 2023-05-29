@@ -97,6 +97,10 @@ export class RoomService {
     });
   }
 
+  async getDirectMsg(myId: number, friendId: number) {
+    return await this.prismaRoom.getOrCreateDirectMessage(myId, friendId);
+  }
+
   // fetches all users of this chatroom
   async getRoomUsers(roomId: number){
     const roomAndUsers = await this.prismaRoom.RoomWithUsers({id: roomId});
@@ -105,7 +109,7 @@ export class RoomService {
 
   async getRoomAdmins(roomId: number){
     const roomAndUsers = await this.prismaRoom.roomWithAdmins({id: roomId});
-    return(roomAndUsers?.users);
+    return(roomAndUsers?.admin);
   }
 
   async getRoomById(roomId: number) {
@@ -133,15 +137,27 @@ export class RoomService {
     });
   }
 
-  async getPublicRooms(userId: number) : Promise<any | null> {
+  async getPublicAndProtectedRooms(userId: number) : Promise<any | null> {
     return (this.prismaRoom.Rooms({
       where: {
-        access: Access.PUBLIC,
-        users: {
-          none: {
-            id: userId
+        OR:[
+          {
+            access: Access.PUBLIC,
+            users: {
+              none: {
+                id: userId,
+              }
+            }
+          },
+          {
+            access: Access.PROTECTED,
+            users: {
+              none: {
+                id: userId,
+              }
+            }
           }
-        }
+        ]
       }
     }));
   }
@@ -208,5 +224,28 @@ export class RoomService {
         }
       }
     });
+  }
+
+  async changeAccess(roomId: number, newAccess: Access, newPassword: string) {
+    const room = await this.prismaRoom.updateRoom({
+      where: { id: roomId },
+      data: {
+        access: newAccess,
+        hashedCode: await this.cryptService.hashPassword(newPassword),
+      },
+    });
+    const roomWithoutPasscode = exclude(room, ['hashedCode']);
+    return roomWithoutPasscode;
+  }
+
+  async changePassword(roomId: number, newPassword: string) {
+    const room = await this.prismaRoom.updateRoom({
+      where: { id: roomId },
+      data: {
+        hashedCode: await this.cryptService.hashPassword(newPassword),
+      },
+    });
+    const roomWithoutPasscode = exclude(room, ['hashedCode']);
+    return roomWithoutPasscode;
   }
 }

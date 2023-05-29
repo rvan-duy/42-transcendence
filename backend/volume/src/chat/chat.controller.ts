@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Controller,
   ForbiddenException,
   Get,
@@ -64,14 +65,15 @@ export class ChatController {
     case Access.PRIVATE:
       return ; // you need to be added to this chat
     case Access.PROTECTED:
-      if (await this.cryptService.comparePassword(password, room.hashedCode) === false)
-        return ; // incorrect password
+      if (await this.cryptService.comparePassword(password, room.hashedCode) === false) {
+        throw new ForbiddenException('Incorrect password');
+      }
       this.roomService.addToChat(userId, roomId);
-      break ;
+      return ;
     case Access.PUBLIC:
       return ; // not added to public rooms since everyone is part unless kicked / blocked
     case 'invalid':
-      throw Error('room may not exist');
+      throw new NotFoundException('Room not found');
     }
   }
 
@@ -86,14 +88,32 @@ export class ChatController {
       const chatsFromUser = userWithChats.rooms as Room[];
       
       // get public chats and add them to the list
-      const publicChats = await this.roomService.getPublicRooms(Number(userId));
-      const combinedChats = chatsFromUser.concat(publicChats);
+      const availableChats = await this.roomService.getPublicAndProtectedRooms(Number(userId));
+      // console.log(publicChats);
+      // console.log('userschats: ', chatsFromUser);
+      // const combinedChats = chatsFromUser.concat(publicChats);
 
       // return all available chat for users to sender
-      return combinedChats;
+      return {myRooms: chatsFromUser, available: availableChats};
     } catch {
       throw new InternalServerErrorException('Failed to fetch Rooms');
     }
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('directMsg')
+  async getDM(
+    @Request() req: any,
+    @Query('friendId') friendId: number,
+  ) {
+    friendId = Number(friendId);
+    const clientId = req.user.id;
+
+    // TODO: check if is blocked
+
+    // get and return the dm
+    const room = await this.roomService.getDirectMsg(clientId, friendId);
+    return room;
   }
 
   @UseGuards(JwtAuthGuard)
@@ -125,8 +145,8 @@ export class ChatController {
       throw new Error('no access or invalid roomId'); // also catches non existing rooms
 
     try {
-      const roomIncludingAdmins = await this.roomService.getRoomAdmins(roomId);
-      return roomIncludingAdmins.admin;
+      const admins = await this.roomService.getRoomAdmins(roomId);
+      return admins;
     } catch {
       throw new InternalServerErrorException('Failed to fetch admins for room');
     }
@@ -156,9 +176,11 @@ export class ChatController {
     @Query('userId') userId: number,
   ) {
     const clientId = req.user.id;
+    console.log(req);
     userId = Number(userId);
     roomId = Number(roomId);
     // is the sender is not the chat owner leave it intact and return and error
+
     if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner is alowed to promote to admin');
 
@@ -250,7 +272,7 @@ export class ChatController {
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to kick users from chat');
 
-    // check if the kicked user is not the owner
+    // check if the kicked user is not the owner or admin
     if (await this.chatService.isOwner(roomId, kickUserId) === true)
       throw new ForbiddenException('The chat owner cannot be kicked');
 
@@ -267,12 +289,50 @@ export class ChatController {
     const clientId = req.user.id;
     roomId = Number(roomId);
 
-    // check if the kicked user is not the owner
-    // if (await this.chatService.isOwner(roomId, clientId) === true)
-    //   throw new ForbiddenException('The chat owner cannot leave?');
-
     // remove the user from chat
     // does not remove admin status
     this.roomService.kickUser(roomId, clientId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('changePassword')
+  async changePassword(
+    @Request() req: any,
+    @Query('roomId') roomId: number,
+    @Query('newPassword') newPassword: string,
+  ) {
+    const clientId = Number(req.user.id);
+    roomId = Number(roomId);
+
+    // only alow the chat owner and admins to change chat password
+    if (await this.chatService.isOwner(roomId, clientId) === false)
+      throw new ForbiddenException('Only chat owner or admin is alowed to change the password');
+
+    // passcode will be hashed in changePassword
+    return await this.roomService.changePassword(roomId, newPassword);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('changeAccess')
+  async changeAccess(
+    @Request() req: any,
+    @Query('roomId') roomId: number,
+    @Query('newAccess') newAccess: Access,
+    @Query('newPassword') newPassword: string = undefined,
+  ) {
+    const clientId = req.user.id;
+    roomId = Number(roomId);
+
+    if (newAccess === Access.PROTECTED && newPassword === undefined)
+      throw new BadRequestException('A change to password protected chat requires an new password');
+    else if (newAccess !== Access.PROTECTED)
+      newPassword = undefined;
+
+    // only alow the chat owner and admins to change chat password
+    if (await this.chatService.isOwner(roomId, clientId) === false)
+      throw new ForbiddenException('Only chat owner or admin is alowed to change the access level');
+
+    // change chat type to protected instead?
+    return await this.roomService.changeAccess(roomId, newAccess, newPassword);
   }
 }

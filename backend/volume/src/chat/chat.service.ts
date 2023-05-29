@@ -19,17 +19,15 @@ export class ChatService {
   }
 
   async isAdminOrOwner(roomId: number, userId: number) {
-    const room = await this.prismaRoomService.RoomWithUsers({id: roomId});
+    const room = await this.prismaRoomService.roomWithAdmins({id: roomId});
     if (room === undefined)
       return false;
     if (room.access === Access.PUBLIC)
       return true;
     if (room.ownerId === userId)
       return true;
-    for (let i = 0; i++; i < room.admin.length) {
-      if (room.admin[i].id === userId)
-        return true;
-    }
+    if (room.admin.some(admin => admin.id === userId))
+      return true;
     return false;
   }
 
@@ -41,7 +39,7 @@ export class ChatService {
       return true;
     if (room.ownerId === userId)
       return true;
-    if (room.users.includes(userId))
+    if (room.users.some(user => user.id === userId))
       return true;
     return false;
   }

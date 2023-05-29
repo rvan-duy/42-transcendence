@@ -35,6 +35,7 @@ lint:
 		@bash .github/scripts/eslint.sh
 lfix:
 		@bash .github/scripts/eslint.sh --fix
+flint: lfix
 
 # add object from seed file to DB
 seed:

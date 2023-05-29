@@ -1,4 +1,3 @@
-import HomeView from '@/views/HomeView.vue';
 import ChatView from '@/views/ChatView.vue';
 import ChatRoomView from '@/views/ChatRoomView.vue';
 import GameView from '@/views/GameView.vue';
@@ -7,20 +6,16 @@ import UserView from '@/views/UserView.vue';
 import OtherUserView from '@/views/OtherUserView.vue';
 import SearchUserView from '@/views/SearchUserView.vue';
 import LadderView from '@/views/LadderView.vue';
+import FriendsView from '@/views/FriendsView.vue';
 
 const routes = [
-  {
-    path: '/',
-    name: 'home',
-    component: HomeView,
-  },
   {
     path: '/chat',
     name: 'chat',
     component: ChatView,
   },
   {
-    path: '/game',
+    path: '/',
     name: 'game',
     component: GameView,
   },
@@ -62,6 +57,11 @@ const routes = [
     path: '/ladder',
     name: 'ladder',
     component: LadderView,
+  },
+  {
+    path: '/friends',
+    name: 'friends',
+    component: FriendsView,
   },
 ];
 

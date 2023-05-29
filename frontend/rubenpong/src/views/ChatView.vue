@@ -31,7 +31,7 @@
                   </option>
                 </select>
               </div>
-              <div v-if="selectedChat?.access === 'PROTECTED'">
+              <div v-if="selectedChat?.access === 'PROTECTED' && !myRooms.includes(selectedChat)">
                 <label for="name">Password</label>
                 <span class="text-black pr-4"><input
                   id="username"
@@ -42,11 +42,11 @@
                   placeholder="Enter password..."
                   required
                   style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-                > </span>
+                ></span>
               </div>
               <!-- We need a backend check to see if password is valid, but I implemented a frontend check to make user check whether they typed a password if one is required -->
               <button
-                v-if="selectedChat == NULL || (selectedChat?.access === 'PROTECTED' && enteredPW === '')"
+                v-if="selectedChat == NULL || (selectedChat?.access === 'PROTECTED' && enteredPW === '' && !myRooms.includes(selectedChat))"
                 type="submit"
                 class="btn bg-blue-100"
               >
@@ -56,7 +56,7 @@
                 v-else
                 type="submit"
                 class="btn bg-blue-100"
-                @click="selectedChat?.access !== 'PRIVATE' ? joinAndGo('chatroom/' + selectedChat?.name + '?id=' + selectedChat?.id) : goTo('chatroom/' + selectedChat?.name + '?id=' + selectedChat?.id)"
+                @click="joinAndGo('chatroom/' + selectedChat?.name + '?id=' + selectedChat?.id)"
               >
                 Join Chat
               </button>
@@ -161,9 +161,12 @@ interface Chat {
   lastId: number;
   password: string;
 }
+
 export default {
   data() {
     return {
+      myRooms: [] as Chat[],
+      available: [] as Chat[],
       chats: [] as Chat[],
       selectedChat: null as Chat | null,
       chatCreate: false,
@@ -173,9 +176,13 @@ export default {
     };
   },
   async created() {
-    const res = await getBackend('chat/myRooms');
-    this.chats = await res.json() as Chat[];
-    console.log(this.chats);
+    await getBackend('chat/myRooms') .then((response => response.json()))
+      .then((data) => {
+        this.myRooms = data.myRooms as Chat[];
+        this.available = data.available as Chat[];
+        const chats = this.myRooms.concat(this.available);
+        Array.prototype.push.apply(this.chats, chats);
+      });
     await getBackend('user/me')
       .then((response => response.json()))
       .then((data) => {
@@ -183,9 +190,20 @@ export default {
       });
   },
   methods: {
-    joinAndGo(route: string)
+    async joinAndGo(route: string)
     {
-      postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.selectedChat?.id, userToAdd: this.id});
+      if (!this.myRooms.includes(this.selectedChat as Chat))
+      {
+        const result = await postBackendWithQueryParams('chat/joinRoom', undefined, { roomId: this.selectedChat?.id, password: this.enteredPW});
+        console.log(result);
+        if (result.statusCode === 403)
+        {
+          alert('Wrong password');
+          return;
+        }
+        else
+          this.$router.push('/' + route);
+      }
       this.$router.push('/' + route);
     },
     goTo(route: string) {

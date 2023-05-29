@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { getBackend, postBackendWithQueryParams, postBackend } from '@/utils/backend-requests';
+import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests';
 import { Modal } from 'usemodal-vue3';
 import SocketioService from '../services/socketio.service.js';
 import { GameMode } from '@/utils/game-definitions';
@@ -32,7 +32,6 @@ interface.
             <h1 class="text-xl">
               {{ $route.params.id }}
             </h1>
-            {{ $route.query.id }}
             <div style="text-align: right;">
               <button
                 class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs m-3"
@@ -40,44 +39,40 @@ interface.
               >
                 Leave Chat
               </button>
-              <div v-if="chat?.access === 'PROTECTED'">
+              <span v-if="isOwner">
                 <span
+                  v-if="chat?.access === 'PUBLIC' || chat?.access === 'PROTECTED'"
                   class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                  @click="goTo('chat')"
-                >Change
-                  Password</span>
+                  @click="isVisible = true"
+                > Set
+                  / Change Password</span>
+                <Modal
+                  v-model:visible="isVisible"
+                  class="text-black"
+                  style="text-align: left;"
+                  :cancel-button="cancelBtn"
+                  :ok-button="okBtn"
+                  :title="'Set Password'"
+                >
+                  <div>
+                    <label>This will make sure the channel cannot be entered without the correct password.</label>
+                    <span class="text-black pr-4"><input
+                      v-model="newPassword"
+                      VALYE
+                      type="text"
+                      name="username"
+                      placeholder="Enter password..."
+                      required
+                      style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+                    > </span>
+                  </div>
+                </Modal>
                 <span
+                  v-if="chat?.access === 'PROTECTED'"
                   class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                  @click="goTo('chat')"
-                >Delete
-                  Password</span>
-              </div>
-              <span
-                v-if="chat?.access === 'PUBLIC'"
-                class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
-                @click="isVisible = true"
-              > Set
-                Password</span>
-              <Modal
-                v-model:visible="isVisible"
-                class="text-black"
-                style="text-align: left;"
-                :cancel-button="cancelBtn"
-                :title="'Set Password'"
-              >
-                <div>
-                  <label>This will make sure the channel cannot be entered without the correct password.</label>
-                  <span class="text-black pr-4"><input
-                    v-model="newPassword"
-                    VALYE
-                    type="text"
-                    name="username"
-                    placeholder="Enter password..."
-                    required
-                    style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-                  > </span>
-                </div>
-              </Modal>
+                  @click="confirmAndGo('delete password, and make public chat: ' + $route.params.id, changeAccess, 'PUBLIC')"
+                > Delete Password</span>
+              </span>
               <span
                 class="btn ml-3"
                 @click="goTo('chat')"
@@ -87,52 +82,54 @@ interface.
           <main class="chat-main">
             <div class="chat-sidebar">
               <!-- <div v-if="chat?.access === 'PRIVATE'"> -->
-              <label
-                for="name"
-                class="pt-2"
-              >Add users</label>
-              <span class="text-black pr-4">
-                <input
-                  v-model="input"
-                  type="text"
-                  placeholder="Search users..."
-                  VALYE
-                  required
-                  style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-                >
-                <!-- {{ filteredList() }} -->
-                <div
-                  v-for="user in filteredList()"
-                  :key="user.id"
-                  :value="user"
-                >
-                  <span><button
-                    class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                    @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)"
-                  >{{
-                    user.name }}</button></span>
-                  <span>
-                    <button
-                      v-if="!usersAdded.find(el => el.id === user.id)"
-                      class="bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                      @click="addUser(user)"
-                    >Add</button></span>
-                </div>
+              <div v-if="isAdmin">
+                <label
+                  for="name"
+                  class="pt-2"
+                >Add users</label>
+                <span class="text-black pr-4">
+                  <input
+                    v-model="input"
+                    type="text"
+                    placeholder="Search users..."
+                    VALYE
+                    required
+                    style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
+                  >
+                  <!-- {{ filteredList() }} -->
+                  <div
+                    v-for="user in filteredList()"
+                    :key="user.id"
+                    :value="user"
+                  >
+                    <span><button
+                      class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                      @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)"
+                    >{{
+                      user.name }}</button></span>
+                    <span>
+                      <button
+                        v-if="!usersAdded.find(el => el.id === user.id)"
+                        class="bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+                        @click="addUser(user)"
+                      >Add</button></span>
+                  </div>
 
-                <div
-                  v-if="input && !allUsers.length"
-                  class="item error"
-                  style="text-align: center;"
-                >
-                  <p>No results found!</p>
-                </div>
-              </span>
-              <!-- </div> -->
+                  <div
+                    v-if="input && !allUsers.length"
+                    class="item error"
+                    style="text-align: center;"
+                  >
+                    <p>No results found!</p>
+                  </div>
+                </span>
+              </div>
               <h3><i class="fas fa-users" /> Users</h3>
               <ul id="users">
                 <li
                   v-for="user in usersAdded"
                   :key="user.id"
+                  class="m-1"
                 >
                   <span @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)">
                     <img
@@ -154,13 +151,13 @@ interface.
                     Channel Owner
                   </span>
                   <span
-                    v-if="user.id !== chat?.ownerId"
+                    v-if="determineAdmin(user.id)"
                     class="text-green-200 text-xs p-1"
                   >
                     Admin
                   </span>
                   <span
-                    v-if="user.id !== chat?.ownerId && idUser === chat?.ownerId"
+                    v-else-if="user.id !== chat?.ownerId && idUser === chat?.ownerId"
                     class="text-green-200 text-xs p-1"
                   >
                     <button
@@ -169,6 +166,7 @@ interface.
                     >Make Admin</button>
                   </span>
                   <button
+                    v-if="user.id !== idUser"
                     class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
                     @click="inviteSubmit(chatId, GameMode.FIESTA)"
                   >
@@ -176,7 +174,7 @@ interface.
                   </button>
 
                   <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
-                  <div v-if="isAdmin && user.id !== idUser">
+                  <div v-if="isAdmin && user.id !== idUser && !determineOwner(user.id)">
                     <button
                       class="bg-blue-500 hover:bg-red-400  text-white text-xs py-1 px-1 rounded-full m-1"
                       @click="confirmAndGo('ban ' + user.name, banUser, user.id)"
@@ -300,15 +298,18 @@ export default {
       users: [] as User[],
       idUser: null,
       isAdmin: false,
+      isOwner: false,
       isVisible: false,
+      isVisibleChange: false,
       newPassword: '',
-      cancelBtn: { text: 'cancel', onclick: () => { }, loading: false },
-      okBtn: { text: 'ok', onclick: () => { this.setPassword(); }, loading: false },
+      cancelBtn: { text: 'cancel', onclick: () => { this.setVisibilityFalse(); }, loading: false },
+      okBtn: { text: 'ok', onclick: () => { this.clickOk(); }, loading: false },
       chatId: Number(this.$route.query.id),
       connection: SocketioService,
       setup: false,
       usersAdded: [] as User[],
       allUsers: [] as User[],
+      chatAdmins: [] as number[],
       input: '',
 
       // input: ''
@@ -321,10 +322,17 @@ export default {
           .then((data) => {
             this.idUser = data.id;
             setTimeout(() => {
-              this.determineAdmin();
+              this.amIAdmin();
             }, 100);
 
           });
+      });
+    await getBackend('chat/roomAdmins/' + '?roomId=' +this.chatId)
+      .then(res => res.json())
+      .then((data) => {
+        data.forEach(user => {
+          this.chatAdmins.push(user.id);
+        });
       });
   },
   mounted() {
@@ -336,6 +344,17 @@ export default {
     this.connection.socket.disconnect();
   },
   methods: {
+    clickOk() {
+      console.log(this.chat?.access);
+      if (this.chat?.access === 'PUBLIC')
+        this.changeAccess('PROTECTED');
+      else
+        this.changePassword();
+      this.setVisibilityFalse();
+    },
+    setVisibilityFalse() {
+      this.isVisible = false;
+    },
     goTo(route: string) {
       this.$router.push('/' + route);
     },
@@ -350,18 +369,28 @@ export default {
     toLocale(timestamp: any) {
       return new Date(timestamp).toLocaleTimeString('nl-NL');
     },
-    determineAdmin() {
-      //temporary code
-      console.log('ownerid: ' + this.chat?.ownerId);
+    amIAdmin() {
       if (this.chat?.ownerId === this.idUser)
+      {
         this.isAdmin = true;
-      // return (this.chat?.ownerId === this.idUser); // checks if is owner, admin is harder to check
-      // maybe easier to alow a backend call for this? let me know if that is needed
+        this.isOwner = true;
+      }
+      if (this.chatAdmins.includes(this.idUser))
+        this.isAdmin = true;
+    },
+    determineAdmin(query_id: number) {
+      if (query_id === this.chat?.ownerId)
+        return true;
+      if (this.chatAdmins.includes(query_id))
+        return true;
+    },
+    determineOwner(query_id: number) {
+      if (query_id === this.chat?.ownerId)
+        return true;
     },
     async loadChatBaseListener(room: any) {
       console.log('loadRoom: ', room);
       this.chat = room.chat;
-      // this.chat?.ownerId = room.chat.ownerId;
       const promises = room.history.map((msg: any) => {
         return getBackend('user/id/' + msg.authorId)
           .then(res => res.json())
@@ -416,17 +445,12 @@ export default {
     },
 
     async makeAdmin(newAdminId: number) {
-      await postBackend('chat/makeUserAdmin', { roomId: this.chatId, userId: newAdminId });
-      // const connection = SocketioService;
-      // connection.setupSocketConnection('/chat');
-      // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
+      await postBackendWithQueryParams('chat/makeUserAdmin', undefined, { roomId: this.chatId, userId: newAdminId });
+      this.chatAdmins.push(newAdminId);
     },
 
     async banUser(bannedUserId: number) {
       postBackendWithQueryParams('chat/banUserFromRoom', undefined, { roomId: this.chatId, banUserId: bannedUserId });
-      // const connection = SocketioService;
-      // connection.setupSocketConnection('/chat');
-      // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
     async kickUser(kickedUserId: number) {
       postBackendWithQueryParams('chat/kickUserFromRoom', undefined, { roomId: this.chatId, kickUserId: kickedUserId });
@@ -437,21 +461,12 @@ export default {
         }
 
       });
-
-      // const connection = SocketioService;
-      // connection.setupSocketConnection('/chat');
-      // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
-
     async muteUser(mutedUserId: number) {
       postBackendWithQueryParams('chat/muteUserInRoom', undefined, { roomId: this.chatId, muteUserId: mutedUserId });
-
-      // const connection = SocketioService;
-      // connection.setupSocketConnection('/chat');
-      // connection.socket.emit('banUserFromRoom', { roomId: this.chatId, banUserId: bannedUserId }); //make this a global socket like the example below
     },
 
-    confirmAndGo(message: string, f: Function, param: number) {
+    confirmAndGo(message: string, f: Function, param: any) {
       if (confirm('Are you sure you want to ' + message + '?') === true) {
         console.log('You pressed OK!');
         f(param);
@@ -460,17 +475,21 @@ export default {
       }
     },
     leaveChat() {
+      console.log('leave');
+      postBackendWithQueryParams('chat/leaveRoom', undefined, { roomId: this.chatId });
+      this.usersAdded.forEach(element => {
 
+        if (element.id === this.idUser) {
+          this.usersAdded.splice(this.usersAdded.indexOf(element), 1);
+        }
+
+      });
     },
 
     scrollChatToBottom() {
       const messageContainer = this.$refs.messageContainer as HTMLElement;
       console.log('current: ', messageContainer.scrollTop, ' next: ', messageContainer.scrollHeight);
       messageContainer.scrollTop = messageContainer.scrollHeight;
-    },
-
-    setPassword() {
-
     },
     async chatFormSubmit(e: any, chatId: number) {
       const msg = e.target.elements.msg;
@@ -504,13 +523,7 @@ export default {
 
     async addUser(user: User) {
       this.usersAdded.push(user);
-      // await putBackend('chat/addUserToRoom', { roomId: this.chatId, userToAdd: user.id})
       await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToAdd: user.id });
-      // .then((response => response.json()))
-      // .then((data) => {
-      //   console.log(data);
-      // }
-      // );
     },
     async getUsers() {
       await getBackend('user/all').then(res => res.json())
@@ -529,8 +542,37 @@ export default {
     },
     getUserPicture(userId: number): string {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${userId}.png`);
+    },
+    async changePassword() {
+      console.log('change pw' + this.newPassword);
+      const result = await postBackendWithQueryParams('chat/changePassword', undefined, { roomId: this.chatId, newPassword: this.newPassword });
+      console.log(result);
+      if (result.statusCode === 403)
+      {
+        alert('You have to be an admin for this action.');
+        return;
+      }
+      else
+        alert('Password changed succesfully.');
+    },
+    //change access is for setting a password and change password is for changing a password
+    async changeAccess(newAccess: string) {
+      console.log('change access' + newAccess);
+      if (newAccess !== 'PUBLIC' && newAccess !== 'PRIVATE' && newAccess !== 'PROTECTED')
+        return;
+      const result = await postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess: newAccess, newPassword: this.newPassword });
+      console.log(result);
+      if (result.statusCode === 403)
+      {
+        alert('You have to be in the channel for this action.');
+        return;
+      }
+      else
+      {
+        alert('Access changed succesfully.');
+        this.chat.access = newAccess;
+      }
     }
-
   },
 };
 

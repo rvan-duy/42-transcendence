@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getBackend } from '@/utils/backend-requests';
 </script>
 
 <template>
@@ -12,116 +13,63 @@
                 class="columns-1"
                 style="text-align: center"
               >
-                <!-- <p style="text-align: center">
-              <img
-                :src="backendPictureUrl"
-                width="50"
-                height="50"
-                style="border-radius: 50%; display:block; margin-left: auto; margin-right: auto;"
-                class="w-11 h-11 shrink-0 grow-0 rounded-full"
-              >
-            </p>
-            <figcaption class="text-white text-m">
-              {{ name }}
-            </figcaption> -->
+                <figcaption class="text-white text-m">
+                  Kings & Queens
+                </figcaption>
               </div>
-              <!-- <img
-                src="../assets/dagmar.jpeg"
-                width="50"
-                height="50"
-                style="border-radius: 50%; display:block;margin-left: auto; margin-right: auto"
-              >
-              <figcaption class="text-white text-m">
-                {{ name }}
-              </figcaption>
-              <button v-if="!alreadyFriends()"
-                class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
-                @click="addFriend()"
-              >
-                Add as friend
-              </button>
-              <button v-else-if="alreadyFriends()"
-                class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full m-2"
-                @click="removeFriend()"
-              >
-                Remove as friend
-              </button> -->
             </span>
           </div>
         </header>
         <main class="join-main">
-          <!-- <button
-            class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
-            style="float: right"
-          >
-            Block User
-          </button>
-          <button
-            class="bg-blue-300 hover:bg-blue-400 text-white text-xs py-1 px-2 rounded-full mr-2"
-            style="float: right"
-            @click="goTo('chatroom/AwesomeChat')"
-          >
-            Send message
-          </button>
-          <label for="status">Status</label>
-          <p class="text-black">
-            {{ status }}
-          </p>
-          <div
-            class="columns-1"
-            style="text-align: center; float: left;"
-          >
-            <span class="p-1">Wins</span>
-            <font-awesome-icon icon="award" />
-            <p class="text-black">
-              1
-            </p>
-          </div>
-          <div
-            class="columns-1"
-            style="text-align: center; float: center;"
-          >
-            <span class="p-1">Losses</span>
-            <font-awesome-icon icon="skull-crossbones" />
-            <p class="text-black">
-              0
-            </p>
-          </div>
-          <label for="status">Ranking</label>
-          <p class="text-black">
-            {{ rank }}
-          </p>
-          <label for="status">Match History</label>
-          <p
-            v-if="matches_played === 0"
-            class="text-black"
-          >
-            No matches played yet!
-          </p>
-          <div v-else-if="matches_played > 0">
-            <div
-              v-for="match in matches"
-              :key="match.player1"
+          <ul id="users">
+            <li
+              v-for="(user, index) in users"
+              :key="user.id"
+              class="m-2"
             >
+              <span v-if="index === 0">
+                <font-awesome-icon
+                  :icon="['fas', 'crown']"
+                  :style="{ color: 'gold' }"
+                />
+              </span>
+              <span v-if="index === 1">
+                <font-awesome-icon
+                  :icon="['fas', 'crown']"
+                  :style="{ color: 'silver' }"
+                />
+              </span>
+              <span v-if="index === 2">
+                <font-awesome-icon
+                  :icon="['fas', 'crown']"
+                  :style="{ color: '#cd7f32' }"
+                />
+              </span>
               <span
-                v-if="match.won === name"
-                class="text-black font-bold"
-              >WON</span>
-              <span
-                v-else-if="match.won !== name"
-                class="text-black font-bold"
-              >LOST</span>
-              <span class="text-black"> against </span>
-              <span
-                v-if="match.player1 === name"
-                class="text-black font-bold"
-              >{{ match.player2 }}</span>
-              <span
-                v-else
-                class="text-black font-bold"
-              >{{ match.player1 }}</span>
-            </div>
-          </div> -->
+                v-else-if="index > 2"
+                class="ml-4"
+              />
+              <span @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)">
+                <!-- <img
+                      :src="String(getUserPicture(user.id))"
+                      width="30"
+                      height="30"
+                      style="border-radius: 50%; display:block;  vertical-align: center; float: left;"
+                      class="w-11 h-11 shrink-0 grow-0 rounded-full"
+                    > -->
+                <span class="text-white text-xs p-1">
+                  {{ user.name }}
+                </span>
+              </span>
+              <button
+                class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full"
+                style="float: right; padding-bottom: 1px; padding-top: 1px;"
+                @click="goTo('game')"
+              >
+                Invite to game
+              </button>
+            </li>
+          </ul>
         </main>
       </div>
     </body>
@@ -129,10 +77,25 @@
 </template>
 
 <script lang="ts">
+interface User {
+  id: number;
+  name: string;
+}
 export default {
   data() {
     return {
+      users: [{id: 2, name: 'd'}, {id: 2, name: 'd'}, {id: 2, name: 'd'}, {id: 2, name: 'd'}] as User[],
+      idUser: 0,
     };
-  }
+  },
+  async created() {
+    await getBackend('user/me')
+      .then((res) => {
+        res.json()
+          .then((data) => {
+            this.idUser = data.id;
+          });
+      });
+  },
 };
 </script>

@@ -20,6 +20,7 @@ enum Access {
   PRIVATE
   PROTECTED
   PUBLIC
+  DM
 }
 
 enum Status {
@@ -37,19 +38,19 @@ model UserTimestamp {
 }
 
 model User {
-  id      Int     @id @default(autoincrement())
-  intraId Int     @unique
-  name    String  @unique
-  status  String?
-  pending Int[] // ids
-  friends Int[] // ids
-  blocked Int[] // ids
-  elo     Int     @default(500)
-  rooms   Room[]
-  admin   Room[]  @relation("admin")
-  owns    Room[]  @relation("owns")
-  sendMsg Msg[]
-  games   Game[]
+  id        Int     @id @default(autoincrement())
+  intraId   Int     @unique
+  name      String  @unique
+  status    String?
+  pending   Int[] // ids
+  friends   Int[] // ids
+  blocked   Int[] // ids
+  elo       Int     @default(500)
+  rooms     Room[]
+  admin     Room[]  @relation("admin")
+  owns      Room[]  @relation("owns")
+  sendMsg   Msg[]
+  games     Game[]
   twoFactor Boolean @default(false)
   secret    String?
 }
@@ -82,9 +83,9 @@ model Msg {
 }
 
 model Game {
-  id      Int    @id @default(autoincrement())
-  players User[]
-  score   Int[]
+  id       Int    @id @default(autoincrement())
+  players  User[]
+  score    Int[]
   winnerId Int
   mode    GameMode
 }
