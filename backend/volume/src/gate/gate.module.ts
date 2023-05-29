@@ -16,7 +16,12 @@ import { GateService } from './gate.service';
       useFactory: () => new GateService(),
       inject: [GateService],
     },
+    {
+      provide: 'statusGate',
+      useFactory: () => new GateService(),
+      inject: [GateService],
+    },
   ],
-  exports: ['chatGate', 'gameGate'],
+  exports: ['chatGate', 'gameGate', 'statusGate'],
 })
 export class GateModule {}

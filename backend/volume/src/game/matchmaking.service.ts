@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { GameService } from './game.service';
 import { GameMode, toGameMode, toPrismaGameMode } from './game.definitions';
 import { MsgDto, MsgService } from 'src/msg/msg.service';
 import { PrismaUserService } from '../user/prisma/prismaUser.service';
 import { Msg, User } from '@prisma/client';
 import { Server } from 'socket.io';
+import { GateService } from 'src/gate/gate.service';
+import { Socket } from 'socket.io';
 
 enum Debug { // make sure to seed before
   ENABLED = 0,
@@ -38,6 +40,7 @@ export class MatchmakingService {
               private readonly gameService: GameService,
               private readonly msgService: MsgService,
               private readonly prismaUserService: PrismaUserService,
+              @Inject('statusGate') private readonly statusGate: GateService,
   ) {
   }
 
@@ -237,8 +240,18 @@ export class MatchmakingService {
     this.privateGameInvites.splice(inviteIndex, 1);
   }
 
+  private async sendCreatorToGameTab(creatorId: number) {
+    const sockets: Socket[] = await this.statusGate.getSocketsByUser(creatorId);
+
+    for (let index = 0; index < sockets.length; index++) {
+      const socket = sockets[index];
+      
+      socket.emit('switchToGameTab');
+    }
+  }
+
   // returns the invite status
-  acceptInvite(acceptingUserId: number, chatInviteMessage: Msg) {
+  async acceptInvite(acceptingUserId: number, chatInviteMessage: Msg) {
     if (acceptingUserId === chatInviteMessage.authorId)
       return (InviteStatus.OwnInvite);
     if (this.gameService.isUserInGame(acceptingUserId))
@@ -256,6 +269,7 @@ export class MatchmakingService {
         this.removePrivateGameInvite(index);
         this.editOldMessage(chatInviteMessage, 'This invite has already been accepted', false);
         this.gameService.createGame(chatInviteMessage.authorId, acceptingUserId, toGameMode(chatInviteMessage.mode));
+        await this.sendCreatorToGameTab(invite.creatorId);
         return (InviteStatus.InviteAccepted);
       }
     }

@@ -180,7 +180,6 @@ export default {
       .then((response => response.json()))
       .then((data) => {
         this.id = data.id;
-        console.log(this.id);
       });
   },
   methods: {
