@@ -55,7 +55,8 @@ interface.
                   :title="'Set Password'"
                 >
                   <div>
-                    <label>This will make sure the channel cannot be entered without the correct password.</label>
+                    <label>This will make sure the channel cannot be entered without the correct
+                      password.</label>
                     <span class="text-black pr-4"><input
                       v-model="newPassword"
                       VALYE
@@ -64,14 +65,16 @@ interface.
                       placeholder="Enter password..."
                       required
                       style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-                    > </span>
+                    >
+                    </span>
                   </div>
                 </Modal>
                 <span
                   v-if="chat?.access === 'PROTECTED'"
                   class="btn px-2 py-1 text-xs m-1 bg-blue-500 hover:bg-blue-300 text-white"
                   @click="confirmAndGo('delete password, and make public chat: ' + $route.params.id, changeAccess, 'PUBLIC')"
-                > Delete Password</span>
+                >
+                  Delete Password</span>
               </span>
               <span
                 class="btn ml-3"
@@ -131,7 +134,9 @@ interface.
                   :key="user.id"
                   class="m-1"
                 >
-                  <span @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)">
+                  <span
+                    @click="user.id === idUser ? goTo('user') : goTo('otheruser/' + user.name + '?id=' + user.id)"
+                  >
                     <img
                       :src="String(getUserPicture(user.id))"
                       width="30"
@@ -163,7 +168,8 @@ interface.
                     <button
                       class="bg-green-400 hover:bg-green-500 text-white text-xs py-1 px-1 rounded-full m-1"
                       @click="confirmAndGo('make ' + user.name + ' Admin', makeAdmin, user.id)"
-                    >Make Admin</button>
+                    >Make
+                      Admin</button>
                   </span>
                   <button
                     v-if="user.id !== idUser"
@@ -268,31 +274,31 @@ interface.
 <script lang="ts">
 
 interface Chat {
-  id: number;
-  name: string;
-  ownerId: number;
-  access: string;
-  lastId: number;
+	id: number;
+	name: string;
+	ownerId: number;
+	access: string;
+	lastId: number;
 }
 
 interface User {
-  id: number;
-  name: string;
+	id: number;
+	name: string;
 }
 
 enum Debug {
-  ENABLED = 0,
+	ENABLED = 0,
 }
 
 enum InviteStatus {
-    NotInRoom = 'You do not have access to the room you have provided',
-    AlreadyInGame = 'You are already playing an ongoing game',
-    CreatorAlreadyInGame = 'The creator is currently in an ongoing game',
-    InviteAccepted = 'You have accepted the invite',
-    InviteNotFound = 'Unable to find the invite you are trying to accept',
-    InvalidPacket = 'You have sent an invalid packet to the server',
-    Muted = 'You are muted in the provided room',
-  }
+	NotInRoom = 'You do not have access to the room you have provided',
+	AlreadyInGame = 'You are already playing an ongoing game',
+	CreatorAlreadyInGame = 'The creator is currently in an ongoing game',
+	InviteAccepted = 'You have accepted the invite',
+	InviteNotFound = 'Unable to find the invite you are trying to accept',
+	InvalidPacket = 'You have sent an invalid packet to the server',
+	Muted = 'You are muted in the provided room',
+}
 
 export default {
   data() {
@@ -331,7 +337,7 @@ export default {
 
           });
       });
-    await getBackend('chat/roomAdmins/' + '?roomId=' +this.chatId)
+    await getBackend('chat/roomAdmins/' + '?roomId=' + this.chatId)
       .then(res => res.json())
       .then((data) => {
         data.forEach(user => {
@@ -375,8 +381,7 @@ export default {
       return new Date(timestamp).toLocaleTimeString('nl-NL');
     },
     amIAdmin() {
-      if (this.chat?.ownerId === this.idUser)
-      {
+      if (this.chat?.ownerId === this.idUser) {
         this.isAdmin = true;
         this.isOwner = true;
       }
@@ -421,7 +426,7 @@ export default {
           const userName: string = this.messages[index].username;
           this.messages[index] = editedMessage;
           this.messages[index].username = userName;
-          return ;
+          return;
         }
       }
     },
@@ -441,7 +446,7 @@ export default {
       // request the chat messages once the listener has been setup
       this.connection.socket.emit('loadRequest', Number(this.$route.query.id));
     },
-    
+
     dropSocketListeners() {
       this.connection.socket.off('loadChatBase', this.loadChatBaseListener);
       this.connection.socket.off('inviteStatus', this.receiveInviteStatusListener);
@@ -511,7 +516,7 @@ export default {
     },
 
     async inviteSubmit(chatId: number, mode: GameMode) {
-      SocketioService.socket.emit('sendInvite', {roomId: chatId, mode: mode} );
+      SocketioService.socket.emit('sendInvite', { roomId: chatId, mode: mode });
     },
 
     // disableInviteListener(invite to be disabled/removed ) {
@@ -521,7 +526,7 @@ export default {
     receiveInviteStatusListener(inviteStatus: InviteStatus) {
       if (inviteStatus === InviteStatus.InviteAccepted) {
         this.goTo('game');
-        return ;
+        return;
       }
       // ToDo: Make visual pop up for user showing the error
       console.log(`Error accepting invite:\n${inviteStatus}.`);
@@ -556,11 +561,10 @@ export default {
     async changePassword() {
       if (Debug.ENABLED)
         console.log('change pw' + this.newPassword);
-      const result = await postBackendWithQueryParams('chat/changePassword', undefined, { roomId: this.chatId, newPassword: this.newPassword });
+      const result = await postBackendWithQueryParams('chat/changePassword', { password: this.newPassword }, { roomId: this.chatId });
       if (Debug.ENABLED)
         console.log(result);
-      if (result.statusCode === 403)
-      {
+      if (result.statusCode === 403) {
         alert('You have to be an admin for this action.');
         return;
       }
@@ -573,16 +577,14 @@ export default {
         console.log('change access' + newAccess);
       if (newAccess !== 'PUBLIC' && newAccess !== 'PRIVATE' && newAccess !== 'PROTECTED')
         return;
-      const result = await postBackendWithQueryParams('chat/changeAccess', undefined, { roomId: this.chatId, newAccess: newAccess, newPassword: this.newPassword });
+      const result = await postBackendWithQueryParams('chat/changeAccess', { password: this.newPassword }, { roomId: this.chatId, newAccess: newAccess });
       if (Debug.ENABLED)
         console.log(result);
-      if (result.statusCode === 403)
-      {
+      if (result.statusCode === 403) {
         alert('You have to be in the channel for this action.');
         return;
       }
-      else
-      {
+      else {
         alert('Access changed succesfully.');
         this.chat.access = newAccess;
       }
@@ -594,9 +596,9 @@ export default {
 
 <style src="../assets/chat.css">
 @media (min-width: 1024px) {
-  .chat {
-    min-height: 100vh;
-    align-items: center;
-  }
+	.chat {
+		min-height: 100vh;
+		align-items: center;
+	}
 }
 </style>
