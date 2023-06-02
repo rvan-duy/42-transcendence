@@ -281,9 +281,11 @@ async getUsers(@Response() res: any) {
   @Post('unblock')
   async handleUnBlock(@Request() req: any, @Query('id') userId: number) {
     const myId = req.user.id;
-    const meAsUser = await this.userService.user(myId);
-    if (meAsUser.blocked.includes(userId) === false)
-      return ; // you did not blcok them
+	console.log(`${myId} is unblocking ${userId}`);
+	userId = Number(userId);
+    const meAsUser = await this.userService.user({id: myId});
+    if (!meAsUser.blocked.includes(userId))
+      return ; // you did not block them
     // unblock on this users side
     meAsUser.blocked.splice(meAsUser.blocked.indexOf(userId), 1);
     this.userService.updateUser({
