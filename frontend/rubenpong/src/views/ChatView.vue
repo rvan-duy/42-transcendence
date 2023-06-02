@@ -46,7 +46,7 @@
               </div>
               <!-- We need a backend check to see if password is valid, but I implemented a frontend check to make user check whether they typed a password if one is required -->
               <button
-                v-if="selectedChat == NULL || (selectedChat?.access === 'PROTECTED' && enteredPW === '' && !myRooms.includes(selectedChat))"
+                v-if="selectedChat == null || (selectedChat?.access === 'PROTECTED' && enteredPW === '' && !myRooms.includes(selectedChat))"
                 type="submit"
                 class="btn bg-blue-100"
               >
@@ -94,7 +94,7 @@
                   With Password
                 </option>
               </select>
-           
+
               <label
                 for="name"
                 class="pt-2"
@@ -128,7 +128,7 @@
               {{ newChat }}
 
               <button
-                v-if="newChat.name == NULL || newChat.access === undefined || ( newChat.access === 'PROTECTED'&& newChat.password == NULL)"
+                v-if="newChat.name == null || newChat.access === undefined || (newChat.access === 'PROTECTED' && newChat.password == NULL)"
                 type="submit"
                 class="btn bg-blue-100"
               >
@@ -154,12 +154,16 @@
 import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests';
 
 interface Chat {
-  id: number;
-  name: string;
-  ownerId: number;
-  access: string;
-  lastId: number;
-  password: string;
+	id: number;
+	name: string;
+	ownerId: number;
+	access: string;
+	lastId: number;
+	password: string;
+}
+
+enum Debug {
+	ENABLED = 0,
 }
 
 export default {
@@ -176,7 +180,7 @@ export default {
     };
   },
   async created() {
-    await getBackend('chat/myRooms') .then((response => response.json()))
+    await getBackend('chat/myRooms').then((response => response.json()))
       .then((data) => {
         this.myRooms = data.myRooms as Chat[];
         this.available = data.available as Chat[];
@@ -187,18 +191,15 @@ export default {
       .then((response => response.json()))
       .then((data) => {
         this.id = data.id;
-        console.log(data);
       });
   },
   methods: {
-    async joinAndGo(route: string)
-    {
-      if (!this.myRooms.includes(this.selectedChat as Chat))
-      {
-        const result = await postBackendWithQueryParams('chat/joinRoom', undefined, { roomId: this.selectedChat?.id, password: this.enteredPW});
-        console.log(result);
-        if (result.statusCode === 403)
-        {
+    async joinAndGo(route: string) {
+      if (!this.myRooms.includes(this.selectedChat as Chat)) {
+        const result = await postBackendWithQueryParams('chat/joinRoom', { password: this.enteredPW }, { roomId: this.selectedChat?.id });
+        if (Debug.ENABLED)
+          console.log(result);
+        if (result.statusCode === 403) {
           alert('Wrong password');
           return;
         }
@@ -208,11 +209,12 @@ export default {
       this.$router.push('/' + route);
     },
     goTo(route: string) {
-      console.log('/' + route);
+      if (Debug.ENABLED)
+        console.log('/' + route);
       this.$router.push('/' + route);
     },
     async createChat(newChat: Chat) {
-      const createdChat = await postBackendWithQueryParams('chat/createRoom', undefined, { name: newChat.name, access: newChat.access, password: newChat.password }) as Chat;
+      const createdChat = await postBackendWithQueryParams('chat/createRoom', { password: newChat.password }, { name: newChat.name, access: newChat.access }) as Chat;
       this.goTo('chatroom/' + newChat.name + '?id=' + createdChat.id);
     },
     // need to implement in the back-end too before this ca work
@@ -226,9 +228,9 @@ export default {
 
 <style src="../assets/chat.css">
 @media (min-width: 1024px) {
-  .chat {
-    min-height: 100vh;
-    align-items: center;
-  }
+	.chat {
+		min-height: 100vh;
+		align-items: center;
+	}
 }
 </style>

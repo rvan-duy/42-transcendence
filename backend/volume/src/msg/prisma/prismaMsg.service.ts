@@ -79,6 +79,7 @@ export class PrismaMsgService {
         body: msgDto.body,
         invite: msgDto.invite,
         id: room.lastId,
+        mode: msgDto.mode,
         room: { connect: { id: roomId } },
         author: { connect: { id: authorId } },
       },

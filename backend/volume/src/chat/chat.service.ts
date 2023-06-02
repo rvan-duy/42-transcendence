@@ -87,7 +87,7 @@ export class ChatService {
     for (let index = 0; index < banMute.length; index++) {
       const element = banMute[index];
       if (element.userId === userId && element.status === Status.MUTED) {
-        client.emit('receiveNewMsg', {body: 'You are muted.', author: {name: 'The system'}});
+        client.emit('receiveNewMsg', {body: 'You are muted.', author: {name: 'The system'}, invite: false});
         return true;
       }
     }
