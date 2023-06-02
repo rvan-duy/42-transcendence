@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   OnGatewayConnection,
   OnGatewayDisconnect,
   OnGatewayInit,
