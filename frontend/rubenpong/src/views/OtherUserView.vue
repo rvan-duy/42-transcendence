@@ -52,6 +52,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
         </header>
         <main class="join-main">
           <button
+            v-if="relationStatus === RelationshipStatus.Blocked"
             class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
             style="float: right"
             @click="unblockUser()"
@@ -59,6 +60,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
             Unblock User
           </button>
           <button
+            v-else
             class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
             style="float: right"
             @click="blockUser()"
@@ -145,6 +147,7 @@ enum RelationshipStatus {
 	Pending = 'PENDING',
 	Accept = 'ACCEPT',
 	Strangers = 'STRANGERS',
+	Blocked = 'BLOCKED',
 }
 
 enum Debug {
@@ -207,6 +210,8 @@ export default {
       this.$router.push('/' + route);
     },
     relationshipStatus(): RelationshipStatus {
+      if (this.me.blocked.includes(this.them.id))
+        return(RelationshipStatus.Blocked);
       if (this.myFriends.includes(Number(this.$route.query.id)))
         return (RelationshipStatus.Friends);
       if (this.me.pending.includes(this.them.id))
@@ -225,10 +230,12 @@ export default {
     async blockUser() {
       console.log(`blocking: ${Number(this.$route.query.id)}`);
       await postBackendWithQueryParams('user/block', undefined, { id: Number(this.$route.query.id) });
+      this.relationStatus = RelationshipStatus.Blocked;
     },
     async unblockUser() {
       console.log(`unblocking: ${Number(this.$route.query.id)}`);
       await postBackendWithQueryParams('user/unblock', undefined, { id: Number(this.$route.query.id) });
+      this.relationStatus = this.relationshipStatus();
     },
     async removeFriend() {
       await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id) });
