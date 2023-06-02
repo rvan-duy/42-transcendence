@@ -261,9 +261,9 @@ async getUsers(@Response() res: any) {
     userId = Number(userId);
     // add to block on this side
     const meAsUser = await this.userService.user({id: myId});
-    console.log(`me as user: `, meAsUser);
-	if (meAsUser.blocked.includes(userId))
-		return ;
+    console.log('me as user: ', meAsUser);
+    if (meAsUser.blocked.includes(userId))
+      return ;
     meAsUser.blocked.push(userId);
     this.userService.updateUser({
       where: {
@@ -281,8 +281,8 @@ async getUsers(@Response() res: any) {
   @Post('unblock')
   async handleUnBlock(@Request() req: any, @Query('id') userId: number) {
     const myId = req.user.id;
-	console.log(`${myId} is unblocking ${userId}`);
-	userId = Number(userId);
+    console.log(`${myId} is unblocking ${userId}`);
+    userId = Number(userId);
     const meAsUser = await this.userService.user({id: myId});
     if (!meAsUser.blocked.includes(userId))
       return ; // you did not block them

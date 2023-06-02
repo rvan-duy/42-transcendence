@@ -1,5 +1,4 @@
 import { GameMode as PrismaGameMode } from '@prisma/client';
-import { error } from 'console';
 import {ForbiddenException} from '@nestjs/common';
 
 export enum GameMode {

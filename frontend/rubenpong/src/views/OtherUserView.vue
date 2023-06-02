@@ -51,7 +51,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
           </div>
         </header>
         <main class="join-main">
-		<button
+          <button
             class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
             style="float: right"
             @click="unblockUser()"
@@ -226,7 +226,7 @@ export default {
       console.log(`blocking: ${Number(this.$route.query.id)}`);
       await postBackendWithQueryParams('user/block', undefined, { id: Number(this.$route.query.id) });
     },
-	async unblockUser() {
+    async unblockUser() {
       console.log(`unblocking: ${Number(this.$route.query.id)}`);
       await postBackendWithQueryParams('user/unblock', undefined, { id: Number(this.$route.query.id) });
     },
