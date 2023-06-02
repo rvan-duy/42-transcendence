@@ -260,8 +260,10 @@ async getUsers(@Response() res: any) {
     console.log(`${myId} is blocking ${userId}`);
     userId = Number(userId);
     // add to block on this side
-    const meAsUser = await this.userService.user(myId);
-    console.log(`me as user: ${meAsUser}`);
+    const meAsUser = await this.userService.user({id: myId});
+    console.log(`me as user: `, meAsUser);
+	if (meAsUser.blocked.includes(userId))
+		return ;
     meAsUser.blocked.push(userId);
     this.userService.updateUser({
       where: {
