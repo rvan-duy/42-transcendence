@@ -6,18 +6,37 @@ import GenerateSecretButtonVue from '@/components/buttons/GenerateSecretButton.v
 
 <template>
   <div class="item">
-    <div class="p-2" style="text-align: center">
+    <div
+      class="p-2"
+      style="text-align: center"
+    >
       <p>Scan this QR code with your authenticator app:</p>
       <GenerateSecretButtonVue />
       <br><br>
-      <form class="p-2" style="display: flex; flex-direction: column; align-items: center;" @submit.prevent>
+      <form
+        class="p-2"
+        style="display: flex; flex-direction: column; align-items: center;"
+        @submit.prevent
+      >
         <label for="code">Enter the code from your authenticator app:</label>
-        <input id="code" v-model="code" type="text" name="code" style="margin: 20px; width: 300px;">
-        <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full" @click="submitCode">
+        <input
+          id="code"
+          v-model="code"
+          type="text"
+          name="code"
+          style="margin: 20px; width: 300px;"
+        >
+        <button
+          class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-full"
+          @click="submitCode"
+        >
           Turn on Two Factor Authentication
         </button>
         <br>
-        <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full" @click="">
+        <button
+          class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full"
+          @click=""
+        >
           Turn off Two Factor Authentication (TODO)
         </button>
       </form>
@@ -36,7 +55,7 @@ export default {
   },
   methods: {
     async submitCode() {
-      await postBackend('2fa/turn-on', { "code": this.code })
+      await postBackend('2fa/turn-on', { 'code': this.code })
         .then((response) => {
           if (response.status !== 200) {
             alert('Invalid code');
@@ -44,9 +63,9 @@ export default {
           else {
             this.$router.push({ name: 'user' });
           }
-        })
+        });
     },
   },
-}
+};
 
 </script>

@@ -9,5 +9,5 @@ export function isLoggedIn(): Promise<number> {
   return getBackend('auth/validate')
     .then((res) => {
       return res.status;
-    })
-};
+    });
+}
