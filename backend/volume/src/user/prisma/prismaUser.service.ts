@@ -109,4 +109,24 @@ export class PrismaUserService {
       return undefined;
     });
   }
+
+  async onlyFriends(userId: number): Promise<any>{
+    return this.users({
+      where: {
+        friends: {
+          has: userId,
+        }
+      }
+    });
+  }
+
+  async onlyPending(userIds: number[]): Promise<any>{
+    return this.users({
+      where: {
+        id: {
+          in: userIds
+        }
+      }
+    });
+  }
 }

@@ -11,8 +11,6 @@ class SocketioService {
   }
   
   setupSocketConnection(slash_namespace: string) {
-    if (this.socket && this.socket.connected)
-      return ;
     const token = getJwtFromCookies();
     this.socket = io(`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}${slash_namespace}`, {
       auth: {

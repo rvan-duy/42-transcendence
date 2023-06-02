@@ -8,6 +8,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
   Post,
+  Body,
   Query,
   Request,
   UseGuards,
@@ -36,8 +37,9 @@ export class ChatController {
     @Request() req: any,
     @Query('name') roomName: string,
     @Query('access') access: Access = Access.PUBLIC,
-    @Query('password') password: string = undefined,
+    @Body() body: any,
   ) {
+    const password = body?.password ?? undefined;
     if (password === undefined && access === Access.PROTECTED)
       throw new HttpException('password left undefined for protected chat', HttpStatus.BAD_REQUEST);
 
@@ -56,22 +58,22 @@ export class ChatController {
   async handleJoinRoom(
     @Request() req: any,
     @Query('roomId') roomId: number,
-    @Query('password') password: string,
+    @Body() body: any,
   ) {
+    const password = body?.password ?? undefined;
     const userId = req.user.id;
     roomId = Number(roomId);
     const room = await this.prismaRoomService.Room({id: roomId});
     switch (room?.access || 'invalid') {
     case Access.PRIVATE:
-      return ; // you need to be added to this chat
+      throw new ForbiddenException('You need to be added ot this room');
     case Access.PROTECTED:
       if (await this.cryptService.comparePassword(password, room.hashedCode) === false) {
         throw new ForbiddenException('Incorrect password');
       }
-      this.roomService.addToChat(userId, roomId);
-      return ;
+      return this.roomService.addToChat(userId, roomId);
     case Access.PUBLIC:
-      return ; // not added to public rooms since everyone is part unless kicked / blocked
+      return this.roomService.addToChat(userId, roomId);
     case 'invalid':
       throw new NotFoundException('Room not found');
     }
@@ -89,9 +91,6 @@ export class ChatController {
       
       // get public chats and add them to the list
       const availableChats = await this.roomService.getPublicAndProtectedRooms(Number(userId));
-      // console.log(publicChats);
-      // console.log('userschats: ', chatsFromUser);
-      // const combinedChats = chatsFromUser.concat(publicChats);
 
       // return all available chat for users to sender
       return {myRooms: chatsFromUser, available: availableChats};
@@ -176,9 +175,11 @@ export class ChatController {
     @Query('userId') userId: number,
   ) {
     const clientId = req.user.id;
+    console.log(req);
     userId = Number(userId);
     roomId = Number(roomId);
     // is the sender is not the chat owner leave it intact and return and error
+
     if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner is alowed to promote to admin');
 
@@ -271,7 +272,7 @@ export class ChatController {
       throw new ForbiddenException('Only chat owner or admin is alowed to kick users from chat');
 
     // check if the kicked user is not the owner or admin
-    if (await this.chatService.isAdminOrOwner(roomId, kickUserId) === true)
+    if (await this.chatService.isOwner(roomId, kickUserId) === true)
       throw new ForbiddenException('The chat owner cannot be kicked');
 
     // remove the kicked user from chat
@@ -297,13 +298,14 @@ export class ChatController {
   async changePassword(
     @Request() req: any,
     @Query('roomId') roomId: number,
-    @Query('newPassword') newPassword: string,
+    @Body() body: any,
   ) {
+    const newPassword = body?.password ?? undefined;
     const clientId = Number(req.user.id);
     roomId = Number(roomId);
 
     // only alow the chat owner and admins to change chat password
-    if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
+    if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to change the password');
 
     // passcode will be hashed in changePassword
@@ -316,8 +318,9 @@ export class ChatController {
     @Request() req: any,
     @Query('roomId') roomId: number,
     @Query('newAccess') newAccess: Access,
-    @Query('newPassword') newPassword: string = undefined,
+    @Body() body: any,
   ) {
+    let newPassword = body?.password ?? undefined;
     const clientId = req.user.id;
     roomId = Number(roomId);
 
@@ -327,7 +330,7 @@ export class ChatController {
       newPassword = undefined;
 
     // only alow the chat owner and admins to change chat password
-    if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
+    if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to change the access level');
 
     // change chat type to protected instead?

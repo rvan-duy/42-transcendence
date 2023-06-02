@@ -8,6 +8,7 @@ import { MsgModule } from './msg/msg.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TwoFactorAuthenticationModule } from './2fa/twoFactorAuthentication.module';
 import { join } from 'path';
+import { StatusModule } from './status/status.module';
 
 // import only the modules which provide the controllers
 
@@ -18,6 +19,7 @@ import { join } from 'path';
     AuthModule,
     GameModule,
     ChatModule,
+    StatusModule,
     MsgModule,
     TwoFactorAuthenticationModule,
     ServeStaticModule.forRoot({

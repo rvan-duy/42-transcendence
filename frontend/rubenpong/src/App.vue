@@ -42,6 +42,13 @@
         <RouterLink
           v-if="userIsLoggedIn"
           class="text-blue-100 p-2 text-lg hover:text-white"
+          to="/friends"
+        >
+          OnlyFriends
+        </RouterLink>
+        <RouterLink
+          v-if="userIsLoggedIn"
+          class="text-blue-100 p-2 text-lg hover:text-white"
           to="/logout"
         >
           Log Out
@@ -86,6 +93,7 @@
 import { isLoggedIn } from '@/router/auth';
 import { getBackend } from './utils/backend-requests';
 import { RouterLink, RouterView } from 'vue-router';
+import SocketioService from '@/services/socketio.service.js';
 export default {
   components: { RouterView, RouterLink },
   data() {
@@ -97,6 +105,7 @@ export default {
       id: 0,
       backendPictureUrl: '',
       userIsLoggedIn: false,
+      statusConnection: SocketioService,
     };
   },
   async created() {
@@ -112,7 +121,33 @@ export default {
             });
         });
     }
-  }
+  },
+  mounted() {
+    this.statusConnection.setupSocketConnection('/status'); // In created this doesn't work?
+    console.log('mounted app');
+    this.setupSocketListeners();
+  },
+  unmounted() {
+    this.dropSocketListeners();
+  },
+  methods: {
+    goTo(route: string) {
+      this.$router.push('/' + route);
+    },
+    
+    setupSocketListeners() {
+      console.log(`${this.statusConnection.socket}`);
+      this.statusConnection.socket.on('switchToGameTab', this.switchToGameTabListener);
+    },
+
+    dropSocketListeners() {
+      this.statusConnection.socket.off('switchToGameTab', this.switchToGameTabListener);
+    },
+
+    switchToGameTabListener() {
+      this.goTo('game');
+    },
+  },
 };
 
 </script>

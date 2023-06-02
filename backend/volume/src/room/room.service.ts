@@ -39,24 +39,6 @@ export class RoomService {
       password = await this.cryptService.hashPassword(password);
     else
       password = undefined;
-
-    // If the chat is public, don't add user to list of room's users, or the chat will show up twice for them
-    if (access === Access.PUBLIC)
-      return this.prismaRoom.createRoom({
-        owner: {
-          connect: {
-            id: ownerId,
-          },
-        },
-        admin: {
-          connect: {
-            id: ownerId,
-          }
-        },
-        name: name,
-        access: access,
-        hashedCode: password,
-      });
     
     return this.prismaRoom.createRoom({
       owner: {

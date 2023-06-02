@@ -13,6 +13,9 @@ import { RoomService } from 'src/room/room.service';
 import { JwtService } from '@nestjs/jwt';
 import { ChatService } from './chat.service';
 import { Inject, NotFoundException } from '@nestjs/common';
+import { InviteStatus, MatchmakingService } from 'src/game/matchmaking.service';
+import { PrismaMsgService } from 'src/msg/prisma/prismaMsg.service';
+import { Msg } from '@prisma/client';
 
 @WebSocketGateway({
   cors: {
@@ -24,10 +27,12 @@ import { Inject, NotFoundException } from '@nestjs/common';
 export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   constructor(
     @Inject('chatGate') private readonly chatGate: GateService,
-    private msgService: MsgService,
-    private roomService: RoomService,
-    private chatService: ChatService,
-    private jwtService: JwtService,
+    private readonly msgService: MsgService,
+    private readonly roomService: RoomService,
+    private readonly chatService: ChatService,
+    private readonly jwtService: JwtService,
+    private readonly matchmakingService: MatchmakingService,
+    private readonly prismaMsgService: PrismaMsgService,
   ){}
   private server: Server;
 
@@ -35,6 +40,9 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   
   afterInit(server: Server) {
     this.server = server;
+    this.matchmakingService.setChatServer(server);
+    const expireInviteInterval: number = 60000; // Every minute
+    setInterval(function() {this.matchmakingService.expireOldInvites();}.bind(this), expireInviteInterval);
   }
   
   async handleConnection(client: Socket) {
@@ -72,6 +80,63 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.server.to(room).emit('receiveNewMsg', msg);
   }
     
+  @SubscribeMessage('sendInvite')
+  async handleGameInvite(client: Socket, packet: any) { //roomId: number, mode: GameMode
+    if (packet.roomId === undefined || packet.mode === undefined) {
+      client.emit('createInviteError', 'You have sent an invalid packet');
+      return ;
+    }
+    const userId = await this.chatGate.getUserBySocket(client);
+    if (await this.chatService.isChatter(packet.roomId, userId) === false) {
+      client.emit('createInviteError', 'You do not have access to the given room');
+      return ;
+    }
+
+    const msgWithAuthor = await this.matchmakingService.createPrivateGameInvite(userId, packet.mode, packet.roomId) as MsgDto;
+
+    if (msgWithAuthor === undefined) {
+      client.emit('createInviteError', 'There already is a pending invite');
+      return ;
+    }
+    // send the message to the connected participants in chat
+    this.spreadMessage(msgWithAuthor, String(packet.roomId));
+  }
+
+  private async getInviteMessage(roomId: number, messageId: number) {
+    return ( await this.prismaMsgService.Msg({roomId_id: {
+      id: messageId,
+      roomId: roomId,
+    }}));
+  }
+
+  @SubscribeMessage('acceptInvite')
+  async handleAcceptGameInvite(client: Socket, packet: any) { //roomId: number, messageId: number
+    if (packet.roomId === undefined || packet.messageId === undefined) {
+      client.emit('inviteStatus', InviteStatus.InvalidPacket);
+      return ;
+    }
+    const userId = await this.chatGate.getUserBySocket(client);
+    // check if the user is connected to the room
+    if (await this.chatService.isChatter(packet.roomId, userId) === false) {
+      client.emit('inviteStatus', InviteStatus.NotInRoom);
+      return ;
+    }
+    // check if the user is muted
+    if (await this.chatService.mutedCheck(userId, packet.roomId, client) === true) {
+      client.emit('inviteStatus', InviteStatus.Muted);
+      return ;
+    }
+
+    // get the message which stores the invite information from the database
+    const msg: Msg = await this.getInviteMessage(packet.roomId, packet.messageId);
+    if (msg === null || msg.invite === false) {
+      client.emit('inviteStatus', InviteStatus.InviteNotFound);
+    }
+
+    const inviteStatus = await this.matchmakingService.acceptInvite(userId, msg);
+    client.emit('inviteStatus', inviteStatus);
+  }
+
   @SubscribeMessage('sendMsg')
   async handleMessage(client: Socket, packet: MsgDto) {
     // input protection
@@ -79,9 +144,11 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
       return ;
     if (packet.invite === undefined)
       packet.invite = false;
-  
-    // retrieve the userId of sender
+
+    // retrieve the userId of sender and check if they are in the given room
     const userId = await this.chatGate.getUserBySocket(client);
+    if (await this.chatService.isChatter(packet.roomId, userId) === false)
+      return ;
 
     // if muted in channel emit a temp mess to sender that they are muted and return
     if (await this.chatService.mutedCheck(userId, packet.roomId, client) === true)

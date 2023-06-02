@@ -1,4 +1,4 @@
-import { GameMode, PaddleInput, PlayerDefinitions, MapSize, MoveSpeedPerTick, DefaultElementSize, BallStatus } from './game.definitions';
+import { GameMode, PaddleInput, PlayerDefinitions, MapSize, MoveSpeedPerTick, DefaultElementSize, BallStatus, toPrismaGameMode } from './game.definitions';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaGameService } from './prisma/prismaGame.service';
 import { PrismaUserService } from '../user/prisma/prismaUser.service';
@@ -203,7 +203,8 @@ export class GameService {
           id: game.players[PlayerDefinitions.PLAYER2].userId
         }],
       },
-      winnerId: winningPlayer.userId
+      winnerId: winningPlayer.userId,
+      mode: toPrismaGameMode(game.mode),
     });
   }
 
