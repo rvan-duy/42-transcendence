@@ -21,7 +21,7 @@ export function toPrismaGameMode(mode: GameMode): PrismaGameMode {
   case GameMode.FIESTA:
     return (PrismaGameMode.FIESTA);
   default:
-    throw new error(`Undefined GameMode: ${mode}`);
+    throw new ForbiddenException(`Undefined GameMode: ${mode}`);
   }
 }
 
@@ -36,7 +36,7 @@ export function toGameMode(mode: PrismaGameMode): GameMode {
   case PrismaGameMode.FIESTA:
     return (GameMode.FIESTA);
   default:
-    throw new error(`Undefined GameMode: ${mode}`);
+    throw new ForbiddenException(`Undefined GameMode: ${mode}`);
   }
 }
 

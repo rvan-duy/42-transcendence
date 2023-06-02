@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Post, Request, Response, UseGuards, HttpStatus, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, Param, Post, Request, Response, UseGuards, HttpStatus, Query, UseInterceptors, UploadedFile, ForbiddenException } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
@@ -104,7 +104,7 @@ export class UserController {
   async getMeFriends(@Request() req: any, @Response() res: any) {
     const user = await this.userService.user({ id: Number(req.user.id) });
     if (user === undefined)
-      throw Error('user does not exist');
+      throw new ForbiddenException('user does not exist');
     const friends = user.friends;
     return res.status(HttpStatus.OK).send(friends);
   }
@@ -144,7 +144,7 @@ export class UserController {
 async getUsers(@Response() res: any) {
   const users = await this.userService.users({});
   if (users === undefined)
-    throw Error('users not found');
+    throw new ForbiddenException('users not found');
   return res.status(HttpStatus.OK).send(users);
 }
   
@@ -162,11 +162,11 @@ async getUsers(@Response() res: any) {
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
     if (otherAsUser === undefined || meAsUser === undefined)
-      throw Error('user or users not found');
+      throw new ForbiddenException('user or users not found');
     if (otherAsUser.blocked.includes(myId))
-      throw Error('friendship could not be established, you are blocked');
+      throw new ForbiddenException('friendship could not be established, you are blocked');
     if (meAsUser.blocked.includes(userId))
-      throw Error('friendship could not be established, you blocked them. unblock first');
+      throw new ForbiddenException('friendship could not be established, you blocked them. unblock first');
     if (meAsUser.pending.includes(userId))
     {
       meAsUser.friends.push(userId);
@@ -205,7 +205,7 @@ async getUsers(@Response() res: any) {
       }
     });
     if (updateCatcher === undefined)
-      throw Error('friendship could not be established');
+      throw new ForbiddenException('friendship could not be established');
     return {status: 'pending'}; // wait till they accept your request (spannend!)
   }
 
