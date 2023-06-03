@@ -317,6 +317,7 @@ export default {
       chatId: Number(this.$route.query.id),
       connection: SocketioService,
       setup: false,
+      myBlockedUsers: [] as number[],
       usersAdded: [] as User[],
       allUsers: [] as User[],
       chatAdmins: [] as number[],
@@ -402,11 +403,18 @@ export default {
       if (Debug.ENABLED)
         console.log('loadRoom: ', room);
       this.chat = room.chat;
+      await getBackend('user/me')
+        .then(res => res.json())
+        .then(user => {
+          this.myBlockedUsers = user.blocked;
+        });
       const promises = room.history.map((msg: any) => {
         return getBackend('user/id/' + msg.authorId)
           .then(res => res.json())
           .then(user => {
             msg.username = user.name;
+            if (this.myBlockedUsers.includes(msg.authorId))
+              msg.body = 'This message was sent by a user you blocked.';
           });
       });
       await Promise.all(promises);

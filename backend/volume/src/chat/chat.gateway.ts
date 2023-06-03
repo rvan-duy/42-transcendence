@@ -6,6 +6,7 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
+import { ForbiddenException } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { MsgDto, MsgService } from '../msg/msg.service';
 import { GateService } from 'src/gate/gate.service';
@@ -170,7 +171,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleLoad(client: Socket, roomId: number) {
     // input protection
     if (typeof roomId !== 'number') {
-      throw new Error('roomId must be a number');
+      throw new ForbiddenException('roomId must be a number');
     }
 
     // client verification
@@ -200,7 +201,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   async handleDeleteMsg(client: Socket, payload: MsgDto) {
     const { roomId, id } = payload;
     if (roomId === undefined || id === undefined)
-      throw Error('incomplete payload');
+      throw new ForbiddenException('incomplete payload');
 
     // client extraction
     const userId = await this.chatGate.getUserBySocket(client);
@@ -209,7 +210,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (await this.chatService.isAdminOrOwner(roomId, userId) === false
     && await this.msgService.verifyAuthor(roomId, id, userId) === false
     )
-      throw Error('not allowed');
+      throw new ForbiddenException('not allowed');
     
     // delete the message
     this.msgService.handleDeleteMsg(payload);
