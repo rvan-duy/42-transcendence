@@ -13,7 +13,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
           <div>
             <h1>Pending friend requests</h1>
             <p
-             v-if="pending.length === 0"
+              v-if="pending.length === 0"
               class="text-black"
             >
               No friend requests yet!
@@ -52,7 +52,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
               Friends
             </h1>
             <p
-             v-if="friends.length === 0"
+              v-if="friends.length === 0"
               class="text-black"
             >
               No friends yet!

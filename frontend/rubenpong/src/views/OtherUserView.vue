@@ -85,7 +85,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
             <span class="p-1">Wins</span>
             <font-awesome-icon icon="award" />
             <p class="text-black">
-              {{wins}}
+              {{ wins }}
             </p>
           </div>
           <div
