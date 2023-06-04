@@ -83,6 +83,8 @@ export enum PowerUpEffects {
 export enum BallStatus {
   MOVING,
   SCORED,
+  OFF_FIELD,
+  SPAWNED,
   }
 
 // timings are in milliseconds
@@ -93,7 +95,11 @@ export enum PowerUpTimings {
 	NOT_TIME_BASED = -1,
 	SPAWN_TIMER = 5 * 1000,
   }
-  
+
+export enum BallTimings {
+    SpawnTime = 1 * 1000, // 1 second
+  }
+
 export enum PowerUpModifier {
 	BallSpeedIncrease = 1.5,
 	BallRadiusDivision = 2,

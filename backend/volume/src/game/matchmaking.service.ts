@@ -9,7 +9,7 @@ import { GateService } from 'src/gate/gate.service';
 import { Socket } from 'socket.io';
 
 enum Debug { // make sure to seed before
-  ENABLED = 0,
+  ENABLED = 1,
 }
 
 class PrivateGameInvite {

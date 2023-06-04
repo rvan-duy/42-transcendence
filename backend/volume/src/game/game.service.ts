@@ -1,4 +1,4 @@
-import { GameMode, PaddleInput, PlayerDefinitions, MapSize, MoveSpeedPerTick, DefaultElementSize, BallStatus, toPrismaGameMode } from './game.definitions';
+import { GameMode, PaddleInput, PlayerDefinitions, MapSize, DefaultElementSize, BallStatus, toPrismaGameMode, PowerUpEffects } from './game.definitions';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaGameService } from './prisma/prismaGame.service';
 import { PrismaUserService } from '../user/prisma/prismaUser.service';
@@ -14,56 +14,49 @@ import { GateService } from 'src/gate/gate.service';
 export class GameData {
   gameID: number;
   players: Player[] = [];
-  spectators: number[] = [];
-  mapSize: number[] = [MapSize.WIDTH, MapSize.HEIGHT];
   mode: GameMode = GameMode.NORMAL;
   score: number[] = [0, 0];
-  texturePath: string = null;
   pointsToWin: number = 5;
   isFinished: Boolean = false;
   powerUpOnField: Boolean = false;
   powerUp: PowerUp;
   ball: Ball;
   server: Server;
+  sendGameState: boolean = true;
 
   emitToRoom(path: string, payload: any) {
     this.server.to(`game_${this.gameID}`).emit(path, payload);
-    // this.server.emit(`${path}_${this.gameID}`, payload);
   }
 }
 
 export class CurrentGameState {
-  constructor (score: number[],
-    leftPaddleCoords: number[], leftPaddleHeight: number, leftPaddleWidth: number,
-    rightPaddleCoords: number[], rightPaddleHeight:number, rightPaddleWidth: number,
-    ballCoords: number[], ballRadius: number,
-    powerUpOnField: Boolean, powerUpcoords: number[], powerUpRadius: number) {
-    this.score = score;
-    this.leftPaddleCoords = leftPaddleCoords;
-    this.leftPaddleHeight = leftPaddleHeight;
-    this.leftPaddleWidth = leftPaddleWidth;
-    this.rightPaddleCoords = rightPaddleCoords;
-    this.rightPaddleHeight = rightPaddleHeight;
-    this.rightPaddleWidth = rightPaddleWidth;
-    this.ballCoords = ballCoords;
-    this.ballRadius = ballRadius;
-    this.powerUpOnField = powerUpOnField;
-    this.powerUpCoords = powerUpcoords;
-    this.powerUpRadius = powerUpRadius;
-  }
-
-  score:number[] = [0, 0];
-  leftPaddleCoords: number[] = [0, MapSize.HEIGHT / 2];
-  leftPaddleHeight: number = DefaultElementSize.PADDLEHEIGHT;
-  leftPaddleWidth: number = DefaultElementSize.PADDLEWIDTH;
-  rightPaddleCoords: number[] = [MapSize.WIDTH, MapSize.HEIGHT / 2];
-  rightPaddleHeight: number = DefaultElementSize.PADDLEHEIGHT;
-  rightPaddleWidth: number = DefaultElementSize.PADDLEWIDTH;
-  ballCoords: number[] = [MapSize.WIDTH / 2, MapSize.HEIGHT / 2];
-  ballRadius: number = DefaultElementSize.BALLRADIUS;
-  powerUpOnField: Boolean = false;
-  powerUpCoords: number[] = [0, 0];
-  powerUpRadius: number = 0;
+  constructor ( 
+    public score: number[] = [0, 0],
+    public leftPaddleDirection: Boolean[] = [false, false, false, false],
+    public leftPaddleCoords: number[] = [0, MapSize.HEIGHT / 2],
+    public leftPaddleHeight: number = DefaultElementSize.PADDLEHEIGHT,
+    public leftPaddleWidth: number = DefaultElementSize.PADDLEWIDTH,
+    public leftPaddleAcceleration: number = 0,
+    public rightPaddleDirection: Boolean[] = [false, false, false, false],
+    public rightPaddleCoords: number[] = [MapSize.WIDTH, MapSize.HEIGHT / 2],
+    public rightPaddleHeight: number = DefaultElementSize.PADDLEHEIGHT,
+    public rightPaddleWidth: number = DefaultElementSize.PADDLEWIDTH,
+    public rightPaddleAcceleration: number = 0,
+    public ballOnField: Boolean = false,
+    public ballCoords: number[] = [MapSize.WIDTH / 2, MapSize.HEIGHT / 2],
+    public ballDirection: number[] = [0, 0],
+    public ballRadius: number = DefaultElementSize.BALLRADIUS,
+    public ballAcceleration: number = 1,
+    public ballSmashEnabled: Boolean = false,
+    public ballSmashHolder: PlayerDefinitions = PlayerDefinitions.PLAYER1,
+    public powerUpOnField: Boolean = false,
+    public powerUpEnabled: Boolean = false,
+    public powerUpCoords: number[] = [0, 0],
+    public powerUpDirection: number[] = [0, 0],
+    public powerUpTarget: PlayerDefinitions = PlayerDefinitions.PLAYER1,
+    public powerUpEffect: PowerUpEffects = PowerUpEffects.BALL_RADIUS,
+    public powerUpRadius: number = 0,
+  ) {}
 }
 
 @Injectable()
@@ -103,7 +96,8 @@ export class GameService {
         powerUp.update(this.games[index]);
 
       // send the game state back to the players
-      this.sendGameInfo(this.games[index]);
+      if (this.games[index].sendGameState)
+        this.sendGameInfo(this.games[index]);
     }
     this.removeFinishedGames(); // Don't do this every game tick
   }
@@ -116,7 +110,7 @@ export class GameService {
   }
 
   private async scored(game: GameData) {
-    const ball = game.ball;
+    const ball: Ball = game.ball;
     let scoringPlayer: PlayerDefinitions;
 
     if (game.ball.x - game.ball.radius <= 0) {
@@ -137,8 +131,10 @@ export class GameService {
     }
     ball.x = MapSize.WIDTH / 2;
     ball.y = MapSize.HEIGHT / 2;
-    ball.xDirection = (getRandomInt(100) % 2) ? (1.0 * MoveSpeedPerTick.BALL) : (-1.0 * MoveSpeedPerTick.BALL);
+    ball.xDirection = 0.0;
     ball.yDirection = 0.0;
+    ball.onField = false;
+    ball.timeSinceLastGoal = new Date().getTime();
     ball.acceleration = 1;
     if (game.mode === GameMode.POWERUP || game.mode === GameMode.FIESTA)
       game.powerUp.resetPowerUpState(game, false);
@@ -162,7 +158,8 @@ export class GameService {
     await this.joinUserToGameRoom(dataPlayer2.id, newGame.gameID);
     this.server.emit('GameCreated', {gameId: newGame.gameID,
       player1: player1, namePlayer1: dataPlayer1.name,
-      player2: player2, namePlayer2: dataPlayer2.name});
+      player2: player2, namePlayer2: dataPlayer2.name,
+      idPlayer1: player1, idPlayer2: player2});
   }
 
   logGames() {
@@ -211,16 +208,38 @@ export class GameService {
   private sendGameInfo(game: GameData) {
     const player1 = game.players[PlayerDefinitions.PLAYER1];
     const player2 = game.players[PlayerDefinitions.PLAYER2];
-    const toSend = new CurrentGameState(game.score,
-      [player1.paddle.x, player1.paddle.y], player1.paddle.height, player1.paddle.width,
-      [player2.paddle.x, player2.paddle.y], player2.paddle.height, player2.paddle.width,
-      [game.ball.x, game.ball.y], game.ball.radius,
-      game.powerUpOnField, [game.powerUp.x, game.powerUp.y], game.powerUp.radius);
+    const toSend = new CurrentGameState (
+      game.score,
+      [player1.moveUp, player1.moveDown, player1.moveLeft, player1.moveRight],
+      [player1.paddle.x, player1.paddle.y],
+      player1.paddle.height,
+      player1.paddle.width,
+      player1.paddle.acceleration,
+      [player2.moveUp, player2.moveDown, player2.moveLeft, player2.moveRight],
+      [player2.paddle.x, player2.paddle.y],
+      player2.paddle.height,
+      player2.paddle.width,
+      player2.paddle.acceleration,
+      game.ball.onField,
+      [game.ball.x, game.ball.y],
+      [game.ball.xDirection, game.ball.yDirection],
+      game.ball.radius,
+      game.ball.acceleration,
+      game.ball.superSmash,
+      game.ball.playerHoldingSmash,
+      game.powerUpOnField,
+      game.powerUp.powerUpEnabled,
+      [game.powerUp.x, game.powerUp.y],
+      [game.powerUp.xDirection, game.powerUp.yDirection],
+      game.powerUp.targetPlayer,
+      game.powerUp.effect,
+      game.powerUp.radius
+      );
 
     // send current game state back through socket
     if (!game.isFinished)
       game.emitToRoom('GameState', toSend);
-    // console.log(toSend);
+    game.sendGameState = false;
   }
   
   UpdatePlayerInput(playerId: number, gameId: number, input: PaddleInput, enabled: Boolean) {
@@ -233,6 +252,7 @@ export class GameService {
       const player = game.players[index];
 
       if (player.userId === playerId) {
+        game.sendGameState = true;
         if (enabled)
           player.enableInput(input);
         else
@@ -274,6 +294,8 @@ export class GameService {
         gameMode: mode,
         namePlayer1: '',
         namePlayer2: '',
+        idPlayer1: -1,
+        idPlayer2: -1,
         powerUpActive: false,
         powerUp: '',
       });
@@ -282,6 +304,8 @@ export class GameService {
 
     // there is a game where the user is playing so we send back all the game's details and join the client to the game's room
     const game: GameData = this.games[gameIndex];
+    const idPlayer1 = game.players[0].userId;
+    const idPlayer2 = game.players[0].userId;
     client.emit('GameStatus', {
       alreadyInGame: true,
       alreadyInQueue: false,
@@ -289,6 +313,8 @@ export class GameService {
       gameMode: game.mode,
       namePlayer1: game.players[0].name,
       namePlayer2: game.players[1].name,
+      idPlayer1: idPlayer1,
+      idPlayer2: idPlayer2,
       powerUpActive: game.powerUp.powerUpEnabled,
       powerUp: powerUps[game.powerUp.effect]
     });
@@ -355,8 +381,4 @@ export class GameService {
     else
       game.players[1].resetInput();
   }
-}
-
-function getRandomInt(max) {
-  return Math.floor(Math.random() * max);
 }

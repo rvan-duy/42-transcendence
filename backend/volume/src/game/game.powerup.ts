@@ -1,5 +1,4 @@
 import { DefaultElementSize, MapSize, MoveSpeedPerTick, PlayerDefinitions, PowerUpEffects, PowerUpModifier, PowerUpTimings } from './game.definitions';
-import { Paddle } from './game.paddle';
 import { GameData } from './game.service';
 
 export class PowerUp {
@@ -24,8 +23,7 @@ export class PowerUp {
     }
 
     if (this.powerUpOnField) {
-      // console.log(`PowerUp position: ${this.x} ${this.y}`);
-      this.movePowerUp();
+      this.movePowerUp(game);
       this.checkCollision(game);
     }
 
@@ -41,7 +39,6 @@ export class PowerUp {
     let collision: Boolean = false;
 
     // Sets all debuffs and buffs to target the right player
-    // if ball collision
     if (this.powerUpBallCollision(game)) {
       collision = true;
       if (game.ball.xDirection > 0 &&
@@ -55,18 +52,6 @@ export class PowerUp {
       else
         this.targetPlayer = PlayerDefinitions.PLAYER2;
     }
-
-    // currently unused since the ball only moves up and down
-    // // if paddle collision
-    // if (this.powerUpPaddleCollision(game)) {
-    //   collision = true;
-    //   if (game.ball.x < MapSize.WIDTH / 2 &&
-    //     (this.effect === PowerUpEffects.FREEZE_ENEMY ||
-    //     this.effect === PowerUpEffects.PADDLE_SLOW_ENEMY))
-    //     this.targetPlayer = PlayerDefinitions.PLAYER1;
-    //   else
-    //       this.targetPlayer = PlayerDefinitions.PLAYER2;
-    //     }
 
     if (collision)
       this.enablePowerUps(game);
@@ -93,6 +78,7 @@ export class PowerUp {
   }
 
   private spawnPowerUp(game: GameData) {
+    game.sendGameState = true;
     game.powerUpOnField = true;
     this.powerUpOnField = true;
     this.effect = getRandomInt(5);
@@ -110,8 +96,6 @@ export class PowerUp {
     if (Math.abs(game.ball.x - this.x) <= this.radius * 10 &&
         Math.abs(game.ball.y - this.y) <= this.radius * 10)
       this.y = (this.y + 250) % MapSize.HEIGHT;
-
-    // console.log(`spawned a powerup at location ${this.x} ${this.y} of type ${this.effect}`);
   }
 
   private updatePaddleEffect(game: GameData) {
@@ -161,9 +145,10 @@ export class PowerUp {
 
   resetPowerUpState(game: GameData, resetByPaddle: Boolean) {
     if (resetByPaddle && (this.effect === PowerUpEffects.FREEZE_ENEMY ||
-              this.effect === PowerUpEffects.PADDLE_SLOW_ENEMY ||
-              this.effect === PowerUpEffects.PADDLE_SPEED_BUFF))
+      this.effect === PowerUpEffects.PADDLE_SLOW_ENEMY ||
+      this.effect === PowerUpEffects.PADDLE_SPEED_BUFF))
       return ;
+    game.sendGameState = true;
     this.powerUpEnabled = false;
     this.powerUpOnField = false;
     this.hitsSinceLastPowerUp = 0;
@@ -185,59 +170,23 @@ export class PowerUp {
     return Math.abs(xSqrd + ySqrd) < radSqrd;
   }
 
-  private powerUpPaddleCollision(game: GameData) {
-    // sets the side to check for which collision
-    let side: PlayerDefinitions;
-    if (this.x < MapSize.WIDTH / 2)
-      side = PlayerDefinitions.PLAYER1;
-    else
-      side = PlayerDefinitions.PLAYER2;
-
-    // this is the same as ball paddle collision but now used for the PowerUp
-    const paddle: Paddle = game.players[side].paddle;
-    let tempX: number = this.x;
-    let tempY: number = this.y;
-    
-    // sets the closest edges into the temp variables
-    // compare to left or right edges
-    if (this.x <= paddle.x)
-      tempX = paddle.x;
-    else if (this.x > paddle.x + paddle.width)
-      tempX = paddle.x + paddle.width;
-  
-    // compare to top or bottom edge
-    if (this.y <= paddle.y)
-      tempY = paddle.y;
-    else if (this.y > paddle.y + paddle.height)
-      tempY = paddle.y + paddle.height;
-  
-    // get distance from closest edges
-    const distX: number = this.x - tempX;
-    const distY: number = this.y - tempY;
-    const distance: number = Math.sqrt((distX * distX) + (distY * distY));
-  
-    // if the distance is less than or equal to the radius there is a collision
-    if (distance <= this.radius)
-      return true;
-    return false;
-  }
-
-  private movePowerUp() {
+  private movePowerUp(game: GameData) {
     // Update PowerUp position
-    this.x += this.xDirection;
-    this.y += this.yDirection;
-
-    // check if it hits the top of the playing field
-    if (this.y + this.radius >= MapSize.HEIGHT)
-      this.yDirection = Math.abs(this.yDirection) * -1;
-    else if (this.y - this.radius <= 0)
-      this.yDirection = Math.abs(this.yDirection);
+    let changedDirection: boolean = false;
     
-    // check if it hits the bottom of the playing field
-    if (this.x + this.radius >= MapSize.WIDTH)
-      this.xDirection = Math.abs(this.xDirection) * -1;
-    else if (this.x - this.radius <= 0)
-      this.xDirection = Math.abs(this.xDirection);
+    // check if it hits the top or bottom of the playing field
+    this.y += this.yDirection;
+    if (this.y + this.radius >= MapSize.HEIGHT) {
+      changedDirection = true;
+      this.yDirection = Math.abs(this.yDirection) * -1;
+    }
+    else if (this.y - this.radius <= 0) {
+      changedDirection = true;
+      this.yDirection = Math.abs(this.yDirection);
+    }
+
+    if (changedDirection)
+      game.sendGameState = true;
   }
 }
 

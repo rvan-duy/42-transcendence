@@ -1,8 +1,11 @@
 import { BallStatus, GameMode, MapSize, MoveSpeedPerTick, PlayerDefinitions, PowerUpEffects } from './game.definitions';
 import { Paddle } from './game.paddle';
 import { GameData } from './game.service';
+import { BallTimings } from './game.definitions';
 
 export class Ball {
+  onField: boolean = false;
+  timeSinceLastGoal: number = new Date().getTime() - BallTimings.SpawnTime;
   x: number = MapSize.WIDTH / 2;
   y: number = MapSize.HEIGHT / 2;
   xDirection: number = (getRandomInt(10) % 2) ? (1.0 * MoveSpeedPerTick.BALL) : (-1.0 * MoveSpeedPerTick.BALL);
@@ -44,6 +47,21 @@ export class Ball {
   update(game: GameData) {
     let side: PlayerDefinitions;
   
+    if (this.onField == false) {
+      let currentTime = new Date().getTime();
+      if (currentTime - this.timeSinceLastGoal < BallTimings.SpawnTime) {
+        return (BallStatus.OFF_FIELD);
+      }
+      this.onField = true;
+      this.x = MapSize.WIDTH / 2;
+      this.y = MapSize.HEIGHT / 2;
+      this.xDirection = (getRandomInt(10) % 2) ? (1.0 * MoveSpeedPerTick.BALL) : (-1.0 * MoveSpeedPerTick.BALL);
+      this.yDirection = 0;
+      this.acceleration = 1;
+      game.sendGameState = true;
+      return (BallStatus.SPAWNED);
+    }
+
     // check what side of the map the ball is on and which paddle to check collision for
     if (game.ball.x + this.radius < MapSize.WIDTH / 2)
       side = PlayerDefinitions.PLAYER1;
@@ -70,6 +88,8 @@ export class Ball {
       const returnAngle = Math.PI / 3 * normalizedCollisionPoint; // 60 degrees (Pi / 3) times the normalized paddle collision point which is between 1 and -1
       const returnDirection = paddle.x < this.x ? 1 : -1; // check what side of the bat the ball gets hit
 
+      game.sendGameState = true;
+
       if (this.superSmash && side === this.playerHoldingSmash) {
         speed *= 1.5;
         game.powerUp.resetPowerUpState(game, true);
@@ -95,8 +115,10 @@ export class Ball {
     }
 
     // Check if the ball has hit the score line
-    if (this.x - this.radius <= 0 || this.x + this.radius >= MapSize.WIDTH)
+    if (this.x - this.radius <= 0 || this.x + this.radius >= MapSize.WIDTH) {
+      game.sendGameState = true;
       return (BallStatus.SCORED);
+    }
     return (BallStatus.MOVING);
   }
 }

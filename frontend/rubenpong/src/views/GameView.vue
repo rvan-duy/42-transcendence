@@ -74,7 +74,8 @@
 import SocketioService from '../services/socketio.service.js';
 import { getBackend } from '@/utils/backend-requests';
 import { GameMode } from '../utils/game-definitions';
-import type { CurrentGameState } from '../utils/game-definitions';
+import { Game } from '../utils/game-classes';
+import { PlayerDefinitions, type CurrentGameState } from '../utils/game-definitions';
 
 enum Debug {
   ENABLED = 0,
@@ -86,7 +87,9 @@ export default {
   {
     return {
       selectGameMode: false,
+      game : new Game(),
       gameMode : GameMode.UNMATCHED,
+      side : PlayerDefinitions.PLAYER1,
       inQueue: false,
       inGame: false,
       powerUp: '',
@@ -147,6 +150,7 @@ export default {
       if (data.alreadyInGame === true) {
         this.namePlayer1 = data.namePlayer1;
         this.namePlayer2 = data.namePlayer2;
+        this.side = this.userId === data.idPlayer1 ? PlayerDefinitions.PLAYER1 : PlayerDefinitions.PLAYER2;
         this.inGame = true;
         this.inQueue = false;
         this.gameId = data.gameId;
@@ -167,6 +171,7 @@ export default {
       if (data.player1 === this.userId || data.player2 === this.userId) {
         this.namePlayer1 = data.namePlayer1;
         this.namePlayer2 = data.namePlayer2;
+        this.side = this.userId === data.idPlayer1 ? PlayerDefinitions.PLAYER1 : PlayerDefinitions.PLAYER2;
         this.gameId = data.gameId;
         this.inGame = true;
         this.inQueue = false;
@@ -177,6 +182,9 @@ export default {
     // set the functions for the movement handling
     document.addEventListener('keydown', this.keyDownEvent);
     document.addEventListener('keyup', this.keyUpEvent);
+    const fps: number = 1000 / 60; // 60fps
+    const self = this;
+    setInterval(function() {self.drawGame(ctx, canvas);}.bind(self), fps, ctx, canvas);
   },
   unmounted() {
     document.removeEventListener('keydown', this.keyDownEvent);
@@ -192,7 +200,9 @@ export default {
       // get the position and current gamestate back from the server
       this.connection.socket.on('GameState', (data: any) => {
         const state: CurrentGameState = data;
-        this.drawGame(ctx, canvas, state);
+        console.log('Updating game state');
+        this.game.updateGameState(state);
+        this.game.mode = this.gameMode;
       });
       
       // Listen to the power up being enabled
@@ -226,21 +236,25 @@ export default {
       if (!this.arrowDown && e.key === 'ArrowDown')
       {
         this.connection.socket.emit('UpdateInput', payload);
+        this.game.paddles[this.side].moveDown = true;
         this.arrowDown = true;
       }
       else if (!this.arrowUp && e.key === 'ArrowUp')
       {
         this.connection.socket.emit('UpdateInput', payload);
+        this.game.paddles[this.side].moveUp = true;
         this.arrowUp = true;
       }
       else if (!this.arrowRight && e.key === 'ArrowRight')
       {
         this.connection.socket.emit('UpdateInput', payload);
+        this.game.paddles[this.side].moveRight = true;
         this.arrowRight = true;
       }
       else if (!this.arrowLeft && e.key === 'ArrowLeft')
       {
         this.connection.socket.emit('UpdateInput', payload);
+        this.game.paddles[this.side].moveLeft = true;
         this.arrowLeft = true;
       }
     },
@@ -253,21 +267,25 @@ export default {
       if (e.key === 'ArrowDown')
       {
         this.connection.socket.emit('UpdateInput', payload);
+        this.game.paddles[this.side].moveDown = false;
         this.arrowDown = false;
       }
       else if (e.key === 'ArrowUp')
       {
         this.connection.socket.emit('UpdateInput', payload);
+        this.game.paddles[this.side].moveUp = false;
         this.arrowUp = false;
       }
       else if (e.key === 'ArrowRight')
       {
         this.connection.socket.emit('UpdateInput', payload);
+        this.game.paddles[this.side].moveRight = false;
         this.arrowRight = false;
       }
       else if (e.key === 'ArrowLeft')
       {
         this.connection.socket.emit('UpdateInput', payload);
+        this.game.paddles[this.side].moveLeft = false;
         this.arrowLeft = false;
       }
     },
@@ -286,29 +304,34 @@ export default {
       this.connection.socket.emit('QueueForGame', packet);
     },
 
-    drawGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, state: CurrentGameState) {
+    drawGame(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) {
+      if (!this.inGame) // don't draw if not in game
+        return ;
+
+      this.game.update();
+
       // draw background
       ctx.fillStyle = 'black';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // draw net
-      for(let i = 0; i <= canvas.height; i+=15){
+      for(let i = 0; i <= canvas.height; i += 15){
         ctx.fillStyle = 'white';
         ctx.fillRect(canvas.width / 2 - 1.5 , i, 3, 10);
       }
 
       // draw paddle player 1
       ctx.fillStyle = 'white';
-      ctx.fillRect(state.leftPaddleCoords[0], state.leftPaddleCoords[1], state.leftPaddleWidth, state.leftPaddleHeight);
+      ctx.fillRect(this.game.paddles[PlayerDefinitions.PLAYER1].x, this.game.paddles[PlayerDefinitions.PLAYER1].y, this.game.paddles[PlayerDefinitions.PLAYER1].width, this.game.paddles[PlayerDefinitions.PLAYER1].height);
 
       // draw paddle player 2
       ctx.fillStyle = 'white';
-      ctx.fillRect(state.rightPaddleCoords[0], state.rightPaddleCoords[1], state.rightPaddleWidth, state.rightPaddleHeight);
+      ctx.fillRect(this.game.paddles[PlayerDefinitions.PLAYER2].x, this.game.paddles[PlayerDefinitions.PLAYER2].y, this.game.paddles[PlayerDefinitions.PLAYER2].width, this.game.paddles[PlayerDefinitions.PLAYER2].height);
 
       // draw ball
       ctx.fillStyle = 'red';
       ctx.beginPath();
-      ctx.arc(state.ballCoords[0], state.ballCoords[1], state.ballRadius, 0, Math.PI * 2, false);
+      ctx.arc(this.game.ball.x, this.game.ball.y, this.game.ball.radius, 0, Math.PI * 2, false);
       ctx.closePath();
       ctx.fill();
 
@@ -320,7 +343,7 @@ export default {
       // draw text score player 1
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
-      ctx.fillText(state.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
+      ctx.fillText(this.game.score[0].toString(), canvas.width / 4 + 40, canvas.height / 4);
 
       // draw text player 2
       ctx.fillStyle = 'white';
@@ -330,13 +353,13 @@ export default {
       // draw text score player 2
       ctx.fillStyle = 'white';
       ctx.font = '50px arial';
-      ctx.fillText(state.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
+      ctx.fillText(this.game.score[1].toString(), canvas.width / 4 * 3 - 70, canvas.height / 4);
 
       // draw PowerUp is it is on the field
-      if (state.powerUpOnField) {
+      if (this.game.powerUp.powerUpOnField) {
         ctx.fillStyle = 'blue';
         ctx.beginPath();
-        ctx.arc(state.powerUpCoords[0], state.powerUpCoords[1], state.powerUpRadius, 0, Math.PI * 2, false);
+        ctx.arc(this.game.powerUp.x, this.game.powerUp.y, this.game.powerUp.radius, 0, Math.PI * 2, false);
         ctx.closePath();
         ctx.fill();
       }
