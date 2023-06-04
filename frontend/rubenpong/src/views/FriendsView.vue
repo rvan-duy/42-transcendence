@@ -93,13 +93,6 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
                     {{ user.status }}
                   </span>
                 </span>
-                <button
-                  class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full"
-                  @click="goTo('game')"
-                >
-                  Invite to game
-                </button>
-
                 <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
               </li>
             </ul>
