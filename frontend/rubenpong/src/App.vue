@@ -35,13 +35,6 @@
         <RouterLink
           v-if="userIsLoggedIn"
           class="text-blue-100 p-2 text-lg hover:text-white"
-          to="/ladder"
-        >
-          User Ladder
-        </RouterLink>
-        <RouterLink
-          v-if="userIsLoggedIn"
-          class="text-blue-100 p-2 text-lg hover:text-white"
           to="/friends"
         >
           OnlyFriends
@@ -145,7 +138,9 @@ export default {
     },
 
     switchToGameTabListener() {
-      this.goTo('game');
+      setTimeout(() => {
+        this.goTo('');
+      }, 100);
     },
   },
 };

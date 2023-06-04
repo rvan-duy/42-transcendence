@@ -10,8 +10,14 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
           <h1><i class="fas fa-smile" /> OnlyFriends</h1>
         </header>
         <main class="join-main">
-          <div v-if="pending.length > 0">
+          <div>
             <h1>Pending friend requests</h1>
+            <p
+              v-if="pending.length === 0"
+              class="text-black"
+            >
+              No friend requests yet!
+            </p>
             <ul id="users">
               <li
                 v-for="user in pending"
@@ -45,6 +51,12 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
             <h1 class="mt-8">
               Friends
             </h1>
+            <p
+              v-if="friends.length === 0"
+              class="text-black"
+            >
+              No friends yet!
+            </p>
             <ul id="users">
               <li
                 v-for="user in friends"
@@ -81,13 +93,6 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
                     {{ user.status }}
                   </span>
                 </span>
-                <button
-                  class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full"
-                  @click="goTo('game')"
-                >
-                  Invite to game
-                </button>
-
                 <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
               </li>
             </ul>
@@ -139,7 +144,8 @@ export default {
       await postBackendWithQueryParams('user/befriend', undefined, { id: user.id });
       this.friends.push(user);
       const index = this.pending.indexOf(user);
-      this.pending.splice(index, 1); },
+      this.pending.splice(index, 1);
+    },
   },
 };
 </script>
