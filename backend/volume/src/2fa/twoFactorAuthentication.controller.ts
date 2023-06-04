@@ -71,11 +71,32 @@ export class TwoFactorAuthenticationController {
     return res.status(HttpStatus.OK).send('Two-factor authentication turned off');
   }
 
-  // TODO: Does this need to redirect to the frontend? Maybe. Okay probably since it is manipulating the cookie.
+  @Post('submit-code')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Submit a two-factor authentication code for current user',
+    description: 'Verifies the two-factor code provided by the user against the generated secret.'
+  })
+  @ApiBody({ description: 'The two-factor code to verify (code)', type: Object })
+  @ApiOkResponse({ description: 'Two-factor authentication verification succeeded', type: String })
+  @ApiBadRequestResponse({ description: 'Two-factor authentication verification failed', type: String })
+  async submitTwoFactorCode(@Request() req: any, @Response() res: any) {
+    const isVerified = await this.twoFactorAuthenticationService.verifyTwoFactorCode(req.user.id, req.body.code);
+
+    if (isVerified === false) {
+      return res.status(HttpStatus.BAD_REQUEST).send('Two-factor authentication verification failed');
+    }
+
+    return res.status(HttpStatus.OK).send('Two-factor authentication verification succeeded');
+  }
+
+  /*
+   * Legacy code, not used anymore
+   */
   @Post('verify')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
-    summary: 'Verify a two-factor authentication code for current user (UNFINISHED)',
+    summary: 'Verify a two-factor authentication code for current user (LEGACY)',
     description: 'Verifies the two-factor code provided by the user against the generated secret. If the code is verified, generates a new JWT token and sends it in a cookie in the response.'
   })
   @ApiResponse({ status: HttpStatus.OK, description: 'Two-factor authentication verification succeeded', type: String })
