@@ -203,6 +203,11 @@ export class RoomService {
           disconnect: {
             id: userId,
           }
+        },
+        admin: {
+          disconnect: {
+            id: userId,
+          }
         }
       }
     });

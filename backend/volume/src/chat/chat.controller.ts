@@ -124,7 +124,7 @@ export class ChatController {
     const clientId = req.user.id;
     roomId = Number(roomId);
     if (false === await this.chatService.isChatter(roomId, clientId))
-      throw new Error('no access or invalid roomId'); // also catches non existing rooms
+      throw new ForbiddenException('no access or invalid roomId'); // also catches non existing rooms
 
     const roomIncludingUsers = await this.roomService.getRoomUsers(roomId);
     return roomIncludingUsers.users;
@@ -141,7 +141,7 @@ export class ChatController {
     roomId = Number(roomId);
 
     if (false === await this.chatService.isChatter(roomId, clientId))
-      throw new Error('no access or invalid roomId'); // also catches non existing rooms
+      throw new ForbiddenException('no access or invalid roomId'); // also catches non existing rooms
 
     try {
       const admins = await this.roomService.getRoomAdmins(roomId);
