@@ -43,7 +43,12 @@ export default {
   },
   methods: {
     async submitCode() {
-      // do submit stuff here, probably a new endpoints needs to be made that handles POST with code
+      const response = await postBackend('2fa/submit-code', {
+        code: this.code,
+      });
+      if (response.status === 200) {
+        console.log('success');
+      }
     },
   }
 };

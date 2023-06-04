@@ -9,7 +9,7 @@ import { Response } from 'express';
 export class TwoFactorAuthenticationService {
   constructor(
     private readonly prismaUserService: PrismaUserService,
-  ) {}
+  ) { }
 
   async verifyTwoFactorCode(userId: any, code: string): Promise<boolean> {
     const user = await this.prismaUserService.user({ id: Number(userId) });
@@ -19,6 +19,16 @@ export class TwoFactorAuthenticationService {
     });
 
     console.log(isVerified ? '✅' : '❌', '2FA verification for', user.name, isVerified ? 'succeeded' : 'failed');
+
+    await this.prismaUserService.updateUser({
+      where: {
+        id: Number(user.id),
+      },
+      data: {
+        twoFactorVerified: isVerified,
+      },
+    });
+
     return isVerified;
   }
 
