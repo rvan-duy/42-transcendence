@@ -9,6 +9,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum GameMode {
+  NORMAL
+  FREEMOVE  
+  POWERUP
+  FIESTA
+}
+
 enum Access {
   PRIVATE
   PROTECTED
@@ -71,9 +78,9 @@ model Msg {
   body      String
   author    User?    @relation(fields: [authorId], references: [id])
   authorId  Int
-  invite    Boolean // ? how ?
+  invite    Boolean @default(false)
   timestamp DateTime @default(now())
-
+  mode      GameMode?
   @@id([roomId, id])
 }
 
@@ -82,4 +89,5 @@ model Game {
   players  User[]
   score    Int[]
   winnerId Int
+  mode    GameMode
 }

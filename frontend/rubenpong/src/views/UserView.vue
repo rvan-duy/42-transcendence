@@ -146,6 +146,10 @@ interface User {
   losses: number;
 }
 
+enum Debug {
+  ENABLED = 0,
+}
+
 export default {
   data()
   {
@@ -176,8 +180,11 @@ export default {
         this.elo = data.elo;
         this.wins = data.wins;
         this.losses = data.losses;
-        console.log('data');
-        console.log(data);
+        this.status = 'Fetching...';
+        if (Debug.ENABLED) {
+          console.log('data');
+          console.log(data);
+        }
       });
     await getBackend('user/id/' + this.id + '?withGames=true&withStatus=true')
       .then(res => res.json())

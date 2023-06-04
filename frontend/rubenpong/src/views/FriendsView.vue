@@ -112,6 +112,10 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
 
 <script lang="ts">
 
+enum Debug {
+  ENABLED = 0,
+}
+
 interface User {
   id: number;
   name: string;
@@ -131,7 +135,8 @@ export default {
           .then((data) => {
             this.friends = data.onlyFriends;
             this.pending = data.onlyPending;
-            console.log(data);
+            if (Debug.ENABLED)
+              console.log(data);
           });
       });
   },

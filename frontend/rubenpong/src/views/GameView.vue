@@ -75,6 +75,11 @@ import SocketioService from '../services/socketio.service.js';
 import { getBackend } from '@/utils/backend-requests';
 import { GameMode } from '../utils/game-definitions';
 import type { CurrentGameState } from '../utils/game-definitions';
+
+enum Debug {
+  ENABLED = 0,
+}
+
 export default {
 
   data()
@@ -103,12 +108,14 @@ export default {
     let userId: number = -1;
     await getBackend('user/me')
       .then(function(res){
-        console.log(res);
+        if (Debug.ENABLED)
+          console.log(res);
         return res.json();
       })
       .then((data) => {
         userId = data.id;
-        console.log(data);
+        if (Debug.ENABLED)
+          console.log(data);
       })
       .catch(e => {
         userId = -1;
@@ -117,7 +124,8 @@ export default {
       });
 
     this.userId = userId;
-    console.log(`received userId: ${this.userId}`);
+    if (Debug.ENABLED)
+      console.log(`received userId: ${this.userId}`);
 
   },
   mounted() {
