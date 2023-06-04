@@ -47,7 +47,7 @@ export default {
         code: this.code,
       });
       if (response.status === 200) {
-        console.log('success');
+        this.$router.push('/');
       }
     },
   }

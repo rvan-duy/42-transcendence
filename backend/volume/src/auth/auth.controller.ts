@@ -36,7 +36,7 @@ export class AuthController {
   @ApiOkResponse({ description: 'JWT is valid', type: String })
   @ApiForbiddenResponse({ description: 'Two-factor authentication required', type: String })
   async check(@Request() req: any, @Response() res: any) {
-    if (req.user.twoFactor === true) {
+    if (req.user.twoFactor === true && req.user.twoFactorVerified === false) {
       return res.status(HttpStatus.FORBIDDEN).send('Two-factor authentication required');
     }
 

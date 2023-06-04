@@ -47,9 +47,11 @@ export class TwoFactorAuthenticationController {
   @ApiBadRequestResponse({ description: 'Two-factor authentication verification failed', type: String })
   async turnOnTwoFactorAuthentication(@Request() req: any, @Response() res: any) {
     const isVerified = await this.twoFactorAuthenticationService.verifyTwoFactorCode(req.user.id, req.body.code);
+
     if (isVerified === false) {
       return res.status(HttpStatus.BAD_REQUEST).send('Two-factor authentication verification failed');
     }
+
     this.twoFactorAuthenticationService.turnOnTwoFactorForUser(req.user.id);
     return res.status(HttpStatus.OK).send('Two-factor authentication turned on');
   }
@@ -60,13 +62,16 @@ export class TwoFactorAuthenticationController {
     summary: 'Turn off two-factor authentication for current user',
     description: 'Verifies the two-factor code provided by the user against the generated secret. If the code is verified, turns off two-factor authentication for the user.'
   })
+  @ApiBody({ description: 'The two-factor code to verify (code)', type: Object })
   @ApiOkResponse({ description: 'Two-factor authentication turned off', type: String })
   @ApiBadRequestResponse({ description: 'Two-factor authentication verification failed', type: String })
   async turnOffTwoFactorAuthentication(@Request() req: any, @Response() res: any) {
     const isVerified = await this.twoFactorAuthenticationService.verifyTwoFactorCode(req.user.id, req.body.code);
+
     if (isVerified === false) {
       return res.status(HttpStatus.BAD_REQUEST).send('Two-factor authentication verification failed');
     }
+
     this.twoFactorAuthenticationService.turnOffTwoFactorForUser(req.user.id);
     return res.status(HttpStatus.OK).send('Two-factor authentication turned off');
   }
@@ -87,6 +92,7 @@ export class TwoFactorAuthenticationController {
       return res.status(HttpStatus.BAD_REQUEST).send('Two-factor authentication verification failed');
     }
 
+    await this.twoFactorAuthenticationService.setVerified(req.user.id);
     return res.status(HttpStatus.OK).send('Two-factor authentication verification succeeded');
   }
 

@@ -35,9 +35,9 @@ import GenerateSecretButtonVue from '@/components/buttons/GenerateSecretButton.v
         <br>
         <button
           class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full"
-          @click=""
+          @click="turnOff"
         >
-          Turn off Two Factor Authentication (TODO)
+          Turn off Two Factor Authentication
         </button>
       </form>
     </div>
@@ -61,7 +61,18 @@ export default {
             alert('Invalid code');
           }
           else {
-            this.$router.push({ name: 'user' });
+            this.$router.push('user');
+          }
+        });
+    },
+    async turnOff() {
+      await postBackend('2fa/turn-off', { 'code': this.code })
+        .then((response) => {
+          if (response.status !== 200) {
+            alert('Invalid code');
+          }
+          else {
+            this.$router.push('/');
           }
         });
     },
