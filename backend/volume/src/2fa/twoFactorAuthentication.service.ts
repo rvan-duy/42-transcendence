@@ -22,13 +22,13 @@ export class TwoFactorAuthenticationService {
     return isVerified;
   }
 
-  async setVerified(userId: any): Promise<void> {
+  async setVerified(userId: any, isVerified: boolean): Promise<void> {
     await this.prismaUserService.updateUser({
       where: {
         id: Number(userId),
       },
       data: {
-        twoFactorVerified: true,
+        twoFactorVerified: isVerified,
       },
     });
   }

@@ -92,7 +92,7 @@ export class TwoFactorAuthenticationController {
       return res.status(HttpStatus.BAD_REQUEST).send('Two-factor authentication verification failed');
     }
 
-    await this.twoFactorAuthenticationService.setVerified(req.user.id);
+    await this.twoFactorAuthenticationService.setVerified(req.user.id, true);
     return res.status(HttpStatus.OK).send('Two-factor authentication verification succeeded');
   }
 

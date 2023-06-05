@@ -47,7 +47,7 @@ export default {
         code: this.code,
       });
       if (response.status === 200) {
-        this.$router.push('/');
+        window.location.href = `http://${import.meta.env.VITE_CODAM_PC}:8000`;
       }
     },
   }

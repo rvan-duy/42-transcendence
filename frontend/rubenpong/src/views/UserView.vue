@@ -33,7 +33,7 @@
               @submit.prevent
             >
               <label for="username">Change Username</label>
-              <span class="text-black pr-4"><input
+              <span class="text-black"><input
                 id="username"
                 v-model="newUsername"
                 VALYE
@@ -42,11 +42,12 @@
                 placeholder="Enter username..."
                 required
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-              > </span><span><button
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-full"
-                @click="changeName"
-              >Submit
-              </button></span>
+              > </span><span>
+                <button
+                  class="bg-blue-500 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-full mt-2"
+                  @click="changeName"
+                >Submit
+                </button></span>
             </form>
           </div>
           <div class="form-control">

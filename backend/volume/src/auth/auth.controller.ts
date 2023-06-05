@@ -3,13 +3,17 @@ import { FortyTwoGuard } from './forty-two-auth.guard';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { ApiCookieAuth, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse, ApiForbiddenResponse } from '@nestjs/swagger';
+import { TwoFactorAuthenticationService } from '../2fa/twoFactorAuthentication.service';
 
 @Controller('auth')
 @ApiCookieAuth()
 @ApiTags('auth')
 @ApiUnauthorizedResponse({ description: 'Unauthorized', type: Object })
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly TwoFactorAuthenticationService: TwoFactorAuthenticationService,
+  ) { }
 
   @Get('')
   @UseGuards(FortyTwoGuard)
@@ -47,6 +51,7 @@ export class AuthController {
   @Get('logout')
   @ApiOperation({ summary: 'Logout, redirects to frontend' })
   async logout(@Request() req: any, @Response() res: any) {
+    this.TwoFactorAuthenticationService.setVerified(req.user.id, false);
     res.clearCookie('jwt');
     return res.redirect(`http://${process.env.CODAM_PC}:${process.env.FRONTEND_PORT}`);
   }
