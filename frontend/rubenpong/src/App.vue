@@ -104,7 +104,7 @@ export default {
     };
   },
   async created() {
-    this.userIsLoggedInStatus = await isLoggedIn(); 
+    this.userIsLoggedInStatus = await isLoggedIn();
     if (this.userIsLoggedInStatus === 200) {
       getBackend('user/me')
         .then((res) => {
