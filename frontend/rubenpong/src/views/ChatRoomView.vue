@@ -32,6 +32,96 @@ interface.
             <h1 class="text-xl">
               {{ $route.params.id }}
             </h1>
+            <!-- <button
+              class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+              @click="inviteSubmit(chatId, GameMode.FIESTA)"
+            >
+              Invite to game
+            </button> -->
+            <button
+              id="dropdownDefaultButton"
+              data-dropdown-toggle="dropdown"
+              class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
+              type="button"
+              @click="changeVisibleInvite()"
+            >
+              Invite to game
+            </button>
+            <div
+              v-if="visibleInvite == true"
+              id="dropdown"
+              class="z-10 bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700"
+            >
+              <ul
+                class="py-2 text-sm text-gray-700 dark:text-gray-200"
+                aria-labelledby="dropdownDefaultButton"
+              >
+                <li>
+                  <button
+                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                    @click="inviteSubmit(chatId, GameMode.NORMAL)"
+                  >
+                    Normal
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                    @click="inviteSubmit(chatId, GameMode.FREEMOVE)"
+                  >
+                    Freemove
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                    @click="inviteSubmit(chatId, GameMode.POWERUP)"
+                  >
+                    Powerup
+                  </button>
+                </li>
+                <li>
+                  <button
+                    class="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                    @click="inviteSubmit(chatId, GameMode.FIESTA)"
+                  >
+                    Fiesta
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <!-- <div class="relative inline-block text-left">
+  <div>
+    <button type="button" class="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" id="menu-button" aria-expanded="true" aria-haspopup="true">
+      Options
+      <svg class="-mr-1 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
+      </svg>
+    </button>
+  </div> -->
+
+            <!--
+    Dropdown menu, show/hide based on menu state.
+
+    Entering: "transition ease-out duration-100"
+      From: "transform opacity-0 scale-95"
+      To: "transform opacity-100 scale-100"
+    Leaving: "transition ease-in duration-75"
+      From: "transform opacity-100 scale-100"
+      To: "transform opacity-0 scale-95"
+  -->
+            <!-- <div class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1">
+    <div class="py-1" role="none"> -->
+            <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" -->
+            <!-- <a href="#" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-0">Account settings</a>
+      <a href="#" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-1">Support</a>
+      <a href="#" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1" id="menu-item-2">License</a>
+      <form method="POST" action="#" role="none">
+        <button type="submit" class="text-gray-700 block w-full px-4 py-2 text-left text-sm" role="menuitem" tabindex="-1" id="menu-item-3">Sign out</button>
+      </form>
+    </div>
+  </div>
+</div> -->
             <div style="text-align: right;">
               <button
                 class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white py-1 px-2 rounded-full text-xs m-3"
@@ -171,13 +261,6 @@ interface.
                     >Make
                       Admin</button>
                   </span>
-                  <button
-                    v-if="user.id !== idUser"
-                    class="bg-blue-300 hover:bg-blue-500 text-white text-xs py-1 px-1 rounded-full m-1"
-                    @click="inviteSubmit(chatId, GameMode.FIESTA)"
-                  >
-                    Invite to game
-                  </button>
 
                   <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
                   <div v-if="isAdmin && user.id !== idUser && !determineOwner(user.id)">
@@ -317,10 +400,12 @@ export default {
       chatId: Number(this.$route.query.id),
       connection: SocketioService,
       setup: false,
+      myBlockedUsers: [] as number[],
       usersAdded: [] as User[],
       allUsers: [] as User[],
       chatAdmins: [] as number[],
       input: '',
+      visibleInvite: false
 
       // input: ''
     };
@@ -369,9 +454,6 @@ export default {
     goTo(route: string) {
       this.$router.push('/' + route);
     },
-    getChatId() {
-      return this.$route.query.id;
-    },
     addMessage(msg: any) {
       this.messages.push(msg);
       const chatMessages = document.querySelector('.chat-messages'); //This is how we used to scroll to end but it no longer works
@@ -402,11 +484,18 @@ export default {
       if (Debug.ENABLED)
         console.log('loadRoom: ', room);
       this.chat = room.chat;
+      await getBackend('user/me')
+        .then(res => res.json())
+        .then(user => {
+          this.myBlockedUsers = user.blocked;
+        });
       const promises = room.history.map((msg: any) => {
         return getBackend('user/id/' + msg.authorId)
           .then(res => res.json())
           .then(user => {
             msg.username = user.name;
+            if (this.myBlockedUsers.includes(msg.authorId))
+              msg.body = 'This message was sent by a user you blocked.';
           });
       });
       await Promise.all(promises);
@@ -525,7 +614,7 @@ export default {
 
     receiveInviteStatusListener(inviteStatus: InviteStatus) {
       if (inviteStatus === InviteStatus.InviteAccepted) {
-        this.goTo('game');
+        this.goTo('');
         return;
       }
       // ToDo: Make visual pop up for user showing the error
@@ -588,6 +677,9 @@ export default {
         alert('Access changed succesfully.');
         this.chat.access = newAccess;
       }
+    },
+    changeVisibleInvite() {
+      this.visibleInvite = !this.visibleInvite;
     }
   },
 };

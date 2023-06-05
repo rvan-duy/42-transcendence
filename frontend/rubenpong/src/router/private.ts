@@ -5,7 +5,6 @@ import LogoutView from '@/views/LogoutView.vue';
 import UserView from '@/views/UserView.vue';
 import OtherUserView from '@/views/OtherUserView.vue';
 import SearchUserView from '@/views/SearchUserView.vue';
-import LadderView from '@/views/LadderView.vue';
 import AuthenticationSettingsView from '@/views/AuthenticationSettingsView.vue';
 import FriendsView from '@/views/FriendsView.vue';
 
@@ -53,11 +52,6 @@ const routes = [
     path: '/searchuser',
     name: 'searchuser',
     component: SearchUserView,
-  },
-  {
-    path: '/ladder',
-    name: 'ladder',
-    component: LadderView,
   },
   {
     path: '/authentication-settings',

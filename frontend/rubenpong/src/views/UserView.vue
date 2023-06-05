@@ -78,7 +78,7 @@
             <span class="p-1">Wins</span>
             <font-awesome-icon icon="award" />
             <p class="text-black">
-              1
+              {{ wins }}
             </p>
           </div>
           <div
@@ -88,7 +88,7 @@
             <span class="p-1">Losses</span>
             <font-awesome-icon icon="skull-crossbones" />
             <p class="text-black">
-              0
+              {{ losses }}
             </p>
           </div>
           <label for="status">Match History</label>
@@ -151,6 +151,8 @@ interface User {
   elo: number;
   twoFactor: boolean;
   secret: string;
+  wins: number;
+  losses: number;
 }
 
 enum Debug {
@@ -172,6 +174,8 @@ export default {
         {id: 0, score: [] as number[], players: [] as User[], winnerId: 0}
       ],
       image: null,
+      wins: 0 as number,
+      losses: 0 as number,
     };
   },
   async created () {
@@ -182,7 +186,9 @@ export default {
         this.id = data.id;
         this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.png`;
         this.elo = data.elo;
-        this.status = 'Online';
+        this.wins = data.wins;
+        this.losses = data.losses;
+        this.status = 'Fetching...';
         if (Debug.ENABLED) {
           console.log('data');
           console.log(data);

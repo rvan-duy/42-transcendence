@@ -52,8 +52,18 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
         </header>
         <main class="join-main">
           <button
+            v-if="relationStatus === RelationshipStatus.Blocked"
             class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
             style="float: right"
+            @click="unblockUser()"
+          >
+            Unblock User
+          </button>
+          <button
+            v-else
+            class="bg-blue-500 border border-red-500 hover:bg-red-400 text-white text-xs py-1 px-2 rounded-full"
+            style="float: right"
+            @click="blockUser()"
           >
             Block User
           </button>
@@ -75,7 +85,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
             <span class="p-1">Wins</span>
             <font-awesome-icon icon="award" />
             <p class="text-black">
-              1
+              {{ wins }}
             </p>
           </div>
           <div
@@ -85,7 +95,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
             <span class="p-1">Losses</span>
             <font-awesome-icon icon="skull-crossbones" />
             <p class="text-black">
-              0
+              {{ losses }}
             </p>
           </div>
           <label for="status">Ranking</label>
@@ -137,6 +147,7 @@ enum RelationshipStatus {
 	Pending = 'PENDING',
 	Accept = 'ACCEPT',
 	Strangers = 'STRANGERS',
+	Blocked = 'BLOCKED',
 }
 
 enum Debug {
@@ -148,13 +159,15 @@ interface User {
 	intraId: number;
 	name: string;
 	status: string;
-	pending: [];
-	friends: [];
-	blocked: [];
+	pending: number[];
+	friends: number[];
+	blocked: number[];
 	elo: number;
 	twoFactor: boolean;
 	secret: string;
+  losses: number;
 }
+
 export default {
   data() {
     return {
@@ -171,6 +184,8 @@ export default {
         { id: 0, score: [] as number[], players: [] as User[], winnerId: 0 }
       ],
       myFriends: [],
+      wins: 0 as number,
+      losses: 0 as number,
     };
   },
   async created() {
@@ -191,14 +206,18 @@ export default {
         this.rank = data.elo;
         this.matches = data.games;
         this.status = data.status;
+        this.wins = data.wins;
+        this.losses = data.losses;
+        this.relationStatus = this.relationshipStatus();
       });
-    this.relationStatus = this.relationshipStatus();
   },
   methods: {
     goTo(route: string) {
       this.$router.push('/' + route);
     },
     relationshipStatus(): RelationshipStatus {
+      if (this.me.blocked.includes(this.them.id))
+        return(RelationshipStatus.Blocked);
       if (this.myFriends.includes(Number(this.$route.query.id)))
         return (RelationshipStatus.Friends);
       if (this.me.pending.includes(this.them.id))
@@ -213,6 +232,16 @@ export default {
         this.relationStatus = RelationshipStatus.Friends;
       else if (ret.status === 'pending')
         this.relationStatus = RelationshipStatus.Pending;
+    },
+    async blockUser() {
+      console.log(`blocking: ${Number(this.$route.query.id)}`);
+      await postBackendWithQueryParams('user/block', undefined, { id: Number(this.$route.query.id) });
+      this.relationStatus = RelationshipStatus.Blocked;
+    },
+    async unblockUser() {
+      console.log(`unblocking: ${Number(this.$route.query.id)}`);
+      await postBackendWithQueryParams('user/unblock', undefined, { id: Number(this.$route.query.id) });
+      this.relationStatus = this.relationshipStatus();
     },
     async removeFriend() {
       await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id) });
