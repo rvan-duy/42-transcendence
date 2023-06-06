@@ -87,6 +87,7 @@ import { isLoggedIn } from '@/router/auth';
 import { getBackend } from './utils/backend-requests';
 import { RouterLink, RouterView } from 'vue-router';
 import SocketioService from '@/services/socketio.service.js';
+
 export default {
   components: { RouterView, RouterLink },
   data() {
@@ -97,13 +98,14 @@ export default {
       name: '',
       id: 0,
       backendPictureUrl: '',
+      userIsLoggedInStatus: 0,
       userIsLoggedIn: false,
       statusConnection: SocketioService,
     };
   },
   async created() {
-    this.userIsLoggedIn = await isLoggedIn();
-    if (this.userIsLoggedIn) {
+    this.userIsLoggedInStatus = await isLoggedIn();
+    if (this.userIsLoggedInStatus === 200) {
       getBackend('user/me')
         .then((res) => {
           res.json()
@@ -111,6 +113,7 @@ export default {
               this.name = data.name;
               this.id = data.id;
               this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.png`;
+              this.userIsLoggedIn = true;
             });
         });
     }

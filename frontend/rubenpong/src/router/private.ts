@@ -5,6 +5,7 @@ import LogoutView from '@/views/LogoutView.vue';
 import UserView from '@/views/UserView.vue';
 import OtherUserView from '@/views/OtherUserView.vue';
 import SearchUserView from '@/views/SearchUserView.vue';
+import AuthenticationSettingsView from '@/views/AuthenticationSettingsView.vue';
 import FriendsView from '@/views/FriendsView.vue';
 
 const routes = [
@@ -51,6 +52,11 @@ const routes = [
     path: '/searchuser',
     name: 'searchuser',
     component: SearchUserView,
+  },
+  {
+    path: '/authentication-settings',
+    name: 'authentication-settings',
+    component: AuthenticationSettingsView,
   },
   {
     path: '/friends',

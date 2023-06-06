@@ -33,7 +33,7 @@
               @submit.prevent
             >
               <label for="username">Change Username</label>
-              <span class="text-black pr-4"><input
+              <span class="text-black"><input
                 id="username"
                 v-model="newUsername"
                 VALYE
@@ -42,11 +42,12 @@
                 placeholder="Enter username..."
                 required
                 style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
-              > </span><span><button
-                class="bg-blue-500 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-full"
-                @click="changeName"
-              >Submit
-              </button></span>
+              > </span><span>
+                <button
+                  class="bg-blue-500 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-full mt-2"
+                  @click="changeName"
+                >Submit
+                </button></span>
             </form>
           </div>
           <div class="form-control">
@@ -122,6 +123,15 @@
               >{{ match.players[0]?.name }}</span>
             </div>
           </div>
+          <br><br>
+          <div>
+            <button
+              class="bg-blue-500 hover:bg-blue-700 text-white font-bold text-xs py-2 px-4 rounded-full"
+              @click="navigateToAuthenticationSettings"
+            >
+              Manage Authentication Settings
+            </button>
+          </div>
         </main>
       </div>
     </body>
@@ -164,7 +174,6 @@ export default {
       matches: [
         {id: 0, score: [] as number[], players: [] as User[], winnerId: 0}
       ],
-      // matches: [{player1: 'Oswin', player2: 'Alice', won: 'Alice'}, {player1: 'Alice', player2: 'Ruben', won: 'Ruben'}],
       image: null,
       wins: 0 as number,
       losses: 0 as number,
@@ -228,6 +237,9 @@ export default {
         .catch((error) => {
           console.log(error);
         });
+    },
+    navigateToAuthenticationSettings() {
+      this.$router.push('/authentication-settings');
     },
   },
 };

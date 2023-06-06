@@ -9,7 +9,7 @@ import { Response } from 'express';
 export class TwoFactorAuthenticationService {
   constructor(
     private readonly prismaUserService: PrismaUserService,
-  ) {}
+  ) { }
 
   async verifyTwoFactorCode(userId: any, code: string): Promise<boolean> {
     const user = await this.prismaUserService.user({ id: Number(userId) });
@@ -20,6 +20,17 @@ export class TwoFactorAuthenticationService {
 
     console.log(isVerified ? '✅' : '❌', '2FA verification for', user.name, isVerified ? 'succeeded' : 'failed');
     return isVerified;
+  }
+
+  async setVerified(userId: any, isVerified: boolean): Promise<void> {
+    await this.prismaUserService.updateUser({
+      where: {
+        id: Number(userId),
+      },
+      data: {
+        twoFactorVerified: isVerified,
+      },
+    });
   }
 
   async getTwoFactorSecret(userId: any): Promise<string> {
@@ -46,6 +57,7 @@ export class TwoFactorAuthenticationService {
       },
       data: {
         twoFactor: false,
+        twoFactorVerified: false,
       },
     });
     console.log('🔓 2FA turned off');

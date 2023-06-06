@@ -10,9 +10,9 @@ import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, Api
 @ApiUnauthorizedResponse({ description: 'Unauthorized', type: Object })
 export class TwoFactorAuthenticationController {
   constructor(
-      private readonly twoFactorAuthenticationService: TwoFactorAuthenticationService,
-      private readonly authService: AuthService,
-  ) {}
+    private readonly twoFactorAuthenticationService: TwoFactorAuthenticationService,
+    private readonly authService: AuthService,
+  ) { }
 
   @Get('generate')
   @UseGuards(JwtAuthGuard)
@@ -47,9 +47,11 @@ export class TwoFactorAuthenticationController {
   @ApiBadRequestResponse({ description: 'Two-factor authentication verification failed', type: String })
   async turnOnTwoFactorAuthentication(@Request() req: any, @Response() res: any) {
     const isVerified = await this.twoFactorAuthenticationService.verifyTwoFactorCode(req.user.id, req.body.code);
+
     if (isVerified === false) {
       return res.status(HttpStatus.BAD_REQUEST).send('Two-factor authentication verification failed');
     }
+
     this.twoFactorAuthenticationService.turnOnTwoFactorForUser(req.user.id);
     return res.status(HttpStatus.OK).send('Two-factor authentication turned on');
   }
@@ -60,22 +62,47 @@ export class TwoFactorAuthenticationController {
     summary: 'Turn off two-factor authentication for current user',
     description: 'Verifies the two-factor code provided by the user against the generated secret. If the code is verified, turns off two-factor authentication for the user.'
   })
-  @ApiOkResponse({ description: 'Two-factor authentication turned on', type: String })
+  @ApiBody({ description: 'The two-factor code to verify (code)', type: Object })
+  @ApiOkResponse({ description: 'Two-factor authentication turned off', type: String })
   @ApiBadRequestResponse({ description: 'Two-factor authentication verification failed', type: String })
   async turnOffTwoFactorAuthentication(@Request() req: any, @Response() res: any) {
     const isVerified = await this.twoFactorAuthenticationService.verifyTwoFactorCode(req.user.id, req.body.code);
+
     if (isVerified === false) {
       return res.status(HttpStatus.BAD_REQUEST).send('Two-factor authentication verification failed');
     }
+
     this.twoFactorAuthenticationService.turnOffTwoFactorForUser(req.user.id);
     return res.status(HttpStatus.OK).send('Two-factor authentication turned off');
   }
 
-  // TODO: Does this need to redirect to the frontend? Maybe. Okay probably since it is manipulating the cookie.
+  @Post('submit-code')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: 'Submit a two-factor authentication code for current user',
+    description: 'Verifies the two-factor code provided by the user against the generated secret.'
+  })
+  @ApiBody({ description: 'The two-factor code to verify (code)', type: Object })
+  @ApiOkResponse({ description: 'Two-factor authentication verification succeeded', type: String })
+  @ApiBadRequestResponse({ description: 'Two-factor authentication verification failed', type: String })
+  async submitTwoFactorCode(@Request() req: any, @Response() res: any) {
+    const isVerified = await this.twoFactorAuthenticationService.verifyTwoFactorCode(req.user.id, req.body.code);
+
+    if (isVerified === false) {
+      return res.status(HttpStatus.BAD_REQUEST).send('Two-factor authentication verification failed');
+    }
+
+    await this.twoFactorAuthenticationService.setVerified(req.user.id, true);
+    return res.status(HttpStatus.OK).send('Two-factor authentication verification succeeded');
+  }
+
+  /*
+   * Legacy code, not used anymore
+   */
   @Post('verify')
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
-    summary: 'Verify a two-factor authentication code for current user (UNFINISHED)',
+    summary: 'Verify a two-factor authentication code for current user (LEGACY)',
     description: 'Verifies the two-factor code provided by the user against the generated secret. If the code is verified, generates a new JWT token and sends it in a cookie in the response.'
   })
   @ApiResponse({ status: HttpStatus.OK, description: 'Two-factor authentication verification succeeded', type: String })
@@ -85,7 +112,7 @@ export class TwoFactorAuthenticationController {
     if (isVerified === false) {
       return res.status(HttpStatus.FORBIDDEN).send('Two-factor authentication verification failed');
     }
-  
+
     const loggedUser = await this.authService.login(req.user, true);
     res.clearCookie('jwt');
     res.cookie('jwt', loggedUser.access_token, {
