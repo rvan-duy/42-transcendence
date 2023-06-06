@@ -7,6 +7,9 @@ export class Player {
     this.paddle = new Paddle;
     this.userId = playerData.id;
     this.name = playerData.name;
+    this.elo = playerData.elo;
+    this.wins = playerData.wins;
+    this.losses = playerData.losses;
     if (side === PlayerDefinitions.PLAYER1) {
       this.paddle.x = 0;
       this.paddle.y = MapSize.HEIGHT / 2 - DefaultElementSize.PADDLEHEIGHT / 2;
@@ -18,6 +21,9 @@ export class Player {
   }
 
   userId: number;
+  elo: number;
+  wins: number;
+  losses: number;
   name: string;
   paddle: Paddle;
   moveUp: boolean = false;
