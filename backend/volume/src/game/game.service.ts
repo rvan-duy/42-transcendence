@@ -28,7 +28,6 @@ export class GameData {
 
   emitToRoom(path: string, payload: any) {
     this.server.to(`game_${this.gameID}`).emit(path, payload);
-    // this.server.emit(`${path}_${this.gameID}`, payload);
   }
 }
 
@@ -138,9 +137,9 @@ export class GameService {
       game.isFinished = true;
       game.emitToRoom('Winner', winningPlayer.name);
       this.storeGameInfo(game, winningPlayer);
-      this.storeWinnerInfo(game, winningPlayer);
-      this.storeLoserInfo(game, loserPlayer);
-
+      this.updateElo(game, scoringPlayer);
+      this.storeWinnerInfo(winningPlayer);
+      this.storeLoserInfo(loserPlayer);
     }
     ball.x = MapSize.WIDTH / 2;
     ball.y = MapSize.HEIGHT / 2;
@@ -149,6 +148,30 @@ export class GameService {
     ball.acceleration = 1;
     if (game.mode === GameMode.POWERUP || game.mode === GameMode.FIESTA)
       game.powerUp.resetPowerUpState(game, false);
+  }
+
+  private updateElo(game: GameData, winningPlayer: PlayerDefinitions) {
+    const player1 = game.players[PlayerDefinitions.PLAYER1];
+    const player2 = game.players[PlayerDefinitions.PLAYER2];
+    //  If the Elo difference is more or equal to 400 then the max 'chance' is set.
+    //  Chance is from 0.0 till 1.0.
+    const chancePlayer1Wins: number = 1.0 * 1.0 / (1 + 1.0 * Math.pow(10, 1.0 * (player1.elo - player2.elo) / 400));
+    const chancePlayer2Wins: number = 1.0 * 1.0 / (1 + 1.0 * Math.pow(10, 1.0 * (player2.elo - player1.elo) / 400));
+
+    // K is a constant. If K is of a lower value,
+    // then the rating is changed by a small fraction but if K is of a higher value,
+    // the changes in the rating are significant.
+    const K = 25;
+
+    // Add or remove K * the chance (0.0 - 1.0) of the players from its current ELO.
+    if (winningPlayer === PlayerDefinitions.PLAYER1) {
+      player1.elo = player1.elo + K * (1 - chancePlayer1Wins);
+      player2.elo = player2.elo + K * (0 - chancePlayer2Wins);
+    }
+    else {
+      player1.elo = player1.elo + K * (0 - chancePlayer1Wins);
+      player2.elo = player2.elo + K * (1 - chancePlayer2Wins);
+    }
   }
 
   async createGame(player1: number, player2: number, mode: GameMode) {
@@ -215,7 +238,7 @@ export class GameService {
     });
   }
 
-  private storeWinnerInfo(game: GameData, winningPlayer: Player) {
+  private storeWinnerInfo(winningPlayer: Player) {
     this.prismaUserService.updateUser({
       where: {
         id: winningPlayer.userId
@@ -223,12 +246,13 @@ export class GameService {
       data: {
         wins: {
           increment: 1
-        }
+        },
+        elo: winningPlayer.elo,
       }
     });
   }
 
-  private storeLoserInfo(game: GameData, losingPlayer: Player) {
+  private storeLoserInfo(losingPlayer: Player) {
     this.prismaUserService.updateUser({
       where: {
         id: losingPlayer.userId
@@ -236,7 +260,8 @@ export class GameService {
       data: {
         losses: {
           increment: 1
-        }
+        },
+        elo: losingPlayer.elo,
       }
     });
   }

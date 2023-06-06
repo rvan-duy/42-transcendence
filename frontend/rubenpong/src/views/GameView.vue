@@ -120,7 +120,6 @@ export default {
       .catch(e => {
         userId = -1;
         console.log(e);
-        // ToDo: show error to reload / relog
       });
 
     this.userId = userId;
