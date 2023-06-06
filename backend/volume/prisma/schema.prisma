@@ -55,6 +55,7 @@ model User {
   games     Game[]
   twoFactor Boolean @default(false)
   secret    String?
+  twoFactorVerified Boolean @default(false)
 }
 
 model Room {

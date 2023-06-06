@@ -19,14 +19,16 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   // The issue from above is presumably fixed, but I'm not sure
 
   async validate(payload: any) {
+    // console.log('payload', payload);
+
     const user = await this.prismaUserService.user({ id: payload.sub });
     if (!user) {
       return null;
     }
 
-    if (user.twoFactor === true && payload.isSecondFactorAuthenticated === false) {
-      return null;
-    }
+    // if (user.twoFactor === true && payload.isSecondFactorAuthenticated === false) {
+    // return null;
+    // }
 
     return user;
   }
