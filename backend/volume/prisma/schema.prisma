@@ -38,23 +38,23 @@ model UserTimestamp {
 }
 
 model User {
-  id        Int     @id @default(autoincrement())
-  intraId   Int     @unique
-  name      String  @unique
-  status    String?
-  pending   Int[] // ids
-  friends   Int[] // ids
-  blocked   Int[] // ids
-  wins      Int     @default(0)
-  losses    Int     @default(0)
-  elo       Float   @default(800)
-  rooms     Room[]
-  admin     Room[]  @relation("admin")
-  owns      Room[]  @relation("owns")
-  sendMsg   Msg[]
-  games     Game[]
-  twoFactor Boolean @default(false)
-  secret    String?
+  id                Int     @id @default(autoincrement())
+  intraId           Int     @unique
+  name              String  @unique
+  status            String?
+  pending           Int[] // ids
+  friends           Int[] // ids
+  blocked           Int[] // ids
+  wins              Int     @default(0)
+  losses            Int     @default(0)
+  elo               Float   @default(800)
+  rooms             Room[]
+  admin             Room[]  @relation("admin")
+  owns              Room[]  @relation("owns")
+  sendMsg           Msg[]
+  games             Game[]
+  twoFactor         Boolean @default(false)
+  secret            String?
   twoFactorVerified Boolean @default(false)
 }
 

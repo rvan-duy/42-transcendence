@@ -155,8 +155,8 @@ export class GameService {
     const player2 = game.players[PlayerDefinitions.PLAYER2];
     //  If the Elo difference is more or equal to 400 then the max 'chance' is set.
     //  Chance is from 0.0 till 1.0.
-    const chancePlayer1Wins: number =  1.0 * 1.0 / (1 + 1.0 * Math.pow(10, 1.0 * (player1.elo - player2.elo) / 400));
-    const chancePlayer2Wins: number =  1.0 * 1.0 / (1 + 1.0 * Math.pow(10, 1.0 * (player2.elo - player1.elo) / 400));
+    const chancePlayer1Wins: number = 1.0 * 1.0 / (1 + 1.0 * Math.pow(10, 1.0 * (player1.elo - player2.elo) / 400));
+    const chancePlayer2Wins: number = 1.0 * 1.0 / (1 + 1.0 * Math.pow(10, 1.0 * (player2.elo - player1.elo) / 400));
 
     // K is a constant. If K is of a lower value,
     // then the rating is changed by a small fraction but if K is of a higher value,
