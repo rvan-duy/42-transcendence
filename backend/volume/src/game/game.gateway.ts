@@ -28,11 +28,11 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private matchmakingService: MatchmakingService,
     private jwtService: JwtService,
     @Inject('gameGate') private gate: GateService,
-    ){}
+  ){}
     
-    private server: Server;
+  private server: Server;
     
-    afterInit(server: Server) {
+  afterInit(server: Server) {
     if (Debug.ENABLED)
       console.log('Created server inside game gateway');
     this.server = server;

@@ -23,11 +23,11 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   constructor (
     @Inject('statusGate') private gate: GateService,
     private jwtService: JwtService,
-    ){}
+  ){}
     
-    private server: Server;
+  private server: Server;
     
-    afterInit(server: Server) {
+  afterInit(server: Server) {
     if (Debug.ENABLED)
       console.log('Created server inside status gateway');
     this.server = server;

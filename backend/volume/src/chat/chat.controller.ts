@@ -20,7 +20,6 @@ import { RoomService, roomDto } from 'src/room/room.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ChatService } from './chat.service';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
-import { debug } from 'console';
 
 enum Debug {
   ENABLED = 0

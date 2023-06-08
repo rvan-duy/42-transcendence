@@ -5,7 +5,6 @@ import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
 import { StatusService } from 'src/status/status.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { debug } from 'console';
 
 enum Debug {
   ENABLED = 0
@@ -166,16 +165,10 @@ export class UserController {
   async handleFriendRequest(@Request() req: any, @Query('id') userId: number) {
     const myId = Number(req.user.id);
     userId = Number(userId);
-<<<<<<< HEAD
     if (Debug.ENABLED)
       console.log('myid, userid', myId, userId);
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
-=======
-    console.log('myid, userid', myId, userId);
-    const meAsUser = await this.userService.user({ id: myId });
-    const otherAsUser = await this.userService.user({ id: userId });
->>>>>>> origin/main
     if (otherAsUser === undefined || meAsUser === undefined)
       throw new ForbiddenException('user or users not found');
     if (otherAsUser.blocked.includes(myId))

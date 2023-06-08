@@ -23,9 +23,9 @@ export class PowerUp {
   update(game: GameData) {
     if (this.hitsSinceLastPowerUp >= 1 && this.powerUpEnabled === false && this.powerUpOnField === false &&
       new Date().getTime() - this.timeSinceLastReset >= PowerUpTimings.SPAWN_TIMER) {
-        this.spawnPowerUp(game);
-        return ;
-      }
+      this.spawnPowerUp(game);
+      return ;
+    }
       
     if (this.powerUpOnField) {
       if (Debug.ENABLED)

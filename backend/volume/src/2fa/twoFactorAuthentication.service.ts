@@ -13,14 +13,14 @@ enum Debug {
 export class TwoFactorAuthenticationService {
   constructor(
     private readonly prismaUserService: PrismaUserService,
-    ) { }
+  ) { }
     
-    async verifyTwoFactorCode(userId: any, code: string): Promise<boolean> {
-      const user = await this.prismaUserService.user({ id: Number(userId) });
-      const isVerified: boolean = authenticator.verify({
-        token: code,
-        secret: user.secret,
-      });
+  async verifyTwoFactorCode(userId: any, code: string): Promise<boolean> {
+    const user = await this.prismaUserService.user({ id: Number(userId) });
+    const isVerified: boolean = authenticator.verify({
+      token: code,
+      secret: user.secret,
+    });
       
     if (Debug.ENABLED)
       console.log(isVerified ? '✅' : '❌', '2FA verification for', user.name, isVerified ? 'succeeded' : 'failed');
