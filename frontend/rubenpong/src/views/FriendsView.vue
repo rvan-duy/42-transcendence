@@ -42,8 +42,6 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
                 >
                   Add as friend
                 </button>
-
-                <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
               </li>
             </ul>
           </div>
@@ -93,7 +91,6 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
                     {{ user.status }}
                   </span>
                 </span>
-                <!-- checks in the frontedn are not definetive (will be reevaluated in backend) -->
               </li>
             </ul>
           </div>

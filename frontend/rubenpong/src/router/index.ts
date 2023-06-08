@@ -1,11 +1,10 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import privateRoutes from './private';
 import LoginView from '@/views/LoginView.vue';
+import TwoFactorView from '@/views/TwoFactorView.vue';
+import NotFoundView from '@/views/NotFoundView.vue';
+import privateRoutes from './private';
+import { createRouter, createWebHistory } from 'vue-router';
 import { isLoggedIn } from './auth';
 import { HttpStatus } from '@nestjs/common';
-import TwoFactorView from '@/views/TwoFactorView.vue';
-
-// usefull link: https://itnext.io/vue-router-99e334094362
 
 /*
  * This is the router for the application, it is used to navigate between
@@ -32,6 +31,15 @@ const router = createRouter({
         loginPage: false
       }
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: '404',
+      component: NotFoundView,
+      meta: {
+        public: true,
+        loginPage: false
+      }
+    }
   ].concat(privateRoutes), // private routes are in a separate file for readability
 });
 

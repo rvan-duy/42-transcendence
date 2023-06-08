@@ -209,6 +209,10 @@ export default {
         this.wins = data.wins;
         this.losses = data.losses;
         this.relationStatus = this.relationshipStatus();
+      })
+      .catch(err => {
+        console.log(err);
+        this.$router.push('/404');
       });
   },
   methods: {

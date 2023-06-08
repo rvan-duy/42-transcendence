@@ -1,17 +1,3 @@
-<script setup lang='ts'>
-import { getBackend } from '@/utils/backend-requests';
-
-// import { ref } from 'vue';
-// const input = ref('');
-// const users = [{ name: 'Ruben1', pic: '', id: 1 }, { name: 'Ruben2', pic: '', id: 2 }, { name: 'Dagmar', pic: '', id: 3 }, { name: 'Oswin', pic: '', id: 4 }, { name: 'Lindsay', pic: '', id: 5 }];
-// function filteredList() {
-//   if (input.value !== '')
-//     return users.filter((user) =>
-//       user.name.toLowerCase().includes(input.value.toLowerCase())
-//     );
-// }
-</script>
-
 <template>
   <input
     v-model="input"
@@ -44,10 +30,13 @@ import { getBackend } from '@/utils/backend-requests';
 </template>
 
 <script lang="ts">
+import { getBackend } from '@/utils/backend-requests';
+
 interface User {
   id: number;
   name: string;
 }
+
 export default {
   data() {
     return {
@@ -70,10 +59,6 @@ export default {
   },
   methods: {
     goTo(route: string, id: number) {
-      // if (isAuthenticated) {
-      //   this.$router.push('/dashboard')
-      // } else {
-      //   this.$router.push('/login')
       if (id === this.myId)
         this.$router.push('/user');
       else
