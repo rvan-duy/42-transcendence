@@ -72,6 +72,10 @@
           <p class="text-black">
             {{ status }}
           </p>
+          <label for="status">Elo</label>
+          <p class="text-black">
+            {{ elo }}
+          </p>
           <div
             class="columns-1"
             style="text-align: center; float: left;"
@@ -170,7 +174,7 @@ export default {
       status: '',
       matches_played: 1,
       newUsername: '',
-      elo: 500,
+      elo: 0,
       matches: [
         {id: 0, score: [] as number[], players: [] as User[], winnerId: 0}
       ],
@@ -186,7 +190,7 @@ export default {
         this.name = data.name;
         this.id = data.id;
         this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.png`;
-        this.elo = data.elo;
+        this.elo = Math.round(data.elo);
         this.wins = data.wins;
         this.losses = data.losses;
         this.status = 'Fetching...';

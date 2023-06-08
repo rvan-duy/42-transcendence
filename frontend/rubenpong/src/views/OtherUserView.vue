@@ -78,6 +78,10 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
           <p class="text-black">
             {{ status }}
           </p>
+          <label for="elo">Elo</label>
+          <p class="text-black">
+            {{ elo }}
+          </p>
           <div
             class="columns-1"
             style="text-align: center; float: left;"
@@ -98,11 +102,7 @@ import { getBackend, postBackendWithQueryParams } from '@/utils/backend-requests
               {{ losses }}
             </p>
           </div>
-          <label for="status">Ranking</label>
-          <p class="text-black">
-            {{ rank }}
-          </p>
-          <label for="status">Match History</label>
+          <label for="history">Match History</label>
           <p
             v-if="matches.length === 0"
             class="text-black"
@@ -177,9 +177,9 @@ export default {
       id: 0,
       name: '',
       status: 'Online',
-      matches_played: 1,
+      matches_played: 0,
       newUsername: '',
-      rank: 0,
+      elo: 0,
       matches: [
         { id: 0, score: [] as number[], players: [] as User[], winnerId: 0 }
       ],
@@ -203,7 +203,7 @@ export default {
         this.them = data;
         this.id = data.id,
         this.name = data.name;
-        this.rank = data.elo;
+        this.elo = Math.round(data.elo);
         this.matches = data.games;
         this.status = data.status;
         this.wins = data.wins;
@@ -246,9 +246,6 @@ export default {
     async removeFriend() {
       await postBackendWithQueryParams('user/unfriend', undefined, { id: Number(this.$route.query.id) });
       this.relationStatus = RelationshipStatus.Strangers;
-    },
-    async cancelPending() {
-      //  you can not cancel yet
     },
     getUserPicture(): string {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${Number(this.$route.query.id)}.png`);
