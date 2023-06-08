@@ -20,6 +20,11 @@ import { RoomService, roomDto } from 'src/room/room.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ChatService } from './chat.service';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
+import { debug } from 'console';
+
+enum Debug {
+  ENABLED = 0
+}
 
 @Controller('chat')
 export class ChatController {
@@ -175,7 +180,8 @@ export class ChatController {
     @Query('userId') userId: number,
   ) {
     const clientId = req.user.id;
-    console.log(req);
+    if (Debug.ENABLED)
+      console.log(req);
     userId = Number(userId);
     roomId = Number(roomId);
     // is the sender is not the chat owner leave it intact and return and error
@@ -263,7 +269,8 @@ export class ChatController {
     @Query('kickUserId') kickUserId: number,
   ) {
     const clientId = req.user.id;
-    console.log('new', roomId, kickUserId);
+    if (Debug.ENABLED)
+      console.log('new', roomId, kickUserId);
     roomId = Number(roomId);
     kickUserId = Number(kickUserId);
 

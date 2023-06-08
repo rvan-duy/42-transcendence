@@ -2,6 +2,10 @@ import { DefaultElementSize, MapSize, MoveSpeedPerTick, PlayerDefinitions, Power
 import { Paddle } from './game.paddle';
 import { GameData } from './game.service';
 
+enum Debug {
+  ENABLED = 0
+}
+
 export class PowerUp {
   x: number = MapSize.WIDTH / 2;
   y: number = MapSize.HEIGHT / 2;
@@ -15,16 +19,17 @@ export class PowerUp {
   timeActivated: number;
   timeSinceLastReset: number = new Date().getTime();
   effect: PowerUpEffects;
-
+  
   update(game: GameData) {
     if (this.hitsSinceLastPowerUp >= 1 && this.powerUpEnabled === false && this.powerUpOnField === false &&
       new Date().getTime() - this.timeSinceLastReset >= PowerUpTimings.SPAWN_TIMER) {
-      this.spawnPowerUp(game);
-      return ;
-    }
-
+        this.spawnPowerUp(game);
+        return ;
+      }
+      
     if (this.powerUpOnField) {
-      // console.log(`PowerUp position: ${this.x} ${this.y}`);
+      if (Debug.ENABLED)
+        console.log(`PowerUp position: ${this.x} ${this.y}`);
       this.movePowerUp();
       this.checkCollision(game);
     }
@@ -74,7 +79,8 @@ export class PowerUp {
 
   private enablePowerUps(game: GameData) {
     const messages: string[] = ['Paddle Slow', 'Paddle Speed', 'Ball Radius', 'Super Smash', 'Freeze'];
-    console.log(`Turning on PowerUp ${messages[this.effect]} for player ${this.targetPlayer + 1}`);
+    if (Debug.ENABLED)
+      console.log(`Turning on PowerUp ${messages[this.effect]} for player ${this.targetPlayer + 1}`);
     this.timeActivated = new Date().getTime();
     this.powerUpEnabled = true;
     this.powerUpOnField = false;
@@ -111,7 +117,8 @@ export class PowerUp {
         Math.abs(game.ball.y - this.y) <= this.radius * 10)
       this.y = (this.y + 250) % MapSize.HEIGHT;
 
-    // console.log(`spawned a powerup at location ${this.x} ${this.y} of type ${this.effect}`);
+    if (Debug.ENABLED)
+      console.log(`spawned a powerup at location ${this.x} ${this.y} of type ${this.effect}`);
   }
 
   private updatePaddleEffect(game: GameData) {
@@ -134,27 +141,32 @@ export class PowerUp {
 
   private enablePaddleEffect(game: GameData) {
     if (this.effect === PowerUpEffects.PADDLE_SPEED_BUFF) {
-    //   console.log(`triggered a paddle speed buff power up on player ${this.targetPlayer}`);
+      if (Debug.ENABLED)
+        console.log(`triggered a paddle speed buff power up on player ${this.targetPlayer}`);
       game.players[this.targetPlayer].paddle.acceleration += PowerUpModifier.PaddleSpeedIncrease;
     }
     else if (this.effect === PowerUpEffects.PADDLE_SLOW_ENEMY) {
-    //   console.log(`triggered a paddle slow debuff power on player ${this.targetPlayer}`);
+      if (Debug.ENABLED)
+        console.log(`triggered a paddle slow debuff power on player ${this.targetPlayer}`);
       game.players[this.targetPlayer].paddle.acceleration -= PowerUpModifier.PaddleSpeedDecrease;
     }
     else if (this.effect === PowerUpEffects.FREEZE_ENEMY) {
-    //   console.log(`triggered a freeze power up on player ${this.targetPlayer}`);
+      if (Debug.ENABLED)
+        console.log(`triggered a freeze power up on player ${this.targetPlayer}`);
       game.players[this.targetPlayer].paddle.acceleration = PowerUpModifier.Freeze;
     }
   }
 
   private ballEffect(game: GameData) {
     if (this.effect === PowerUpEffects.BALL_SMASH) {
-    //   console.log('Triggered a ball speed power up!');
+      if (Debug.ENABLED)
+        console.log('Triggered a ball speed power up!');
       game.ball.superSmash = true;
       game.ball.playerHoldingSmash = this.targetPlayer;
     }
     else if (this.effect === PowerUpEffects.BALL_RADIUS) {
-    //   console.log('Triggered a ball radius power up!');
+      if (Debug.ENABLED)
+        console.log('Triggered a ball radius power up!');
       game.ball.radius /= PowerUpModifier.BallRadiusDivision;
     }
   }

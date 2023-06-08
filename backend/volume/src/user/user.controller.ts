@@ -5,6 +5,11 @@ import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
 import { StatusService } from 'src/status/status.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { debug } from 'console';
+
+enum Debug {
+  ENABLED = 0
+}
 
 @Controller('user')
 @ApiCookieAuth()
@@ -158,7 +163,8 @@ async getUsers(@Response() res: any) {
   async handleFriendRequest(@Request() req: any, @Query('id') userId: number) {
     const myId = Number(req.user.id);
     userId = Number(userId);
-    console.log('myid, userid', myId, userId);
+    if (Debug.ENABLED)
+      console.log('myid, userid', myId, userId);
     const meAsUser = await this.userService.user({id: myId});
     const otherAsUser = await this.userService.user({id: userId});
     if (otherAsUser === undefined || meAsUser === undefined)
@@ -172,7 +178,8 @@ async getUsers(@Response() res: any) {
       meAsUser.friends.push(userId);
       meAsUser.pending.splice(meAsUser.pending.indexOf(userId), 1); // removes the pending request
       otherAsUser.friends.push(myId);
-      console.log('measuser', meAsUser);
+      if (Debug.ENABLED)
+        console.log('measuser', meAsUser);
       this.userService.updateUser({
         where: {
           id: myId,
@@ -257,11 +264,13 @@ async getUsers(@Response() res: any) {
   @Post('block')
   async handleBlock(@Request() req: any, @Query('id') userId: number) {
     const myId = req.user.id;
-    console.log(`${myId} is blocking ${userId}`);
+    if (Debug.ENABLED)
+      console.log(`${myId} is blocking ${userId}`);
     userId = Number(userId);
     // add to block on this side
     const meAsUser = await this.userService.user({id: myId});
-    console.log('me as user: ', meAsUser);
+    if (Debug.ENABLED)
+      console.log('me as user: ', meAsUser);
     if (meAsUser.blocked.includes(userId))
       return ;
     meAsUser.blocked.push(userId);
@@ -281,7 +290,8 @@ async getUsers(@Response() res: any) {
   @Post('unblock')
   async handleUnBlock(@Request() req: any, @Query('id') userId: number) {
     const myId = req.user.id;
-    console.log(`${myId} is unblocking ${userId}`);
+    if (Debug.ENABLED)
+      console.log(`${myId} is unblocking ${userId}`);
     userId = Number(userId);
     const meAsUser = await this.userService.user({id: myId});
     if (!meAsUser.blocked.includes(userId))

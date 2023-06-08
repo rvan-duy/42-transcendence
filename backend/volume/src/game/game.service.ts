@@ -11,6 +11,10 @@ import { Socket } from 'socket.io';
 import { MatchmakingService } from './matchmaking.service';
 import { GateService } from 'src/gate/gate.service';
 
+enum Debug {
+  ENABLED = 0
+}
+
 export class GameData {
   gameID: number;
   players: Player[] = [];
@@ -203,7 +207,8 @@ export class GameService {
     for (let index = 0; index < this.games.length; index++) {
       const game: GameData = this.games[index];
       if (game.isFinished) {
-        console.log(`removing game ${game.gameID}`);
+        if (Debug.ENABLED)
+          console.log(`removing game ${game.gameID}`);
         const userId1: number = game.players[0].userId;
         const userId2: number = game.players[1].userId;
         const socketsUser1: Socket[] = await this.gate.getSocketsByUser(userId1);
@@ -276,9 +281,11 @@ export class GameService {
       game.powerUpOnField, [game.powerUp.x, game.powerUp.y], game.powerUp.radius);
 
     // send current game state back through socket
-    if (!game.isFinished)
+    if (!game.isFinished) {
       game.emitToRoom('GameState', toSend);
-    // console.log(toSend);
+      if (Debug.ENABLED)
+        console.log(toSend);
+    }
   }
   
   UpdatePlayerInput(playerId: number, gameId: number, input: PaddleInput, enabled: Boolean) {

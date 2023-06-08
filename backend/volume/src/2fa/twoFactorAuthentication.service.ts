@@ -5,20 +5,25 @@ import { toFileStream } from 'qrcode';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
 import { Response } from 'express';
 
+enum Debug {
+  ENABLED = 0
+}
+
 @Injectable()
 export class TwoFactorAuthenticationService {
   constructor(
     private readonly prismaUserService: PrismaUserService,
-  ) { }
-
-  async verifyTwoFactorCode(userId: any, code: string): Promise<boolean> {
-    const user = await this.prismaUserService.user({ id: Number(userId) });
-    const isVerified: boolean = authenticator.verify({
-      token: code,
-      secret: user.secret,
-    });
-
-    console.log(isVerified ? '✅' : '❌', '2FA verification for', user.name, isVerified ? 'succeeded' : 'failed');
+    ) { }
+    
+    async verifyTwoFactorCode(userId: any, code: string): Promise<boolean> {
+      const user = await this.prismaUserService.user({ id: Number(userId) });
+      const isVerified: boolean = authenticator.verify({
+        token: code,
+        secret: user.secret,
+      });
+      
+    if (Debug.ENABLED)
+      console.log(isVerified ? '✅' : '❌', '2FA verification for', user.name, isVerified ? 'succeeded' : 'failed');
     return isVerified;
   }
 
@@ -47,9 +52,11 @@ export class TwoFactorAuthenticationService {
         twoFactor: true,
       },
     });
-    console.log('🔒 2FA turned on');
-  }
 
+    if (Debug.ENABLED)
+      console.log('🔒 2FA turned on');
+  }
+  
   async turnOffTwoFactorForUser(userId: any): Promise<void> {
     this.prismaUserService.updateUser({
       where: {
@@ -60,13 +67,15 @@ export class TwoFactorAuthenticationService {
         twoFactorVerified: false,
       },
     });
-    console.log('🔓 2FA turned off');
-  }
 
+    if (Debug.ENABLED)
+      console.log('🔓 2FA turned off');
+  }
+  
   async generateTwoFactorSecret(user: User): Promise<any> {
     const secret = authenticator.generateSecret();
     const otpauthUrl = authenticator.keyuri(`user_${String(user.id)}`, '42_Transcendence_RubenPong', secret);
-
+    
     const userData = await this.prismaUserService.updateUser({
       where: {
         id: user.id,
@@ -75,7 +84,9 @@ export class TwoFactorAuthenticationService {
         secret: secret,
       },
     });
-    console.log('🔑 2FA secret generated for', userData.name);
+
+    if (Debug.ENABLED)
+      console.log('🔑 2FA secret generated for', userData.name);
 
     return {
       secret,

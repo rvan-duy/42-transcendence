@@ -12,6 +12,10 @@ import { JwtService } from '@nestjs/jwt';
 import { GateService } from 'src/gate/gate.service';
 import { Inject } from '@nestjs/common';
 
+enum Debug {
+  ENABLED = 0
+}
+
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -24,12 +28,13 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private matchmakingService: MatchmakingService,
     private jwtService: JwtService,
     @Inject('gameGate') private gate: GateService,
-  ){}
-
-  private server: Server;
-
-  afterInit(server: Server) {
-    console.log('Created server inside game gateway');
+    ){}
+    
+    private server: Server;
+    
+    afterInit(server: Server) {
+    if (Debug.ENABLED)
+      console.log('Created server inside game gateway');
     this.server = server;
     const fps: number = 1000 / 60; // 60 fps
     const updatesPerSecond: number = 1000 * 0.5; // half a second
@@ -50,7 +55,10 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     } catch(err) {
       client.emit('FailedToAuthenticate');
       client.disconnect();
-      console.log('Failed to Authenticate user');
+      if (Debug.ENABLED) {
+        console.log('Failed to Authenticate user. Error:');
+        console.log(err);
+      }
       return ;
     }
 
@@ -80,7 +88,8 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     const userId: number = await this.gate.getUserBySocket(client);
     if (userId === undefined)
       return ;
-    console.log(`player: ${userId} is queuing for gamemode: ${payload.gameMode}`);
+    if (Debug.ENABLED)
+      console.log(`player: ${userId} is queuing for gamemode: ${payload.gameMode}`);
     this.matchmakingService.addPlayerToQueue(payload.gameMode, userId);
   }
 
@@ -102,6 +111,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     if (sockets.length === 1)
       this.matchmakingService.removePlayerFromQueue(userId);
     this.gameService.resetUserInput(userId);
-    console.log(`${userId} has disconnected with socket ${client.id}`);
+    if (Debug.ENABLED)
+      console.log(`${userId} has disconnected with socket ${client.id}`);
   }
 }
