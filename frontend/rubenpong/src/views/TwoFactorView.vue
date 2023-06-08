@@ -8,7 +8,7 @@
       class="p-2"
       style="text-align: center"
     >
-      <p>Insert QR code here:</p>
+      <p>Insert authentication code:</p>
       <form
         class="p-2"
         style="display: flex; flex-direction: column; align-items: center;"
@@ -48,6 +48,8 @@ export default {
       });
       if (response.status === 200) {
         window.location.href = `http://${import.meta.env.VITE_CODAM_PC}:8000`;
+      } else {
+        alert('Invalid code');
       }
     },
   }
