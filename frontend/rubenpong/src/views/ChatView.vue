@@ -125,8 +125,6 @@
                   style="border-radius: 20px; width:300px; font-size: 12px; height: 35px;"
                 > </span>
               </div>
-              {{ newChat }}
-
               <button
                 v-if="newChat.name == null || newChat.access === undefined || (newChat.access === 'PROTECTED' && newChat.password == NULL)"
                 type="submit"
