@@ -212,6 +212,16 @@ export default {
       this.$router.push('/' + route);
     },
     async createChat(newChat: Chat) {
+      if (newChat.name.length > 100)
+      {
+        alert('Room name too long.');
+        return ;
+      }
+      if (newChat.password.length > 20)
+      {
+        alert('Room password too long.')
+        return ;
+      }
       const createdChat = await postBackendWithQueryParams('chat/createRoom', { password: newChat.password }, { name: newChat.name, access: newChat.access }) as Chat;
       this.goTo('chatroom/' + newChat.name + '?id=' + createdChat.id);
     },

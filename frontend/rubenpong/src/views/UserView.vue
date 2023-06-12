@@ -214,11 +214,12 @@ export default {
             this.name = this.newUsername;
             this.newUsername = '';
           }
+            if (response.status === HttpStatus.BAD_REQUEST) {
+              alert('Bad name.');
+              return;
+            }
         }
         )
-        .catch((error) => {
-          console.log(error);
-        });
     },
     uploadProfilePicture(event) {
       this.image = event.target.files[0];
@@ -236,11 +237,12 @@ export default {
           if (response.status === HttpStatus.OK) {
             document.location.reload();
           }
+          if (response.status === HttpStatus.BAD_REQUEST) {
+              alert('Bad file.');
+              return;
+            }
         }
         )
-        .catch((error) => {
-          console.log(error);
-        });
     },
     navigateToAuthenticationSettings() {
       this.$router.push('/authentication-settings');
