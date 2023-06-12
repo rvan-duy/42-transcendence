@@ -4,6 +4,10 @@ import { AuthService } from './auth.service';
 import { Strategy } from 'passport-42';
 import * as fs from 'fs';
 
+enum Debug {
+  ENABLED = 0
+}
+
 @Injectable()
 export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
   constructor(private readonly authService: AuthService) {
@@ -18,9 +22,10 @@ export class FortyTwoStrategy extends PassportStrategy(Strategy, '42') {
       }
     });
   }
-
+  
   async validate(accessToken: string, refreshToken: string, profile: any) {
-    console.log('INFO validating user', profile.username);
+    if (Debug.ENABLED)
+      console.log('INFO validating user', profile.username);
     
     const user = await this.authService.validateUser(profile.id, profile.username);
     if (!user) {
