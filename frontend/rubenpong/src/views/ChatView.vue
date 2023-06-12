@@ -219,7 +219,7 @@ export default {
       }
       if (newChat.password && newChat.password.length > 20)
       {
-        alert('Room password too long.')
+        alert('Room password too long.');
         return ;
       }
       const createdChat = await postBackendWithQueryParams('chat/createRoom', { password: newChat.password }, { name: newChat.name, access: newChat.access }) as Chat;

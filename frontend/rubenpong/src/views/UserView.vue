@@ -214,12 +214,12 @@ export default {
             this.name = this.newUsername;
             this.newUsername = '';
           }
-            if (response.status === HttpStatus.BAD_REQUEST) {
-              alert('Bad name.');
-              return;
-            }
+          if (response.status === HttpStatus.BAD_REQUEST) {
+            alert('Bad name.');
+            return;
+          }
         }
-        )
+        );
     },
     uploadProfilePicture(event) {
       this.image = event.target.files[0];
@@ -238,11 +238,11 @@ export default {
             document.location.reload();
           }
           if (response.status === HttpStatus.BAD_REQUEST) {
-              alert('Bad file.');
-              return;
-            }
+            alert('Bad file.');
+            return;
+          }
         }
-        )
+        );
     },
     navigateToAuthenticationSettings() {
       this.$router.push('/authentication-settings');

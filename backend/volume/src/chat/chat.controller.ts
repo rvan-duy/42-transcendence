@@ -73,17 +73,17 @@ export class ChatController {
     roomId = Number(roomId);
     const room = await this.prismaRoomService.Room({ id: roomId });
     switch (room?.access || 'invalid') {
-      case Access.PRIVATE:
-        throw new ForbiddenException('You need to be added ot this room');
-      case Access.PROTECTED:
-        if (await this.cryptService.comparePassword(password, room.hashedCode) === false) {
-          throw new ForbiddenException('Incorrect password');
-        }
-        return this.roomService.addToChat(userId, roomId);
-      case Access.PUBLIC:
-        return this.roomService.addToChat(userId, roomId);
-      case 'invalid':
-        throw new NotFoundException('Room not found');
+    case Access.PRIVATE:
+      throw new ForbiddenException('You need to be added ot this room');
+    case Access.PROTECTED:
+      if (await this.cryptService.comparePassword(password, room.hashedCode) === false) {
+        throw new ForbiddenException('Incorrect password');
+      }
+      return this.roomService.addToChat(userId, roomId);
+    case Access.PUBLIC:
+      return this.roomService.addToChat(userId, roomId);
+    case 'invalid':
+      throw new NotFoundException('Room not found');
     }
   }
 
