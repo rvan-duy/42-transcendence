@@ -9,6 +9,10 @@ import { Socket, Server } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import { GateService } from 'src/gate/gate.service';
 
+enum Debug {
+  ENABLED = 0
+}
+
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -20,16 +24,18 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     @Inject('statusGate') private gate: GateService,
     private jwtService: JwtService,
   ){}
-  
+    
   private server: Server;
-
+    
   afterInit(server: Server) {
-    console.log('Created server inside status gateway');
+    if (Debug.ENABLED)
+      console.log('Created server inside status gateway');
     this.server = server;
   }
 
   async handleConnection(client: Socket) {
-    console.log(`Client: ${client.id} trying to connect with backend`);
+    if (Debug.ENABLED)
+      console.log(`Client: ${client.id} trying to connect with backend`);
     if (client.handshake.auth.token === '')
       return;
     let user;
@@ -40,11 +46,15 @@ export class StatusGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     } catch(err) {
       client.emit('FailedToAuthenticate');
       client.disconnect();
-      console.log('Failed to Authenticate user');
+      if (Debug.ENABLED) {
+        console.log('Failed to Authenticate user. Error: ');
+        console.log(err);
+      }
       return ;
     }
 
-    console.log(`added client: ${client.id} to status service`);
+    if (Debug.ENABLED)
+      console.log(`added client: ${client.id} to status service`);
     this.gate.addSocket(user.sub, client);
   }
 

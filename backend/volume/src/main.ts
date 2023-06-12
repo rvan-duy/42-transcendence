@@ -8,8 +8,13 @@ import * as dotenv from 'dotenv';
 import * as cookieParser from 'cookie-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
+enum Debug {
+  ENABLED = 0
+}
+
 dotenv.config();
-console.log(process.env); // debug
+if (Debug.ENABLED)
+  console.log(process.env); // debug
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: true });
