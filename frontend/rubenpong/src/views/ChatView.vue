@@ -217,7 +217,7 @@ export default {
         alert('Room name too long.');
         return ;
       }
-      if (newChat.password.length > 20)
+      if (newChat.password && newChat.password.length > 20)
       {
         alert('Room password too long.')
         return ;

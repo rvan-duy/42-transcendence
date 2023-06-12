@@ -657,6 +657,11 @@ export default {
         alert('You have to be an admin for this action.');
         return;
       }
+      else if (result.statusCode === 400)
+      {
+        alert('Password too long.');
+        return;
+      }
       else
         alert('Password changed succesfully.');
     },
@@ -671,6 +676,11 @@ export default {
         console.log(result);
       if (result.statusCode === 403) {
         alert('You have to be in the channel for this action.');
+        return;
+      }
+      else if (result.statusCode === 400)
+      {
+        alert('Password too long.');
         return;
       }
       else {
