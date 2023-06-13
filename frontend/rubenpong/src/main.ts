@@ -30,5 +30,3 @@ app.use(router);
 app.component('FontAwesomeIcon', FontAwesomeIcon);
 
 app.mount('#app');
-
-console.log(import.meta.env); // debug
