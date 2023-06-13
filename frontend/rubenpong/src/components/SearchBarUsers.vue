@@ -80,7 +80,7 @@ export default {
 input {
   display: block;
   width: 350px;
-  background: white url("assets/search-icon.svg") no-repeat 15px center;
+  background: white;
   background-size: 15px 15px;
   font-size: 16px;
   border: none;

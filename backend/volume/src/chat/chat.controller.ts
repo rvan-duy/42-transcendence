@@ -33,7 +33,7 @@ export class ChatController {
     private readonly cryptService: CryptService,
     private readonly chatService: ChatService,
     private readonly userService: PrismaUserService,
-  ) {}
+  ) { }
 
   @UseGuards(JwtAuthGuard)
   @Post('createRoom')
@@ -46,7 +46,11 @@ export class ChatController {
     const password = body?.password ?? undefined;
     if (password === undefined && access === Access.PROTECTED)
       throw new HttpException('password left undefined for protected chat', HttpStatus.BAD_REQUEST);
-
+    // console.log('password', password, 'roomname', roomname);
+    if (password !== undefined && password.length > 20)
+      throw new HttpException('password too long', HttpStatus.BAD_REQUEST);
+    if (roomName.length > 100)
+      throw new HttpException('room name too long', HttpStatus.BAD_REQUEST);
     const userId = req.user.id;
     const newRoom: roomDto = {
       name: roomName,
@@ -67,7 +71,7 @@ export class ChatController {
     const password = body?.password ?? undefined;
     const userId = req.user.id;
     roomId = Number(roomId);
-    const room = await this.prismaRoomService.Room({id: roomId});
+    const room = await this.prismaRoomService.Room({ id: roomId });
     switch (room?.access || 'invalid') {
     case Access.PRIVATE:
       throw new ForbiddenException('You need to be added ot this room');
@@ -90,14 +94,14 @@ export class ChatController {
   ) {
     try {
       const userId = req.user.id;
-      const userWithChats = await this.userService.userChats({id: userId});
+      const userWithChats = await this.userService.userChats({ id: userId });
       const chatsFromUser = userWithChats.rooms as Room[];
-      
+
       // get public chats and add them to the list
       const availableChats = await this.roomService.getPublicAndProtectedRooms(Number(userId));
 
       // return all available chat for users to sender
-      return {myRooms: chatsFromUser, available: availableChats};
+      return { myRooms: chatsFromUser, available: availableChats };
     } catch {
       throw new InternalServerErrorException('Failed to fetch Rooms');
     }
@@ -158,8 +162,8 @@ export class ChatController {
   @UseGuards(JwtAuthGuard)
   @Post('destroyRoom')
   async destroyRoom(
-        @Request() req: any,
-        @Query('roomId') roomId: number,
+    @Request() req: any,
+    @Query('roomId') roomId: number,
   ) {
     const userId = req.user.id;
     roomId = Number(roomId);
@@ -170,7 +174,7 @@ export class ChatController {
     // destroy with fire
     this.roomService.removeChat(roomId);
   }
-  
+
   @UseGuards(JwtAuthGuard)
   @Post('makeUserAdmin')
   async makeUserAdmin(
@@ -309,7 +313,8 @@ export class ChatController {
     const newPassword = body?.password ?? undefined;
     const clientId = Number(req.user.id);
     roomId = Number(roomId);
-
+    if (newPassword.length > 20)
+      throw new HttpException('password too long', HttpStatus.BAD_REQUEST);
     // only alow the chat owner and admins to change chat password
     if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to change the password');
@@ -334,7 +339,8 @@ export class ChatController {
       throw new BadRequestException('A change to password protected chat requires an new password');
     else if (newAccess !== Access.PROTECTED)
       newPassword = undefined;
-
+    if (newPassword.length > 20)
+      throw new HttpException('password too long', HttpStatus.BAD_REQUEST);
     // only alow the chat owner and admins to change chat password
     if (await this.chatService.isOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to change the access level');
