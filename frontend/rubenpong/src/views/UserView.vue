@@ -1,7 +1,3 @@
-<script setup lang="ts">
-
-</script>
-
 <template>
   <div class="chat">
     <body>
@@ -26,7 +22,6 @@
           </div>
         </header>
         <main class="join-main">
-          <!-- <form action="/chatroom"> -->
           <div class="form-control">
             <form
               action=""

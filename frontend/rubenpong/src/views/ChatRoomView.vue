@@ -406,8 +406,6 @@ export default {
       chatAdmins: [] as number[],
       input: '',
       visibleInvite: false
-
-      // input: ''
     };
   },
   async created() {
@@ -419,7 +417,6 @@ export default {
             setTimeout(() => {
               this.amIAdmin();
             }, 100);
-
           });
       });
     await getBackend('chat/roomAdmins/' + '?roomId=' + this.chatId)
@@ -428,6 +425,10 @@ export default {
         data.forEach(user => {
           this.chatAdmins.push(user.id);
         });
+      })
+      .catch(err => {
+        console.log(err);
+        this.$router.push('/404');
       });
   },
   mounted() {
