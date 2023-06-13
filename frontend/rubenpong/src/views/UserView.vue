@@ -211,17 +211,11 @@ export default {
       await postBackend('user/me/name', { name: this.newUsername })
         .then(async (response) => {
           if (response.status === HttpStatus.OK) {
-            return response.json();
+            document.location.reload();
           } else {
             const data = await response.json();
-            throw new Error(data.error);
+            alert(data.error);
           }
-        })
-        .then(() => {
-          document.location.reload();
-        })
-        .catch((error) => {
-          alert(error.message);
         });
       this.newUsername = '';
     },
