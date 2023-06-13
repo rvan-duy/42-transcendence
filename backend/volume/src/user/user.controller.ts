@@ -5,6 +5,7 @@ import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
 import { StatusService } from 'src/status/status.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ErrorDto } from './dto/user.dto';
 
 enum Debug {
   ENABLED = 0
@@ -33,14 +34,7 @@ export class UserController {
   @ApiOperation({ summary: 'Update user name for current user' })
   @ApiBody({ type: Object, description: 'Name to be updated' })
   @ApiOkResponse({ description: 'User name updated', type: Object })
-  @ApiBadRequestResponse({
-    description: 'Reason why request was bad',
-    schema: {
-      example: {
-        error: 'Name is required'
-      }
-    }
-  })
+  @ApiBadRequestResponse({ description: 'Reason why request was bad', type: ErrorDto })
   async updateMe(@Request() req: any, @Response() res: any) {
     const nameToBeUpdated = req.body.name;
 
