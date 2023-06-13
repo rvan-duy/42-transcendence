@@ -209,18 +209,19 @@ export default {
   methods: {
     async changeName() {
       await postBackend('user/me/name', { name: this.newUsername })
-        .then((response => response.json()))
-        .then((data) => {
-          console.log('data', data);
-          if (data.status === HttpStatus.OK) {
-            this.name = this.newUsername;
-          }
-          else {
-            alert(data.error);
+        .then(async (response) => {
+          if (response.status === HttpStatus.OK) {
+            return response.json();
+          } else {
+            const data = await response.json();
+            throw new Error(data.error);
           }
         })
-        .catch(error => {
-          alert('Something went wrong changing your name.');
+        .then(() => {
+          document.location.reload();
+        })
+        .catch((error) => {
+          alert(error.message);
         });
       this.newUsername = '';
     },
