@@ -209,17 +209,20 @@ export default {
   methods: {
     async changeName() {
       await postBackend('user/me/name', { name: this.newUsername })
-        .then((response) => {
-          if (response.status === HttpStatus.OK) {
+        .then((response => response.json()))
+        .then((data) => {
+          console.log('data', data);
+          if (data.status === HttpStatus.OK) {
             this.name = this.newUsername;
-            this.newUsername = '';
           }
-          if (response.status === HttpStatus.BAD_REQUEST) {
-            alert('Bad name.');
-            return;
+          else {
+            alert(data.error);
           }
-        }
-        );
+        })
+        .catch(error => {
+          alert('Something went wrong changing your name.');
+        });
+      this.newUsername = '';
     },
     uploadProfilePicture(event) {
       this.image = event.target.files[0];
