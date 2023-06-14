@@ -10,7 +10,7 @@ import { Socket } from 'socket.io';
 import { GameStatus } from './status/game.status';
 
 enum Debug { // make sure to seed before
-  ENABLED = 1,
+  ENABLED = 0,
 }
 
 class PrivateGameInvite {
