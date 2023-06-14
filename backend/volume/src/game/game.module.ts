@@ -12,12 +12,14 @@ import { GateService } from 'src/gate/gate.service';
 import { GateModule } from 'src/gate/gate.module';
 import { MsgService } from 'src/msg/msg.service';
 import { PrismaMsgService } from 'src/msg/prisma/prismaMsg.service';
+import { GameStatusModule } from './status/game.status.module';
 
 @Module({
   imports: [
     PrismaClient,
     JwtModule,
     GateModule,
+    GameStatusModule,
   ],
   controllers: [GameController],
   providers: [

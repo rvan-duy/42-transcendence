@@ -10,6 +10,7 @@ import { PowerUp } from './game.powerup';
 import { Socket } from 'socket.io';
 import { MatchmakingService } from './matchmaking.service';
 import { GateService } from 'src/gate/gate.service';
+import { GameStatus } from '../game/status/game.status';
 
 export class GameData {
   gameID: number;
@@ -70,6 +71,7 @@ export class GameService {
   constructor(private readonly prismaGameService: PrismaGameService,
               private readonly prismaUserService: PrismaUserService,
               @Inject('gameGate') private readonly gate: GateService,
+              @Inject('gameStatus') private readonly gameStatus: GameStatus,
   ) {}
 
   private games: GameData[] = [];
@@ -186,6 +188,8 @@ export class GameService {
     newGame.powerUp = new PowerUp();
     newGame.mode = mode;
     newGame.server = this.server;
+    this.gameStatus.setPlayerStatus(player1, mode);
+    this.gameStatus.setPlayerStatus(player2, mode);
     this.games.push(newGame);
     this.gamesPlayed++;
     await this.joinUserToGameRoom(dataPlayer1.id, newGame.gameID);
@@ -206,6 +210,8 @@ export class GameService {
         console.log(`removing game ${game.gameID}`);
         const userId1: number = game.players[0].userId;
         const userId2: number = game.players[1].userId;
+        this.gameStatus.deletePlayerStatus(userId1);
+        this.gameStatus.deletePlayerStatus(userId2);
         const socketsUser1: Socket[] = await this.gate.getSocketsByUser(userId1);
         const socketsUser2: Socket[] = await this.gate.getSocketsByUser(userId2);
         for (let index = 0; index < socketsUser1.length; index++) {
@@ -300,7 +306,7 @@ export class GameService {
     }
   }
 
-  isUserInGame(userId: number) {
+  whatGameIsUserIn(userId: number) {
     for (let index = 0; index < this.games.length; index++) {
       const game = this.games[index];
 
@@ -308,10 +314,10 @@ export class GameService {
         const player = game.players[index];
 
         if (player.userId === userId)
-          return (true);
+          return (game.mode);
       }
     }
-    return (false);
+    return (GameMode.NOTINGAME);
   }
 
   checkIfPlaying(userId: number, client: Socket, matchmakingService: MatchmakingService) {
@@ -319,7 +325,7 @@ export class GameService {
     const gameIndex: number = this.getGameIndexByUserId(userId);
 
     if (gameIndex === -1) {
-      const mode: GameMode = matchmakingService.isUserQueued(userId);
+      const mode: GameMode = matchmakingService.whatQueueIsUserIn(userId);
       let inQueue = false;
       if (mode !== GameMode.NOTQUEUED)
         inQueue = true;
