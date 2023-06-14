@@ -7,6 +7,7 @@ import { Msg, User } from '@prisma/client';
 import { Server } from 'socket.io';
 import { GateService } from 'src/gate/gate.service';
 import { Socket } from 'socket.io';
+import { GameStatus } from './status/game.status';
 
 enum Debug { // make sure to seed before
   ENABLED = 0,
@@ -41,6 +42,7 @@ export class MatchmakingService {
               private readonly msgService: MsgService,
               private readonly prismaUserService: PrismaUserService,
               @Inject('statusGate') private readonly statusGate: GateService,
+              @Inject('matchmakingStatus') private readonly matchmakingStatus: GameStatus,
   ) {
   }
 
@@ -57,7 +59,7 @@ export class MatchmakingService {
   }
 
   // returns the queue the user is in or NotQueued
-  isUserQueued(userId: number) {
+  whatQueueIsUserIn(userId: number) {
     if (this.queueNormal.indexOf(userId) !== -1)
       return (GameMode.NORMAL);
     if (this.queueFreeMove.indexOf(userId) !== -1)
@@ -83,6 +85,7 @@ export class MatchmakingService {
       this.queuePowerUp.push(userId);
     else if (mode === GameMode.FIESTA)
       this.queueFiesta.push(userId);
+    this.matchmakingStatus.setPlayerStatus(userId, mode);
   }
 
   // removed the player from a queue if they are inside of one
@@ -97,6 +100,7 @@ export class MatchmakingService {
       return;
     if (this.checkAndRemoveFromArray(this.queueFiesta, userId))
       return;
+    this.matchmakingStatus.deletePlayerStatus(userId);
   }
 
   // checks if a userId is found inside of an array and then removed it
@@ -112,7 +116,9 @@ export class MatchmakingService {
   // checks if there are enough players in a queue, creates a game with 2 players if they are found
   private checkAndMatchPlayers(arr: number[], mode: GameMode) {
     if (Debug.ENABLED && arr.length === 1) {
-      this.gameService.createGame(arr.pop(), 2, mode);
+      const userId: number = arr.pop();
+      this.removePlayerFromQueue(userId);
+      this.gameService.createGame(userId, 2, mode);
       return ;
     }
 
@@ -124,6 +130,8 @@ export class MatchmakingService {
     if (Debug.ENABLED)
       console.log(`Created a game of ${mode} with players ${player1} and ${player2}`);
     this.gameService.createGame(player1, player2, mode);
+    this.matchmakingStatus.deletePlayerStatus(player1);
+    this.matchmakingStatus.deletePlayerStatus(player2);
   }
 
   // checks all the queues if any games can be created
@@ -254,9 +262,9 @@ export class MatchmakingService {
   async acceptInvite(acceptingUserId: number, chatInviteMessage: Msg) {
     if (acceptingUserId === chatInviteMessage.authorId)
       return (InviteStatus.OwnInvite);
-    if (this.gameService.isUserInGame(acceptingUserId))
+    if (this.gameService.whatGameIsUserIn(acceptingUserId) !== GameMode.NOTINGAME)
       return (InviteStatus.AlreadyInGame);
-    if (this.gameService.isUserInGame(chatInviteMessage.authorId))
+    if (this.gameService.whatGameIsUserIn(chatInviteMessage.authorId) !== GameMode.NOTINGAME)
       return (InviteStatus.CreatorAlreadyInGame);
 
     for (let index = 0; index < this.privateGameInvites.length; index++) {
@@ -264,6 +272,8 @@ export class MatchmakingService {
 
       if (invite.creatorId === chatInviteMessage.authorId && invite.mode === toGameMode(chatInviteMessage.mode) && invite.room === chatInviteMessage.roomId)
       {
+        this.matchmakingStatus.deletePlayerStatus(chatInviteMessage.authorId);
+        this.matchmakingStatus.deletePlayerStatus(acceptingUserId);
         this.removePlayerFromQueue(chatInviteMessage.authorId);
         this.removePlayerFromQueue(acceptingUserId);
         this.removePrivateGameInvite(index);

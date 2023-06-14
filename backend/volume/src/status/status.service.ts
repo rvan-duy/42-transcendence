@@ -1,4 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { GameMode } from 'src/game/game.definitions';
+import { GameStatus } from 'src/game/status/game.status';
 import { GateService } from 'src/gate/gate.service';
 
 @Injectable()
@@ -7,19 +9,24 @@ export class StatusService {
     @Inject('statusGate') private readonly statusGate: GateService,
     @Inject('gameGate') private readonly gameGate: GateService,
     @Inject('chatGate') private readonly chatGate: GateService,
+    @Inject('gameStatus') private readonly gameStatus: GameStatus,
+    @Inject('matchmakingStatus') private readonly matchmakingStatus: GameStatus,
   ){}
 
   async getStatus(userId: number) {
-    const gameSockets = this.gameGate.getSocketsByUser(userId);
     const chatSockets = this.chatGate.getSocketsByUser(userId);
     const statusSockets = this.statusGate.getSocketsByUser(userId);
-    if ((await gameSockets).length > 0)
-      return 'ingame';
+    const gameMode: GameMode = this.gameStatus.getPlayerStatus(userId);
+    const queueMode: GameMode = this.matchmakingStatus.getPlayerStatus(userId);
+    if (gameMode !== undefined)
+      return `Playing a ${gameMode} game`;
+    if (queueMode !== undefined)
+      return `In a queue for a ${queueMode} game`;
     if ((await chatSockets).length > 0)
-      return 'online';
+      return 'Online';
     if ((await statusSockets).length > 0)
-      return 'online';
-    return 'offline';
+      return 'Online';
+    return 'Offline';
   }
 
   // for testing purposes

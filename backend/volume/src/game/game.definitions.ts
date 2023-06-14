@@ -7,7 +7,8 @@ export enum GameMode {
   POWERUP = 'PowerUp',
   FIESTA = 'Fiesta',
   UNMATCHED = 'UnMatched',
-  NOTQUEUED = 'NotQueued'
+  NOTQUEUED = 'NotQueued',
+  NOTINGAME = 'NotInGame',
   }
 
 export function toPrismaGameMode(mode: GameMode): PrismaGameMode {
