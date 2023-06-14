@@ -117,7 +117,7 @@ export class MatchmakingService {
   private checkAndMatchPlayers(arr: number[], mode: GameMode) {
     if (Debug.ENABLED && arr.length === 1) {
       const userId: number = arr.pop();
-      this.removePlayerFromQueue(userId)
+      this.removePlayerFromQueue(userId);
       this.gameService.createGame(userId, 2, mode);
       return ;
     }
