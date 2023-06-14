@@ -11,8 +11,9 @@ export class PrismaUserService {
   ): Promise<User | null> {
     return this.prisma.user.findUnique({
       where: userWhereUniqueInput,
-    }).catch(() => {
-      console.log('prismaUser.service \'user\' method could not find user.');
+    }).catch((err) => {
+      console.log('prismaUser.service \'user\' method could not find user. Error:');
+      console.log(err);
       return undefined;
     });
   }

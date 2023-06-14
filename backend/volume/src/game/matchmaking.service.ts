@@ -136,8 +136,8 @@ export class MatchmakingService {
 
   // checks all the queues if any games can be created
   checkForMatches() {
-    // if (Debug.ENABLED)
-    // console.log(`Checking for matches current players searching: normal ${this.queueNormal} freeMove ${this.queueFreeMove} powerUp ${this.queuePowerUp} fiesta: ${this.queueFiesta}`);
+    if (Debug.ENABLED)
+      console.log(`Checking for matches current players searching: normal ${this.queueNormal} freeMove ${this.queueFreeMove} powerUp ${this.queuePowerUp} fiesta: ${this.queueFiesta}`);
     this.checkAndMatchPlayers(this.queueNormal, GameMode.NORMAL);
     this.checkAndMatchPlayers(this.queueFreeMove, GameMode.FREEMOVE);
     this.checkAndMatchPlayers(this.queuePowerUp, GameMode.POWERUP);

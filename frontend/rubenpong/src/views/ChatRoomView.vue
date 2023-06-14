@@ -406,8 +406,6 @@ export default {
       chatAdmins: [] as number[],
       input: '',
       visibleInvite: false
-
-      // input: ''
     };
   },
   async created() {
@@ -419,7 +417,6 @@ export default {
             setTimeout(() => {
               this.amIAdmin();
             }, 100);
-
           });
       });
     await getBackend('chat/roomAdmins/' + '?roomId=' + this.chatId)
@@ -428,6 +425,10 @@ export default {
         data.forEach(user => {
           this.chatAdmins.push(user.id);
         });
+      })
+      .catch(err => {
+        console.log(err);
+        this.$router.push('/404');
       });
   },
   mounted() {
@@ -657,6 +658,11 @@ export default {
         alert('You have to be an admin for this action.');
         return;
       }
+      else if (result.statusCode === 400)
+      {
+        alert('Password too long.');
+        return;
+      }
       else
         alert('Password changed succesfully.');
     },
@@ -671,6 +677,11 @@ export default {
         console.log(result);
       if (result.statusCode === 403) {
         alert('You have to be in the channel for this action.');
+        return;
+      }
+      else if (result.statusCode === 400)
+      {
+        alert('Password too long.');
         return;
       }
       else {

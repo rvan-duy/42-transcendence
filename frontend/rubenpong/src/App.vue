@@ -120,7 +120,6 @@ export default {
   },
   mounted() {
     this.statusConnection.setupSocketConnection('/status'); // In created this doesn't work?
-    console.log('mounted app');
     this.setupSocketListeners();
   },
   unmounted() {
@@ -132,7 +131,6 @@ export default {
     },
     
     setupSocketListeners() {
-      console.log(`${this.statusConnection.socket}`);
       this.statusConnection.socket.on('switchToGameTab', this.switchToGameTabListener);
     },
 

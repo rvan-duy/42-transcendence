@@ -1,7 +1,3 @@
-<script setup lang="ts">
-
-</script>
-
 <template>
   <div class="chat">
     <body>
@@ -26,7 +22,6 @@
           </div>
         </header>
         <main class="join-main">
-          <!-- <form action="/chatroom"> -->
           <div class="form-control">
             <form
               action=""
@@ -209,16 +204,15 @@ export default {
   methods: {
     async changeName() {
       await postBackend('user/me/name', { name: this.newUsername })
-        .then((response) => {
+        .then(async (response) => {
           if (response.status === HttpStatus.OK) {
-            this.name = this.newUsername;
-            this.newUsername = '';
+            document.location.reload();
+          } else {
+            const data = await response.json();
+            alert(data.error);
           }
-        }
-        )
-        .catch((error) => {
-          console.log(error);
         });
+      this.newUsername = '';
     },
     uploadProfilePicture(event) {
       this.image = event.target.files[0];
@@ -236,11 +230,12 @@ export default {
           if (response.status === HttpStatus.OK) {
             document.location.reload();
           }
+          if (response.status === HttpStatus.BAD_REQUEST) {
+            alert('Bad file.');
+            return;
+          }
         }
-        )
-        .catch((error) => {
-          console.log(error);
-        });
+        );
     },
     navigateToAuthenticationSettings() {
       this.$router.push('/authentication-settings');
