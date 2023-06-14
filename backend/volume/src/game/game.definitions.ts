@@ -87,6 +87,11 @@ export enum BallStatus {
   }
 
 // timings are in milliseconds
+export enum BallTimings {
+  DELAY_AFTER_GOAL = 1 * 2000,
+}
+
+// timings are in milliseconds
 export enum PowerUpTimings {
 	FREEZE_TIME = 0.4 * 1000,
 	SLOW_TIME = 0.7 * 1000,
