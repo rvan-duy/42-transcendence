@@ -171,7 +171,17 @@ export class RoomService {
             status: Status.BANNED,
             timestamp: new Date(Date.now() + 45000), // 45sec
           }
-        }
+        },
+		users: {
+			disconnect: {
+			  id: userId,
+			}
+		  },
+		  admin: {
+			disconnect: {
+			  id: userId,
+			}
+		  },
       }
     });
   }
