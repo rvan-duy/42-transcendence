@@ -74,14 +74,20 @@ export class ChatController {
     const room = await this.prismaRoomService.Room({ id: roomId });
     switch (room?.access || 'invalid') {
     case Access.PRIVATE:
-      throw new ForbiddenException('You need to be added ot this room');
+      throw new ForbiddenException('You need to be added to this room');
     case Access.PROTECTED:
       if (await this.cryptService.comparePassword(password, room.hashedCode) === false) {
         throw new ForbiddenException('Incorrect password');
       }
-      return this.roomService.addToChat(userId, roomId);
+	  if (await this.chatService.banCheck(userId, roomId) === true){
+	  	throw new ForbiddenException('You are banned.');
+	  }
+	  return this.roomService.addToChat(userId, roomId);
     case Access.PUBLIC:
-      return this.roomService.addToChat(userId, roomId);
+		if (await this.chatService.banCheck(userId, roomId) === true){
+			throw new ForbiddenException('You are banned.');
+		}
+		return this.roomService.addToChat(userId, roomId);
     case 'invalid':
       throw new NotFoundException('Room not found');
     }
@@ -211,6 +217,8 @@ export class ChatController {
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
       throw new ForbiddenException('Only chat owner or admin is alowed to add users to chat');
 
+	if (await this.chatService.banCheck(userId, roomId))
+	  throw new ForbiddenException('User has been banned.') ;
     // add the user to the chat
     this.roomService.addToChat(userId, roomId);
   }
