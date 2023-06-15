@@ -238,12 +238,14 @@ export default {
         this.relationStatus = RelationshipStatus.Pending;
     },
     async blockUser() {
-      console.log(`blocking: ${Number(this.$route.query.id)}`);
+      if (Debug.ENABLED)
+        console.log(`blocking: ${Number(this.$route.query.id)}`);
       await postBackendWithQueryParams('user/block', undefined, { id: Number(this.$route.query.id) });
       this.relationStatus = RelationshipStatus.Blocked;
     },
     async unblockUser() {
-      console.log(`unblocking: ${Number(this.$route.query.id)}`);
+      if (Debug.ENABLED)
+        console.log(`unblocking: ${Number(this.$route.query.id)}`);
       await postBackendWithQueryParams('user/unblock', undefined, { id: Number(this.$route.query.id) });
       this.relationStatus = this.relationshipStatus();
     },

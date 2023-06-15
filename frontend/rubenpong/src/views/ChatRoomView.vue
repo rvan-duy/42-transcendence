@@ -374,8 +374,6 @@ export default {
       chatAdmins: [] as number[],
       input: '',
       visibleInvite: false
-
-      // input: ''
     };
   },
   async created() {
@@ -395,6 +393,10 @@ export default {
         data.forEach(user => {
           this.chatAdmins.push(user.id);
         });
+      })
+      .catch(err => {
+        console.log(err);
+        this.$router.push('/404');
       });
   },
   mounted() {

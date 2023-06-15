@@ -7,7 +7,8 @@ export enum GameMode {
   POWERUP = 'PowerUp',
   FIESTA = 'Fiesta',
   UNMATCHED = 'UnMatched',
-  NOTQUEUED = 'NotQueued'
+  NOTQUEUED = 'NotQueued',
+  NOTINGAME = 'NotInGame',
   }
 
 export function toPrismaGameMode(mode: GameMode): PrismaGameMode {
@@ -84,6 +85,11 @@ export enum BallStatus {
   MOVING,
   SCORED,
   }
+
+// timings are in milliseconds
+export enum BallTimings {
+  DELAY_AFTER_GOAL = 1 * 2000,
+}
 
 // timings are in milliseconds
 export enum PowerUpTimings {

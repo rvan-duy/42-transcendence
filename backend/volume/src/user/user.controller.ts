@@ -32,26 +32,33 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: 'Update user name for current user' })
   @ApiBody({ type: Object, description: 'Name to be updated' })
-  @ApiOkResponse({ description: 'User name updated' })
-  @ApiBadRequestResponse({ description: 'Reason why request was bad' })
+  @ApiOkResponse({ description: 'User name updated', type: Object })
+  @ApiBadRequestResponse({
+    description: 'Reason why request was bad',
+    schema: {
+      example: {
+        error: 'Name is required'
+      }
+    }
+  })
   async updateMe(@Request() req: any, @Response() res: any) {
     const nameToBeUpdated = req.body.name;
 
     if (!nameToBeUpdated) {
-      return res.status(HttpStatus.BAD_REQUEST).send('Name is required, please make sure "name" is present in the body of the request');
+      return res.status(HttpStatus.BAD_REQUEST).send({ error: 'Name is required' });
     }
 
     if (nameToBeUpdated.length < 3 || nameToBeUpdated.length > 20) {
-      return res.status(HttpStatus.BAD_REQUEST).send('Name length must be between 3 and 20 characters');
+      return res.status(HttpStatus.BAD_REQUEST).send({ error: 'Name length must be between 3 and 20 characters' });
     }
 
     if (!/^[a-zA-Z0-9-_. ]+$/.test(nameToBeUpdated)) {
-      return res.status(HttpStatus.BAD_REQUEST).send('Name can only contain letters, numbers, spaces and the following special characters: - _ .');
+      return res.status(HttpStatus.BAD_REQUEST).send({ error: 'Name can only contain letters, numbers, spaces and the following special characters: - _ .' });
     }
 
     const user = await this.userService.user({ name: nameToBeUpdated });
     if (user) {
-      return res.status(HttpStatus.BAD_REQUEST).send('Name already taken');
+      return res.status(HttpStatus.BAD_REQUEST).send({ error: 'Name already taken' });
     }
 
     await this.userService.updateUser({
@@ -63,7 +70,7 @@ export class UserController {
       }
     });
 
-    return res.status(HttpStatus.OK).send('User updated');
+    return res.status(HttpStatus.OK).send({ message: 'User updated' });
   }
 
   @Get('me/picture')
@@ -167,8 +174,8 @@ export class UserController {
     userId = Number(userId);
     if (Debug.ENABLED)
       console.log('myid, userid', myId, userId);
-    const meAsUser = await this.userService.user({id: myId});
-    const otherAsUser = await this.userService.user({id: userId});
+    const meAsUser = await this.userService.user({ id: myId });
+    const otherAsUser = await this.userService.user({ id: userId });
     if (otherAsUser === undefined || meAsUser === undefined)
       throw new ForbiddenException('user or users not found');
     if (otherAsUser.blocked.includes(myId))
@@ -269,7 +276,7 @@ export class UserController {
       console.log(`${myId} is blocking ${userId}`);
     userId = Number(userId);
     // add to block on this side
-    const meAsUser = await this.userService.user({id: myId});
+    const meAsUser = await this.userService.user({ id: myId });
     if (Debug.ENABLED)
       console.log('me as user: ', meAsUser);
     if (meAsUser.blocked.includes(userId))

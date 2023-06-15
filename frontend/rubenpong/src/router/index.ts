@@ -48,7 +48,6 @@ const router = createRouter({
  */
 router.beforeEach(async (to, from, next) => {
   const loggedInCode: number = await isLoggedIn();
-  console.log('loggedInCode: ' + loggedInCode);
 
   /*
    * This can probably done more elegantly, but it works for now.

@@ -1,4 +1,4 @@
-import { BallStatus, GameMode, MapSize, MoveSpeedPerTick, PlayerDefinitions, PowerUpEffects } from './game.definitions';
+import { BallStatus, BallTimings, GameMode, MapSize, MoveSpeedPerTick, PlayerDefinitions, PowerUpEffects } from './game.definitions';
 import { Paddle } from './game.paddle';
 import { GameData } from './game.service';
 
@@ -10,6 +10,8 @@ export class Ball {
   acceleration: number = 1;
   radius: number = 20;
   superSmash: Boolean = false;
+  spawnLocked: Boolean = true;
+  timeSpawnUnlock: number = new Date().getTime() - BallTimings.DELAY_AFTER_GOAL;
   playerHoldingSmash: PlayerDefinitions = PlayerDefinitions.PLAYER1;
   
   ballPaddleCollision(paddle: Paddle) {
@@ -44,6 +46,12 @@ export class Ball {
   update(game: GameData) {
     let side: PlayerDefinitions;
   
+    if (this.spawnLocked === true) {
+      if (new Date().getTime() < this.timeSpawnUnlock)
+        return ;
+      this.spawnLocked = false;
+    }
+
     // check what side of the map the ball is on and which paddle to check collision for
     if (game.ball.x + this.radius < MapSize.WIDTH / 2)
       side = PlayerDefinitions.PLAYER1;
