@@ -533,6 +533,7 @@ export default {
       this.connection.socket.on('editMessage', this.editMessageListener);
       this.connection.socket.on('createInviteError', this.createInviteErrorListener);
       this.connection.socket.on('removedFromRoom', this.removedFromRoomListener);
+      this.connection.socket.on('updateUsers', this.updateUsersListener);
       // request the chat messages once the listener has been setup
       this.connection.socket.emit('loadRequest', Number(this.$route.query.id));
     },
@@ -543,7 +544,7 @@ export default {
       this.connection.socket.off('receiveNewMsg', this.receiveNewMsgListener);
       this.connection.socket.off('createInviteError', this.createInviteErrorListener);
       this.connection.socket.off('editMessage', this.editMessageListener);
-      this.connection.socket.off('removedFromRoom', this.removedFromRoomListener);
+      this.connection.socket.off('updateUsers', this.updateUsersListener);
     },
 
     async makeAdmin(newAdminId: number) {
@@ -554,16 +555,11 @@ export default {
     async banUser(bannedUserId: number) {
       postBackendWithQueryParams('chat/banUserFromRoom', undefined, { roomId: this.chatId, banUserId: bannedUserId });
     },
+    
     async kickUser(kickedUserId: number) {
       postBackendWithQueryParams('chat/kickUserFromRoom', undefined, { roomId: this.chatId, kickUserId: kickedUserId });
-      this.usersAdded.forEach(element => {
-
-        if (element.id === kickedUserId) {
-          this.usersAdded.splice(this.usersAdded.indexOf(element), 1);
-        }
-
-      });
     },
+
     async muteUser(mutedUserId: number) {
       postBackendWithQueryParams('chat/muteUserInRoom', undefined, { roomId: this.chatId, muteUserId: mutedUserId });
     },
@@ -578,17 +574,12 @@ export default {
           console.log('You canceled!');
       }
     },
+
     leaveChat() {
       if (Debug.ENABLED)
         console.log('leave');
       postBackendWithQueryParams('chat/leaveRoom', undefined, { roomId: this.chatId });
-      this.usersAdded.forEach(element => {
-
-        if (element.id === this.idUser) {
-          this.usersAdded.splice(this.usersAdded.indexOf(element), 1);
-        }
-
-      });
+      this.goTo('chat');
     },
 
     scrollChatToBottom() {
@@ -633,17 +624,40 @@ export default {
       SocketioService.socket.emit('acceptInvite', { roomId: this.chatId, messageId: messageId });
     },
 
+    updateUsersListener(data: any) {
+      if (data.userGotRemoved) {
+        if (data.user.id === this.idUser)
+          return ;
+        for (let index = 0; index < this.usersAdded.length; index++) {
+          const user = this.usersAdded[index];
+          
+          if (user.id === data.user.id) {
+            this.usersAdded.splice(index, 1);
+          }
+        }
+      }
+      else {
+        for (let index = 0; index < this.usersAdded.length; index++) {
+          const user = this.usersAdded[index];
+          
+          if (user.id === data.user.id)
+            return ; // user is already inside the list
+        }
+        this.usersAdded.push(data.user);
+      }
+    },
+
     async addUser(user: User) {
-      this.usersAdded.push(user);
       await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToAdd: user.id });
     },
+
     async getUsers() {
       await getBackend('user/all').then(res => res.json())
         .then((data: User[]) => {
           this.allUsers = data;
         });
-
     },
+
     filteredList() {
       this.getUsers();
       if (this.input !== '') {
@@ -652,9 +666,11 @@ export default {
         );
       }
     },
+
     getUserPicture(userId: number): string {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${userId}.png`);
     },
+
     async changePassword() {
       if (Debug.ENABLED)
         console.log('change pw' + this.newPassword);
@@ -673,6 +689,7 @@ export default {
       else
         alert('Password changed succesfully.');
     },
+
     //change access is for setting a password and change password is for changing a password
     async changeAccess(newAccess: string) {
       if (Debug.ENABLED)
@@ -696,6 +713,7 @@ export default {
         this.chat.access = newAccess;
       }
     },
+
     changeVisibleInvite() {
       this.visibleInvite = !this.visibleInvite;
     }

@@ -42,6 +42,7 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   afterInit(server: Server) {
     this.server = server;
     this.matchmakingService.setChatServer(server);
+    this.roomService.setChatServer(server);
     const expireInviteInterval: number = 60000; // Every minute
     setInterval(function() {this.matchmakingService.expireOldInvites();}.bind(this), expireInviteInterval);
   }
