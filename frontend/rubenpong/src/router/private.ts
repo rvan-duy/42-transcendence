@@ -7,15 +7,21 @@ import OtherUserView from '@/views/OtherUserView.vue';
 import SearchUserView from '@/views/SearchUserView.vue';
 import AuthenticationSettingsView from '@/views/AuthenticationSettingsView.vue';
 import FriendsView from '@/views/FriendsView.vue';
+import HomeView from '@/views/HomeView.vue';
 
 const routes = [
+  {
+    path: '/',
+    name: 'home',
+    component: HomeView,
+  },
   {
     path: '/chat',
     name: 'chat',
     component: ChatView,
   },
   {
-    path: '/',
+    path: '/game',
     name: 'game',
     component: GameView,
   },
