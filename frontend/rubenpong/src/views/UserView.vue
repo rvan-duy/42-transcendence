@@ -207,7 +207,6 @@ export default {
         .then(async (response) => {
           if (response.status === HttpStatus.OK) {
             this.name = this.newUsername;
-            // document.location.reload();
           } else {
             const data = await response.json();
             alert(data.error);
@@ -230,7 +229,6 @@ export default {
         .then((response) => {
           if (response.status === HttpStatus.OK) {
             this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.png?${new Date().getTime()}`;
-            // document.location.reload();
           }
           if (response.status === HttpStatus.BAD_REQUEST) {
             alert('Bad file.');
