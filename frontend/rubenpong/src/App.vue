@@ -149,7 +149,6 @@ export default {
     },
 
     updateName(newName: string) {
-      console.log('updateName');
       this.name = newName;
     },
 
