@@ -1,4 +1,4 @@
-import { GameMode, PaddleInput, PlayerDefinitions, MapSize, MoveSpeedPerTick, DefaultElementSize, BallStatus, toPrismaGameMode } from './game.definitions';
+import { GameMode, PaddleInput, PlayerDefinitions, MapSize, MoveSpeedPerTick, DefaultElementSize, BallStatus, toPrismaGameMode, BallTimings } from './game.definitions';
 import { Inject, Injectable } from '@nestjs/common';
 import { PrismaGameService } from './prisma/prismaGame.service';
 import { PrismaUserService } from '../user/prisma/prismaUser.service';
@@ -125,6 +125,9 @@ export class GameService {
     let scoringPlayer: PlayerDefinitions;
     let losingPlayer: PlayerDefinitions;
 
+    ball.spawnLocked = true;
+    ball.timeSpawnUnlock = new Date().getTime() + BallTimings.DELAY_AFTER_GOAL;
+    
     if (game.ball.x - game.ball.radius <= 0) {
       scoringPlayer = PlayerDefinitions.PLAYER2;
       losingPlayer = PlayerDefinitions.PLAYER1;
