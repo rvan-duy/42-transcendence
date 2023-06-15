@@ -49,6 +49,10 @@ export class ChatController {
     // console.log('password', password, 'roomname', roomname);
     if (password !== undefined && password.length > 20)
       throw new HttpException('password too long', HttpStatus.BAD_REQUEST);
+    if (password !== undefined && password.length < 3)
+      throw new HttpException('password too short', HttpStatus.BAD_REQUEST);
+    if (roomName.length < 3)
+      throw new HttpException('room name too short', HttpStatus.BAD_REQUEST);
     if (roomName.length > 100)
       throw new HttpException('room name too long', HttpStatus.BAD_REQUEST);
     const userId = req.user.id;
@@ -313,7 +317,9 @@ export class ChatController {
     const newPassword = body?.password ?? undefined;
     const clientId = Number(req.user.id);
     roomId = Number(roomId);
-    if (newPassword.length > 20)
+    if (newPassword !== undefined && newPassword.length < 3)
+      throw new HttpException('password too short', HttpStatus.BAD_REQUEST);
+    if (newPassword && newPassword.length > 20)
       throw new HttpException('password too long', HttpStatus.BAD_REQUEST);
     // only alow the chat owner and admins to change chat password
     if (await this.chatService.isOwner(roomId, clientId) === false)
@@ -339,7 +345,9 @@ export class ChatController {
       throw new BadRequestException('A change to password protected chat requires an new password');
     else if (newAccess !== Access.PROTECTED)
       newPassword = undefined;
-    if (newPassword.length > 20)
+    if (newPassword !== undefined && newPassword.length < 3)
+      throw new HttpException('password too short', HttpStatus.BAD_REQUEST);
+    if (newPassword && newPassword.length > 20)
       throw new HttpException('password too long', HttpStatus.BAD_REQUEST);
     // only alow the chat owner and admins to change chat password
     if (await this.chatService.isOwner(roomId, clientId) === false)
