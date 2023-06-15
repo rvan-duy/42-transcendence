@@ -12,6 +12,7 @@ import {
   Query,
   Request,
   UseGuards,
+  Inject,
 } from '@nestjs/common';
 import { Room, Access } from '@prisma/client';
 import { PrismaRoomService } from 'src/room/prisma/prismaRoom.service';
@@ -20,6 +21,7 @@ import { RoomService, roomDto } from 'src/room/room.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ChatService } from './chat.service';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
+import { GateService } from 'src/gate/gate.service';
 
 enum Debug {
   ENABLED = 0
@@ -33,6 +35,7 @@ export class ChatController {
     private readonly cryptService: CryptService,
     private readonly chatService: ChatService,
     private readonly userService: PrismaUserService,
+    @Inject('chatGate') private readonly chatGate: GateService,
   ) { }
 
   @UseGuards(JwtAuthGuard)
@@ -234,6 +237,15 @@ export class ChatController {
     if (await this.chatService.isOwner(roomId, banUserId) === true)
       throw new ForbiddenException('The chat owner cannot be banned');
 
+    // send a message to the frontend of the banned user to notify them of their ban and switch them off the room page
+    const bannedUserChatSockets = await this.chatGate.getSocketsByUser(banUserId);
+
+    for (let index = 0; index < bannedUserChatSockets.length; index++) {
+      const socket = bannedUserChatSockets[index];
+      
+      socket.emit('removedFromRoom', {message: 'banned', roomId: roomId});
+    }
+
     // add user to the banned list in this chat
     this.roomService.banUser(roomId, banUserId);
   }
@@ -284,6 +296,14 @@ export class ChatController {
     // check if the kicked user is not the owner or admin
     if (await this.chatService.isOwner(roomId, kickUserId) === true)
       throw new ForbiddenException('The chat owner cannot be kicked');
+
+    const kickedUserChatSockets = await this.chatGate.getSocketsByUser(kickUserId);
+
+    for (let index = 0; index < kickedUserChatSockets.length; index++) {
+      const socket = kickedUserChatSockets[index];
+        
+      socket.emit('removedFromRoom', {message: 'kicked', roomId: roomId});
+    }
 
     // remove the kicked user from chat
     this.roomService.kickUser(roomId, kickUserId);

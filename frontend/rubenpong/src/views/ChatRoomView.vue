@@ -506,8 +506,7 @@ export default {
     },
 
     createInviteErrorListener(message: string) {
-      // ToDo: Make error pop up
-      console.log(message);
+      alert(`Error creating invite:\n${message}`);
     },
 
     async editMessageListener(editedMessage: any) { // ToDo: find a way to set the username in the backend instead of reusing the old name?
@@ -533,6 +532,7 @@ export default {
       this.connection.socket.on('inviteStatus', this.receiveInviteStatusListener);
       this.connection.socket.on('editMessage', this.editMessageListener);
       this.connection.socket.on('createInviteError', this.createInviteErrorListener);
+      this.connection.socket.on('removedFromRoom', this.removedFromRoomListener);
       // request the chat messages once the listener has been setup
       this.connection.socket.emit('loadRequest', Number(this.$route.query.id));
     },
@@ -543,6 +543,7 @@ export default {
       this.connection.socket.off('receiveNewMsg', this.receiveNewMsgListener);
       this.connection.socket.off('createInviteError', this.createInviteErrorListener);
       this.connection.socket.off('editMessage', this.editMessageListener);
+      this.connection.socket.off('removedFromRoom', this.removedFromRoomListener);
     },
 
     async makeAdmin(newAdminId: number) {
@@ -618,8 +619,14 @@ export default {
         this.goTo('');
         return;
       }
-      // ToDo: Make visual pop up for user showing the error
-      console.log(`Error accepting invite:\n${inviteStatus}.`);
+      alert(`Error accepting invite:\n${inviteStatus}`);
+    },
+
+    removedFromRoomListener(data: any) {
+      if (data.roomId === this.chatId) {
+        alert(`You've been ${data.message} from the chat room`);
+        this.goTo('chat');
+      }
     },
 
     async acceptInvite(messageId: number) {
