@@ -16,36 +16,43 @@
           class="text-blue-100 p-2 text-lg hover:text-white"
           to="/"
         >
-          Game
-        </RouterLink>
-        <RouterLink
-          v-if="userIsLoggedIn"
-          class="text-blue-100 p-2 text-lg hover:text-white"
-          to="/chat"
-        >
-          Chat
-        </RouterLink>
-        <RouterLink
-          v-if="userIsLoggedIn"
-          class="text-blue-100 p-2 text-lg hover:text-white"
-          to="/searchuser"
-        >
-          Search User
-        </RouterLink>
-        <RouterLink
-          v-if="userIsLoggedIn"
-          class="text-blue-100 p-2 text-lg hover:text-white"
-          to="/friends"
-        >
-          OnlyFriends
-        </RouterLink>
-        <RouterLink
-          v-if="userIsLoggedIn"
-          class="text-blue-100 p-2 text-lg hover:text-white"
-          to="/logout"
-        >
-          Log Out
-        </RouterLink>
+          Home
+          <RouterLink
+            v-if="userIsLoggedIn"
+            class="text-blue-100 p-2 text-lg hover:text-white"
+            to="/game"
+          >
+            Game
+          </RouterLink>
+          <RouterLink
+            v-if="userIsLoggedIn"
+            class="text-blue-100 p-2 text-lg hover:text-white"
+            to="/chat"
+          >
+            Chat
+          </RouterLink>
+          <RouterLink
+            v-if="userIsLoggedIn"
+            class="text-blue-100 p-2 text-lg hover:text-white"
+            to="/searchuser"
+          >
+            Search User
+          </RouterLink>
+          <RouterLink
+            v-if="userIsLoggedIn"
+            class="text-blue-100 p-2 text-lg hover:text-white"
+            to="/friends"
+          >
+            OnlyFriends
+          </RouterLink>
+          <RouterLink
+            v-if="userIsLoggedIn"
+            class="text-blue-100 p-2 text-lg hover:text-white"
+            to="/logout"
+          >
+            Log Out
+          </RouterLink>
+        </routerlink>
       </div>
       <div
         class="columns-1"
@@ -125,17 +132,29 @@ export default {
     
     setupSocketListeners() {
       this.statusConnection.socket.on('switchToGameTab', this.switchToGameTabListener);
+      this.statusConnection.socket.on('updateUsername', this.updateName);
+      this.statusConnection.socket.on('requestNewPicture', this.requestNewPicture);
     },
 
     dropSocketListeners() {
       this.statusConnection.socket.off('switchToGameTab', this.switchToGameTabListener);
+      this.statusConnection.socket.off('updateUsername', this.updateName);
+      this.statusConnection.socket.off('requestNewPicture', this.requestNewPicture);
     },
 
     switchToGameTabListener() {
       setTimeout(() => {
-        this.goTo('');
+        this.goTo('game');
       }, 100);
     },
+
+    updateName(newName: string) {
+      this.name = newName;
+    },
+
+    requestNewPicture() {
+      this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.png?${new Date().getTime()}`;
+    }
   },
 };
 

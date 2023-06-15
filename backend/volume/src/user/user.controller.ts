@@ -1,10 +1,11 @@
-import { Controller, Get, Param, Post, Request, Response, UseGuards, HttpStatus, Query, UseInterceptors, UploadedFile, ForbiddenException } from '@nestjs/common';
+import { Controller, Get, Param, Post, Request, Response, UseGuards, HttpStatus, Query, UseInterceptors, UploadedFile, ForbiddenException, Inject } from '@nestjs/common';
 import { ApiBadRequestResponse, ApiBody, ApiCookieAuth, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { PrismaUserService } from './prisma/prismaUser.service';
 import * as fs from 'fs';
 import { StatusService } from 'src/status/status.service';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { GateService } from 'src/gate/gate.service';
 
 enum Debug {
   ENABLED = 0
@@ -17,7 +18,8 @@ enum Debug {
 export class UserController {
   constructor(
     private readonly userService: PrismaUserService,
-    private readonly statusService: StatusService
+    private readonly statusService: StatusService,
+    @Inject('statusGate') private readonly statusGate: GateService,
   ) { }
 
   @Get('me')
@@ -59,6 +61,13 @@ export class UserController {
     const user = await this.userService.user({ name: nameToBeUpdated });
     if (user) {
       return res.status(HttpStatus.BAD_REQUEST).send({ error: 'Name already taken' });
+    }
+
+    const userSockets = await this.statusGate.getSocketsByUser(req.user.id);
+
+    for (let index = 0; index < userSockets.length; index++) {
+      const socket = userSockets[index];
+      socket.emit('updateUsername', nameToBeUpdated);
     }
 
     await this.userService.updateUser({
@@ -105,6 +114,14 @@ export class UserController {
     const picturePath = '/usr/src/app/public/' + filename;
 
     fs.writeFileSync(picturePath, file.buffer);
+
+    const userSockets = await this.statusGate.getSocketsByUser(req.user.id);
+
+    for (let index = 0; index < userSockets.length; index++) {
+      const socket = userSockets[index];
+      socket.emit('requestNewPicture');
+    }
+
     return res.status(HttpStatus.OK).send('User picture updated');
   }
 

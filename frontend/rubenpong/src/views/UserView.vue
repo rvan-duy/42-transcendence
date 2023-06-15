@@ -206,7 +206,7 @@ export default {
       await postBackend('user/me/name', { name: this.newUsername })
         .then(async (response) => {
           if (response.status === HttpStatus.OK) {
-            document.location.reload();
+            this.name = this.newUsername;
           } else {
             const data = await response.json();
             alert(data.error);
@@ -228,7 +228,7 @@ export default {
       await postPictureBackend('user/me/picture', formData)
         .then((response) => {
           if (response.status === HttpStatus.OK) {
-            document.location.reload();
+            this.backendPictureUrl = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${this.id}.png?${new Date().getTime()}`;
           }
           if (response.status === HttpStatus.BAD_REQUEST) {
             alert('Bad file.');
