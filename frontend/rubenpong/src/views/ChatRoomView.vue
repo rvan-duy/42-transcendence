@@ -607,7 +607,7 @@ export default {
 
     receiveInviteStatusListener(inviteStatus: InviteStatus) {
       if (inviteStatus === InviteStatus.InviteAccepted) {
-        this.goTo('');
+        this.goTo('game');
         return;
       }
       alert(`Error accepting invite:\n${inviteStatus}`);

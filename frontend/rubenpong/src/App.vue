@@ -16,43 +16,43 @@
           class="text-blue-100 p-2 text-lg hover:text-white"
           to="/"
         >
-          Game
-        </RouterLink>
-        <RouterLink
-          v-if="userIsLoggedIn"
-          class="text-blue-100 p-2 text-lg hover:text-white"
-          to="/chat"
-        >
-          Chat
-        </RouterLink>
-        <RouterLink
-          v-if="userIsLoggedIn"
-          class="text-blue-100 p-2 text-lg hover:text-white"
-          to="/searchuser"
-        >
-          Search User
-        </RouterLink>
-        <RouterLink
-          v-if="userIsLoggedIn"
-          class="text-blue-100 p-2 text-lg hover:text-white"
-          to="/friends"
-        >
-          OnlyFriends
-        </RouterLink>
-        <RouterLink
-          v-if="userIsLoggedIn"
-          class="text-blue-100 p-2 text-lg hover:text-white"
-          to="/logout"
-        >
-          Log Out
-        </RouterLink>
-        <RouterLink
-          v-if="userIsLoggedIn"
-          class="text-blue-100 p-2 text-lg hover:text-white"
-          to="/backend"
-        >
-          Backend
-        </RouterLink>
+          Home
+          <RouterLink
+            v-if="userIsLoggedIn"
+            class="text-blue-100 p-2 text-lg hover:text-white"
+            to="/game"
+          >
+            Game
+          </RouterLink>
+          <RouterLink
+            v-if="userIsLoggedIn"
+            class="text-blue-100 p-2 text-lg hover:text-white"
+            to="/chat"
+          >
+            Chat
+          </RouterLink>
+          <RouterLink
+            v-if="userIsLoggedIn"
+            class="text-blue-100 p-2 text-lg hover:text-white"
+            to="/searchuser"
+          >
+            Search User
+          </RouterLink>
+          <RouterLink
+            v-if="userIsLoggedIn"
+            class="text-blue-100 p-2 text-lg hover:text-white"
+            to="/friends"
+          >
+            OnlyFriends
+          </RouterLink>
+          <RouterLink
+            v-if="userIsLoggedIn"
+            class="text-blue-100 p-2 text-lg hover:text-white"
+            to="/logout"
+          >
+            Log Out
+          </RouterLink>
+        </routerlink>
       </div>
       <div
         class="columns-1"
@@ -144,7 +144,7 @@ export default {
 
     switchToGameTabListener() {
       setTimeout(() => {
-        this.goTo('');
+        this.goTo('game');
       }, 100);
     },
 

@@ -1,50 +1,68 @@
 <script setup lang="ts">
-// This function describes what the Meow-button does onclick.
-// It either runs a GET request to "/cat" of the back-end, and sets the
-// about_text to the text received as a response. Or it changes the
-import { getBackend } from '@/utils/backend-requests';
-
-// about_text to be "dog" if the value is currently "cat".
-async function onclickMeow(){
-  const about_text_element = document.getElementById('about_text');
-
-  if (about_text_element.innerHTML !== 'dog') {
-    about_text_element.innerHTML = 'dog';
-  }
-  else
-  {
-    await getBackend('user/me')
-      .then((response => response.json()))
-      .then((data) => {
-        about_text_element.innerHTML = data.name;
-      });
-  }
-}
 
 </script>
 
 <template>
-  <div
-    class="about"
-    style="text-align: center"
-  >
-    <h1 id="about_text">
-      This is no longer an about page, it is now a home page.
-    </h1>
-    <button
-      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
-      @click="onclickMeow"
+  <div class="item">
+    <div
+      class="p-2"
+      style="text-align: center;"
     >
-      Meow
-    </button>
+      <h1 style="font-size: 100px;">
+        Welcome {{ name }} to RubenPong! 🏓
+      </h1>
+      <p>
+        Brought to you with ❤️ by Ruben, Ruben & de Rest
+      </p>
+      <br><br>
+      <div style="display: flex; justify-content: center;">
+        <img
+          src="../assets/rubenruben.jpg"
+          alt="RubenPong Logo"
+          style="width: 50%; height: 50%;"
+        >
+      </div>
+      <div
+        style="display: flex; justify-content: center;"
+      >
+        <img
+          src="../assets/dkramer.jpeg"
+          alt="dkramer"
+          style="width: 10%; height: 10%;"
+        >
+        <img
+          src="../assets/limartin.jpeg"
+          alt="limartin"
+          style="width: 10%; height: 10%;"
+        >
+        <img
+          src="../assets/obult.jpeg"
+          alt="obult"
+          style="width: 10%; height: 10%;"
+        >
+      </div>
+    </div>
   </div>
 </template>
 
-<style>
-@media (min-width: 1024px) {
-  .about {
-    min-height: 100vh;
-    align-items: center;
+<script lang="ts">
+
+import { getBackend } from '@/utils/backend-requests';
+
+export default {
+  data()
+  {
+    return {
+      name: '',
+    };
+  },
+  async created() {
+    await getBackend('user/me')
+      .then((response => response.json()))
+      .then((data) => {
+        this.name = data.name;
+      });
   }
-}
-</style>
+};
+
+</script>
