@@ -373,6 +373,10 @@ enum Debug {
 	ENABLED = 0,
 }
 
+enum Timeout {
+  UpdateUsersTimeout = 5 * 1000,
+}
+
 enum InviteStatus {
 	NotInRoom = 'You do not have access to the room you have provided',
 	AlreadyInGame = 'You are already playing an ongoing game',
@@ -405,7 +409,8 @@ export default {
       allUsers: [] as User[],
       chatAdmins: [] as number[],
       input: '',
-      visibleInvite: false
+      visibleInvite: false,
+      updateUsersTimestamp: new Date().getTime() - Timeout.UpdateUsersTimeout,
     };
   },
   async created() {
@@ -458,6 +463,9 @@ export default {
     addMessage(msg: any) {
       this.messages.push(msg);
       const chatMessages = document.querySelector('.chat-messages'); //This is how we used to scroll to end but it no longer works
+
+      if (chatMessages === null)
+        return ;
       chatMessages.scrollTop = (chatMessages.scrollHeight);
     },
     toLocale(timestamp: any) {
@@ -648,18 +656,34 @@ export default {
     },
 
     async addUser(user: User) {
-      await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToAdd: user.id });
+      const result: any = await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToAdd: user.id });
+
+      if (result.statusCode === 403) {
+        alert(result.message);
+      }
     },
 
     async getUsers() {
       await getBackend('user/all').then(res => res.json())
         .then((data: User[]) => {
           this.allUsers = data;
-        });
+        })
+        .catch(error =>
+          console.log(error)
+        );
+    },
+
+    updateUserList() {
+      const currentTime: number = new Date().getTime();
+
+      if (this.updateUsersTimestamp + Timeout.UpdateUsersTimeout < currentTime) {
+        this.getUsers();
+        this.updateUsersTimestamp = currentTime;
+      }
     },
 
     filteredList() {
-      this.getUsers();
+      this.updateUserList();
       if (this.input !== '') {
         return this.allUsers.filter((user) =>
           user.name.toLowerCase().includes(this.input.toLowerCase())
@@ -674,7 +698,7 @@ export default {
     async changePassword() {
       if (Debug.ENABLED)
         console.log('change pw' + this.newPassword);
-      const result = await postBackendWithQueryParams('chat/changePassword', { password: this.newPassword }, { roomId: this.chatId });
+      const result: any = await postBackendWithQueryParams('chat/changePassword', { password: this.newPassword }, { roomId: this.chatId });
       if (Debug.ENABLED)
         console.log(result);
       if (result.statusCode === 403) {
@@ -687,7 +711,7 @@ export default {
         return;
       }
       else
-        alert('Password changed succesfully.');
+        alert('Password changed successfully.');
     },
 
     //change access is for setting a password and change password is for changing a password
@@ -696,7 +720,7 @@ export default {
         console.log('change access' + newAccess);
       if (newAccess !== 'PUBLIC' && newAccess !== 'PRIVATE' && newAccess !== 'PROTECTED')
         return;
-      const result = await postBackendWithQueryParams('chat/changeAccess', { password: this.newPassword }, { roomId: this.chatId, newAccess: newAccess });
+      const result: any = await postBackendWithQueryParams('chat/changeAccess', { password: this.newPassword }, { roomId: this.chatId, newAccess: newAccess });
       if (Debug.ENABLED)
         console.log(result);
       if (result.statusCode === 403) {

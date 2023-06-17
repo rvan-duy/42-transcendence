@@ -101,7 +101,7 @@ export class ChatService {
     if (roomWithBanMute === undefined)
       return true; // room does not exist
 
-    let banMute: UserTimestamp[] = roomWithBanMute.banMute;
+    const banMute: UserTimestamp[] = roomWithBanMute.banMute;
 
     // clean the array for outdated stuff and send back
     // banMute = this.clearPast(banMute, roomId);

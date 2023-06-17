@@ -82,15 +82,15 @@ export class ChatController {
       if (await this.cryptService.comparePassword(password, room.hashedCode) === false) {
         throw new ForbiddenException('Incorrect password');
       }
-	  if (await this.chatService.banCheck(userId, roomId) === true){
-	  	throw new ForbiddenException('You are banned.');
-	  }
-	  return this.roomService.addToChat(userId, roomId);
+      if (await this.chatService.banCheck(userId, roomId) === true){
+        throw new ForbiddenException('You are banned.');
+      }
+      return this.roomService.addToChat(userId, roomId);
     case Access.PUBLIC:
-		if (await this.chatService.banCheck(userId, roomId) === true){
-			throw new ForbiddenException('You are banned.');
-		}
-		return this.roomService.addToChat(userId, roomId);
+      if (await this.chatService.banCheck(userId, roomId) === true){
+        throw new ForbiddenException('You are banned.');
+      }
+      return this.roomService.addToChat(userId, roomId);
     case 'invalid':
       throw new NotFoundException('Room not found');
     }
@@ -218,10 +218,11 @@ export class ChatController {
     roomId = Number(roomId);
     // only alow the chat owner and admins to add members to the chat
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
-      throw new ForbiddenException('Only chat owner or admin is alowed to add users to chat');
+      throw new ForbiddenException('Only chat owner or admin is allowed to add users to chat');
 
-	if (await this.chatService.banCheck(userId, roomId))
-	  throw new ForbiddenException('User has been banned.') ;
+    if (await this.chatService.banCheck(userId, roomId))
+      throw new ForbiddenException('User has been banned.');
+
     // add the user to the chat
     this.roomService.addToChat(userId, roomId);
   }

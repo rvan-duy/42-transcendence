@@ -34,9 +34,9 @@ export class RoomService {
 
   private chatServer: Server;
 
-    setChatServer(chatServer: Server) {
-      this.chatServer = chatServer;
-    }
+  setChatServer(chatServer: Server) {
+    this.chatServer = chatServer;
+  }
 
   //  creates a new chatroom
   async createChat(roomData: roomDto) {
@@ -76,7 +76,7 @@ export class RoomService {
   async addToChat(userId: number, roomId: number) {
     const addedUser: User = await this.prismaUserService.user({id: userId});
 
-    this.chatServer.to(`${roomId}`).emit('updateUsers', {userGotRemoved: false, user: addedUser})
+    this.chatServer.to(`${roomId}`).emit('updateUsers', {userGotRemoved: false, user: addedUser});
     this.prismaRoom.updateRoom({
       where: {
         id: roomId,
@@ -156,8 +156,7 @@ export class RoomService {
     }));
   }
 
-  async removeAdmin(roomId: number, userId: number) { // add removeUserFromChat here too?
-    // this.removeUserFromChat(roomId, userId);
+  async removeAdmin(roomId: number, userId: number) {
     this.prismaRoom.updateRoom({
       where: {
         id: roomId,
@@ -175,7 +174,7 @@ export class RoomService {
   async removeUserFromChat(roomId: number, userId: number) {
     const removedUser: User = await this.prismaUserService.user({id: userId});
 
-    this.chatServer.to(`${roomId}`).emit('updateUsers', {userGotRemoved: true, user: removedUser})
+    this.chatServer.to(`${roomId}`).emit('updateUsers', {userGotRemoved: true, user: removedUser});
   }
 
   async banUser(roomId: number, userId: number) {
