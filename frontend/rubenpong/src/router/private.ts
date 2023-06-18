@@ -62,6 +62,13 @@ const routes = [
     name: 'friends',
     component: FriendsView,
   },
+  {
+    path: '/backend',
+    name: 'backend',
+    beforeEnter() {
+      location.href = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/api`;
+    },
+  },
 ];
 
 export default routes.map(route => {
