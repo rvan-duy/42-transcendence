@@ -215,7 +215,7 @@ export class RoomService {
           create: {
             userId: userId,
             status: Status.MUTED,
-            timestamp: new Date(Date.now() + 45000), // 45sec
+            timestamp: new Date(Date.now() + 12000), // 12 sec
           }
         }
       }

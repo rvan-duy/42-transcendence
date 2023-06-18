@@ -63,7 +63,7 @@ export class ChatService {
         where: { id: roomId },
         data: {
           banMute: {
-            disconnect: removedIds.map(id => ({id})),
+            deleteMany: {id: {in: removedIds}},
           }
         }
       });
