@@ -490,6 +490,8 @@ export default {
     },
 
     receiveNewMsgListener(msg: any) {
+      if (this.myBlockedUsers.includes(msg.authorId))
+        msg.body = 'This message was sent by a user you blocked.';
       msg.username = msg.author.name;
       this.addMessage(msg);
       // this.scrollChatToBottom();
