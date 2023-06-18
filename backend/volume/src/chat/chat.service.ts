@@ -93,4 +93,25 @@ export class ChatService {
     }
     return false;
   }
+
+  async banedCheck(userId: number, roomId: number): Promise<boolean> {
+    const roomWithBanMute = await this.prismaRoomService.roomWithBanMute({
+      id: roomId,
+    });
+    if (roomWithBanMute === undefined)
+      return true; // room does not exist
+
+    let banMute: UserTimestamp[] = roomWithBanMute.banMute;
+
+    // clean the array for outdated stuff and send back
+    banMute = this.clearPast(banMute, roomId);
+
+    for (let index = 0; index < banMute.length; index++) {
+      const element = banMute[index];
+      if (element.userId === userId && element.status === Status.BANNED) {
+        return true;
+      }
+    }
+    return false;
+  }
 }
