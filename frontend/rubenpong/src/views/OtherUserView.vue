@@ -247,6 +247,8 @@ export default {
       if (Debug.ENABLED)
         console.log(`unblocking: ${Number(this.$route.query.id)}`);
       await postBackendWithQueryParams('user/unblock', undefined, { id: Number(this.$route.query.id) });
+      const index = this.me.blocked.indexOf(Number(this.$route.query.id));
+      this.me.blocked.splice(index, 1);
       this.relationStatus = this.relationshipStatus();
     },
     async removeFriend() {
