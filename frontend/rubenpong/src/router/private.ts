@@ -36,13 +36,6 @@ const routes = [
     component: UserView,
   },
   {
-    path: '/backend',
-    name: 'backend',
-    beforeEnter() {
-      location.href = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/api`;
-    },
-  },
-  {
     path: '/otheruser/:id',
     name: 'otheruser',
     component: OtherUserView,
@@ -52,7 +45,7 @@ const routes = [
     path: '/chatroom/:id',
     name: 'chatroom',
     component: ChatRoomView,
-    props: { id: null}
+    props: { id: null }
   },
   {
     path: '/searchuser',
@@ -68,6 +61,13 @@ const routes = [
     path: '/friends',
     name: 'friends',
     component: FriendsView,
+  },
+  {
+    path: '/backend',
+    name: 'backend',
+    beforeEnter() {
+      location.href = `http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/api`;
+    },
   },
 ];
 
