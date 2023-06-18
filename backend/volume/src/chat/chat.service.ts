@@ -63,7 +63,7 @@ export class ChatService {
         where: { id: roomId },
         data: {
           banMute: {
-            disconnect: removedIds.map(id => ({id})),
+            deleteMany: {id: {in: removedIds}},
           }
         }
       });
@@ -88,6 +88,27 @@ export class ChatService {
       const element = banMute[index];
       if (element.userId === userId && element.status === Status.MUTED) {
         client.emit('receiveNewMsg', {body: 'You are muted.', author: {name: 'The system'}, invite: false});
+        return true;
+      }
+    }
+    return false;
+  }
+
+  async banCheck(userId: number, roomId: number): Promise<boolean> {
+    const roomWithBanMute = await this.prismaRoomService.roomWithBanMute({
+      id: roomId,
+    });
+    if (roomWithBanMute === undefined)
+      return true; // room does not exist
+
+    const banMute: UserTimestamp[] = roomWithBanMute.banMute;
+
+    // clean the array for outdated stuff and send back
+    // banMute = this.clearPast(banMute, roomId);
+
+    for (let index = 0; index < banMute.length; index++) {
+      const element = banMute[index];
+      if (element.userId === userId && element.status === Status.BANNED) {
         return true;
       }
     }

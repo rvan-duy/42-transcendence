@@ -1,7 +1,9 @@
 import { PrismaRoomService } from './prisma/prismaRoom.service';
 import { Injectable } from '@nestjs/common';
-import { Access, Status } from '@prisma/client';
+import { Access, Status, User } from '@prisma/client';
+import { Server } from 'socket.io';
 import { CryptService } from 'src/crypt/crypt.service';
+import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
 
 export interface roomDto {
   name: string;
@@ -26,8 +28,15 @@ function exclude<Room, Key extends keyof Room>(
 export class RoomService {
   constructor(
     private prismaRoom: PrismaRoomService,
+    private prismaUserService: PrismaUserService,
     private readonly cryptService: CryptService,
   ) { }
+
+  private chatServer: Server;
+
+  setChatServer(chatServer: Server) {
+    this.chatServer = chatServer;
+  }
 
   //  creates a new chatroom
   async createChat(roomData: roomDto) {
@@ -65,6 +74,9 @@ export class RoomService {
   // adds user to the chatroom
   // need to add uban to this too? FUTURE feature
   async addToChat(userId: number, roomId: number) {
+    const addedUser: User = await this.prismaUserService.user({id: userId});
+
+    this.chatServer.to(`${roomId}`).emit('updateUsers', {userGotRemoved: false, user: addedUser});
     this.prismaRoom.updateRoom({
       where: {
         id: roomId,
@@ -159,7 +171,14 @@ export class RoomService {
     });
   }
 
+  async removeUserFromChat(roomId: number, userId: number) {
+    const removedUser: User = await this.prismaUserService.user({id: userId});
+
+    this.chatServer.to(`${roomId}`).emit('updateUsers', {userGotRemoved: true, user: removedUser});
+  }
+
   async banUser(roomId: number, userId: number) {
+    this.removeUserFromChat(roomId, userId);
     this.prismaRoom.updateRoom({
       where: {
         id: roomId,
@@ -170,6 +189,16 @@ export class RoomService {
             userId: userId,
             status: Status.BANNED,
             timestamp: new Date(Date.now() + 45000), // 45sec
+          }
+        },
+        users: {
+          disconnect: {
+            id: userId,
+          }
+        },
+        admin: {
+          disconnect: {
+            id: userId,
           }
         }
       }
@@ -186,7 +215,7 @@ export class RoomService {
           create: {
             userId: userId,
             status: Status.MUTED,
-            timestamp: new Date(Date.now() + 45000), // 45sec
+            timestamp: new Date(Date.now() + 12000), // 12 sec
           }
         }
       }
@@ -194,6 +223,7 @@ export class RoomService {
   }
 
   async kickUser(roomId: number, userId: number) {
+    this.removeUserFromChat(roomId, userId);
     return await this.prismaRoom.updateRoom({
       where: {
         id: roomId,

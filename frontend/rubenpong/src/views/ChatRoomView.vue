@@ -341,6 +341,10 @@ enum Debug {
 	ENABLED = 0,
 }
 
+enum Timeout {
+  UpdateUsersTimeout = 5 * 1000,
+}
+
 enum InviteStatus {
 	NotInRoom = 'You do not have access to the room you have provided',
 	AlreadyInGame = 'You are already playing an ongoing game',
@@ -373,7 +377,8 @@ export default {
       allUsers: [] as User[],
       chatAdmins: [] as number[],
       input: '',
-      visibleInvite: false
+      visibleInvite: false,
+      updateUsersTimestamp: new Date().getTime() - Timeout.UpdateUsersTimeout,
     };
   },
   async created() {
@@ -426,6 +431,9 @@ export default {
     addMessage(msg: any) {
       this.messages.push(msg);
       const chatMessages = document.querySelector('.chat-messages'); //This is how we used to scroll to end but it no longer works
+
+      if (chatMessages === null)
+        return ;
       chatMessages.scrollTop = (chatMessages.scrollHeight);
     },
     toLocale(timestamp: any) {
@@ -474,8 +482,7 @@ export default {
     },
 
     createInviteErrorListener(message: string) {
-      // ToDo: Make error pop up
-      console.log(message);
+      alert(`Error creating invite:\n${message}`);
     },
 
     async editMessageListener(editedMessage: any) { // ToDo: find a way to set the username in the backend instead of reusing the old name?
@@ -503,6 +510,8 @@ export default {
       this.connection.socket.on('inviteStatus', this.receiveInviteStatusListener);
       this.connection.socket.on('editMessage', this.editMessageListener);
       this.connection.socket.on('createInviteError', this.createInviteErrorListener);
+      this.connection.socket.on('removedFromRoom', this.removedFromRoomListener);
+      this.connection.socket.on('updateUsers', this.updateUsersListener);
       // request the chat messages once the listener has been setup
       this.connection.socket.emit('loadRequest', Number(this.$route.query.id));
     },
@@ -513,6 +522,7 @@ export default {
       this.connection.socket.off('receiveNewMsg', this.receiveNewMsgListener);
       this.connection.socket.off('createInviteError', this.createInviteErrorListener);
       this.connection.socket.off('editMessage', this.editMessageListener);
+      this.connection.socket.off('updateUsers', this.updateUsersListener);
     },
 
     async makeAdmin(newAdminId: number) {
@@ -523,16 +533,11 @@ export default {
     async banUser(bannedUserId: number) {
       postBackendWithQueryParams('chat/banUserFromRoom', undefined, { roomId: this.chatId, banUserId: bannedUserId });
     },
+    
     async kickUser(kickedUserId: number) {
       postBackendWithQueryParams('chat/kickUserFromRoom', undefined, { roomId: this.chatId, kickUserId: kickedUserId });
-      this.usersAdded.forEach(element => {
-
-        if (element.id === kickedUserId) {
-          this.usersAdded.splice(this.usersAdded.indexOf(element), 1);
-        }
-
-      });
     },
+
     async muteUser(mutedUserId: number) {
       postBackendWithQueryParams('chat/muteUserInRoom', undefined, { roomId: this.chatId, muteUserId: mutedUserId });
     },
@@ -547,17 +552,12 @@ export default {
           console.log('You canceled!');
       }
     },
+
     leaveChat() {
       if (Debug.ENABLED)
         console.log('leave');
       postBackendWithQueryParams('chat/leaveRoom', undefined, { roomId: this.chatId });
-      this.usersAdded.forEach(element => {
-
-        if (element.id === this.idUser) {
-          this.usersAdded.splice(this.usersAdded.indexOf(element), 1);
-        }
-
-      });
+      this.goTo('chat');
     },
 
     scrollChatToBottom() {
@@ -588,40 +588,87 @@ export default {
         this.goTo('game');
         return;
       }
-      // ToDo: Make visual pop up for user showing the error
-      console.log(`Error accepting invite:\n${inviteStatus}.`);
+      alert(`Error accepting invite:\n${inviteStatus}`);
+    },
+
+    removedFromRoomListener(data: any) {
+      if (data.roomId === this.chatId) {
+        alert(`You've been ${data.message} from the chat room`);
+        this.goTo('chat');
+      }
     },
 
     async acceptInvite(messageId: number) {
       SocketioService.socket.emit('acceptInvite', { roomId: this.chatId, messageId: messageId });
     },
 
-    async addUser(user: User) {
-      this.usersAdded.push(user);
-      await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToAdd: user.id });
+    updateUsersListener(data: any) {
+      if (data.userGotRemoved) {
+        if (data.user.id === this.idUser)
+          return ;
+        for (let index = 0; index < this.usersAdded.length; index++) {
+          const user = this.usersAdded[index];
+          
+          if (user.id === data.user.id) {
+            this.usersAdded.splice(index, 1);
+          }
+        }
+      }
+      else {
+        for (let index = 0; index < this.usersAdded.length; index++) {
+          const user = this.usersAdded[index];
+          
+          if (user.id === data.user.id)
+            return ; // user is already inside the list
+        }
+        this.usersAdded.push(data.user);
+      }
     },
+
+    async addUser(user: User) {
+      const result: any = await postBackendWithQueryParams('chat/addUserToRoom', undefined, { roomId: this.chatId, userToAdd: user.id });
+
+      if (result.statusCode === 403) {
+        alert(result.message);
+      }
+    },
+
     async getUsers() {
       await getBackend('user/all').then(res => res.json())
         .then((data: User[]) => {
           this.allUsers = data;
-        });
-
+        })
+        .catch(error =>
+          console.log(error)
+        );
     },
+
+    updateUserList() {
+      const currentTime: number = new Date().getTime();
+
+      if (this.updateUsersTimestamp + Timeout.UpdateUsersTimeout < currentTime) {
+        this.getUsers();
+        this.updateUsersTimestamp = currentTime;
+      }
+    },
+
     filteredList() {
-      this.getUsers();
+      this.updateUserList();
       if (this.input !== '') {
         return this.allUsers.filter((user) =>
           user.name.toLowerCase().includes(this.input.toLowerCase())
         );
       }
     },
+
     getUserPicture(userId: number): string {
       return (`http://${import.meta.env.VITE_CODAM_PC}:${import.meta.env.VITE_BACKEND_PORT}/public/user_${userId}.png`);
     },
+
     async changePassword() {
       if (Debug.ENABLED)
         console.log('change pw' + this.newPassword);
-      const result = await postBackendWithQueryParams('chat/changePassword', { password: this.newPassword }, { roomId: this.chatId });
+      const result: any = await postBackendWithQueryParams('chat/changePassword', { password: this.newPassword }, { roomId: this.chatId });
       if (Debug.ENABLED)
         console.log(result);
       if (result.statusCode === 403) {
@@ -634,15 +681,16 @@ export default {
         return;
       }
       else
-        alert('Password changed succesfully.');
+        alert('Password changed successfully.');
     },
+
     //change access is for setting a password and change password is for changing a password
     async changeAccess(newAccess: string) {
       if (Debug.ENABLED)
         console.log('change access' + newAccess);
       if (newAccess !== 'PUBLIC' && newAccess !== 'PRIVATE' && newAccess !== 'PROTECTED')
         return;
-      const result = await postBackendWithQueryParams('chat/changeAccess', { password: this.newPassword }, { roomId: this.chatId, newAccess: newAccess });
+      const result: any = await postBackendWithQueryParams('chat/changeAccess', { password: this.newPassword }, { roomId: this.chatId, newAccess: newAccess });
       if (Debug.ENABLED)
         console.log(result);
       if (result.statusCode === 403) {
@@ -659,6 +707,7 @@ export default {
         this.chat.access = newAccess;
       }
     },
+
     changeVisibleInvite() {
       this.visibleInvite = !this.visibleInvite;
     }

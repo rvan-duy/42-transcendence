@@ -12,6 +12,7 @@ import {
   Query,
   Request,
   UseGuards,
+  Inject,
 } from '@nestjs/common';
 import { Room, Access } from '@prisma/client';
 import { PrismaRoomService } from 'src/room/prisma/prismaRoom.service';
@@ -20,6 +21,7 @@ import { RoomService, roomDto } from 'src/room/room.service';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 import { ChatService } from './chat.service';
 import { PrismaUserService } from 'src/user/prisma/prismaUser.service';
+import { GateService } from 'src/gate/gate.service';
 
 enum Debug {
   ENABLED = 0
@@ -33,6 +35,7 @@ export class ChatController {
     private readonly cryptService: CryptService,
     private readonly chatService: ChatService,
     private readonly userService: PrismaUserService,
+    @Inject('chatGate') private readonly chatGate: GateService,
   ) { }
 
   @UseGuards(JwtAuthGuard)
@@ -77,13 +80,19 @@ export class ChatController {
     const room = await this.prismaRoomService.Room({ id: roomId });
     switch (room?.access || 'invalid') {
     case Access.PRIVATE:
-      throw new ForbiddenException('You need to be added ot this room');
+      throw new ForbiddenException('You need to be added to this room');
     case Access.PROTECTED:
       if (await this.cryptService.comparePassword(password, room.hashedCode) === false) {
         throw new ForbiddenException('Incorrect password');
       }
+      if (await this.chatService.banCheck(userId, roomId) === true){
+        throw new ForbiddenException('You are banned.');
+      }
       return this.roomService.addToChat(userId, roomId);
     case Access.PUBLIC:
+      if (await this.chatService.banCheck(userId, roomId) === true){
+        throw new ForbiddenException('You are banned.');
+      }
       return this.roomService.addToChat(userId, roomId);
     case 'invalid':
       throw new NotFoundException('Room not found');
@@ -208,7 +217,10 @@ export class ChatController {
     roomId = Number(roomId);
     // only alow the chat owner and admins to add members to the chat
     if (await this.chatService.isAdminOrOwner(roomId, clientId) === false)
-      throw new ForbiddenException('Only chat owner or admin is alowed to add users to chat');
+      throw new ForbiddenException('Only chat owner or admin is allowed to add users to chat');
+
+    if (await this.chatService.banCheck(userId, roomId))
+      throw new ForbiddenException('User has been banned.');
 
     // add the user to the chat
     this.roomService.addToChat(userId, roomId);
@@ -232,6 +244,15 @@ export class ChatController {
     // check if the banned user is not the owner
     if (await this.chatService.isOwner(roomId, banUserId) === true)
       throw new ForbiddenException('The chat owner cannot be banned');
+
+    // send a message to the frontend of the banned user to notify them of their ban and switch them off the room page
+    const bannedUserChatSockets = await this.chatGate.getSocketsByUser(banUserId);
+
+    for (let index = 0; index < bannedUserChatSockets.length; index++) {
+      const socket = bannedUserChatSockets[index];
+      
+      socket.emit('removedFromRoom', {message: 'banned', roomId: roomId});
+    }
 
     // add user to the banned list in this chat
     this.roomService.banUser(roomId, banUserId);
@@ -283,6 +304,14 @@ export class ChatController {
     // check if the kicked user is not the owner or admin
     if (await this.chatService.isOwner(roomId, kickUserId) === true)
       throw new ForbiddenException('The chat owner cannot be kicked');
+
+    const kickedUserChatSockets = await this.chatGate.getSocketsByUser(kickUserId);
+
+    for (let index = 0; index < kickedUserChatSockets.length; index++) {
+      const socket = kickedUserChatSockets[index];
+        
+      socket.emit('removedFromRoom', {message: 'kicked', roomId: roomId});
+    }
 
     // remove the kicked user from chat
     this.roomService.kickUser(roomId, kickUserId);

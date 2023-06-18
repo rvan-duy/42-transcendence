@@ -198,7 +198,7 @@ export default {
         if (Debug.ENABLED)
           console.log(result);
         if (result.statusCode === 403) {
-          alert('Wrong password');
+          alert('Cannot enter');
           return;
         }
         else
