@@ -66,7 +66,7 @@ export class TwoFactorAuthenticationController {
   @ApiOkResponse({ description: 'Two-factor authentication turned off', type: String })
   @ApiBadRequestResponse({ description: 'Two-factor authentication verification failed', type: String })
   async turnOffTwoFactorAuthentication(@Request() req: any, @Response() res: any) {
-    const isVerified = await this.twoFactorAuthenticationService.verifyTwoFactorCode(req.user.id, req.body.code);
+    // const isVerified = await this.twoFactorAuthenticationService.verifyTwoFactorCode(req.user.id, req.body.code);
 
     // if (isVerified === false) {
     //   return res.status(HttpStatus.BAD_REQUEST).send('Two-factor authentication verification failed');
