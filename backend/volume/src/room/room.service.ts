@@ -30,7 +30,7 @@ export class RoomService {
     private prismaRoom: PrismaRoomService,
     private prismaUserService: PrismaUserService,
     private readonly cryptService: CryptService,
-  ) {}
+  ) { }
 
   private chatServer: Server;
 
@@ -40,7 +40,7 @@ export class RoomService {
 
   //  creates a new chatroom
   async createChat(roomData: roomDto) {
-    const {access, ownerId, name} = roomData;
+    const { access, ownerId, name } = roomData;
     let { password } = roomData;
 
     // encrypt password when chat is proteced else leave undefined
@@ -48,7 +48,7 @@ export class RoomService {
       password = await this.cryptService.hashPassword(password);
     else
       password = undefined;
-    
+
     return this.prismaRoom.createRoom({
       owner: {
         connect: {
@@ -96,24 +96,24 @@ export class RoomService {
   }
 
   // fetches all users of this chatroom
-  async getRoomUsers(roomId: number){
-    const roomAndUsers = await this.prismaRoom.RoomWithUsers({id: roomId});
-    return(roomAndUsers?.users);
+  async getRoomUsers(roomId: number) {
+    const roomAndUsers = await this.prismaRoom.RoomWithUsers({ id: roomId });
+    return (roomAndUsers?.users);
   }
 
-  async getRoomAdmins(roomId: number){
-    const roomAndUsers = await this.prismaRoom.roomWithAdmins({id: roomId});
-    return(roomAndUsers?.admin);
+  async getRoomAdmins(roomId: number) {
+    const roomAndUsers = await this.prismaRoom.roomWithAdmins({ id: roomId });
+    return (roomAndUsers?.admin);
   }
 
   async getRoomById(roomId: number) {
-    const room = await this.prismaRoom.Room({id: roomId});
+    const room = await this.prismaRoom.Room({ id: roomId });
     const roomWithoutPasscode = exclude(room, ['hashedCode']);
     return roomWithoutPasscode;
   }
 
   async removeChat(roomId: number) {
-    this.prismaRoom.deleteRoom({id: roomId});
+    this.prismaRoom.deleteRoom({ id: roomId });
   }
 
   async makeAdmin(roomId: number, userId: number) {
@@ -131,10 +131,10 @@ export class RoomService {
     });
   }
 
-  async getPublicAndProtectedRooms(userId: number) : Promise<any | null> {
+  async getPublicAndProtectedRooms(userId: number): Promise<any | null> {
     return (this.prismaRoom.Rooms({
       where: {
-        OR:[
+        OR: [
           {
             access: Access.PUBLIC,
             users: {
@@ -221,7 +221,7 @@ export class RoomService {
       }
     });
   }
-  
+
   async kickUser(roomId: number, userId: number) {
     this.removeUserFromChat(roomId, userId);
     return await this.prismaRoom.updateRoom({

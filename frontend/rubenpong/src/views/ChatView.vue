@@ -217,19 +217,24 @@ export default {
         alert('Room name too long.');
         return ;
       }
+      if (newChat.name.length < 3)
+      {
+        alert('Room name too short.');
+        return ;
+      }
       if (newChat.password && newChat.password.length > 20)
       {
         alert('Room password too long.');
         return ;
       }
+      if (newChat.password && newChat.password.length < 3)
+      {
+        alert('Room password too short.');
+        return ;
+      }
       const createdChat = await postBackendWithQueryParams('chat/createRoom', { password: newChat.password }, { name: newChat.name, access: newChat.access }) as Chat;
       this.goTo('chatroom/' + newChat.name + '?id=' + createdChat.id);
     },
-    // need to implement in the back-end too before this ca work
-    // addUser(user: any) {
-    //   this.newChat.users.push(user);
-    //   this.usersAdded.push(user.id);
-    // }
   },
 };
 </script>
